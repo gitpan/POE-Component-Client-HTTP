@@ -1,4 +1,35 @@
 =========================
+2003-05-04 06:08:08 v0_53
+=========================
+
+  2003-05-04 06:08:08 by rcaputo; HTTP.pm 1.37; Makefile.PL 1.16
+
+    Update version numbers in requisite modules and itself. 
+
+  2003-05-03 01:39:28 by rcaputo; HTTP.pm 1.36
+
+    Various minor stylistic tweaks while hunting down an error that
+    eventually turned out to be in POE::Wheel::SocketFactory. 
+
+  2003-05-02 20:20:19 by rcaputo; HTTP.pm 1.35
+
+    Removed the shutdown() code. In extended tests, it was causing some
+    servers to disconnect before sending HTTP responses.
+
+    Added code to match comments. If an HTTP request contains a UserAgent
+    header, use that instead of writing over it with one of ours. This
+    allows proxies written with this component to pass on proper values. 
+
+  2003-05-02 12:58:19 by rcaputo; Makefile.PL 1.15
+
+    Update the revisions of things we require. 
+
+  2003-05-02 12:57:19 by rcaputo; HTTP.pm 1.34
+
+    Use shutdown() to signal the end of a request. Requires POE 0.2501 or
+    newer. 
+
+=========================
 2003-03-14 06:09:41 v0_52
 =========================
 

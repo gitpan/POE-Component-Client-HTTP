@@ -1,4 +1,4 @@
-# $Id: HTTP.pm,v 1.33 2003/03/14 06:09:41 rcaputo Exp $
+# $Id: HTTP.pm,v 1.37 2003/05/04 06:08:08 rcaputo Exp $
 # License and documentation are after __END__.
 
 package POE::Component::Client::HTTP;
@@ -9,7 +9,7 @@ sub DEBUG      () { 0 }
 sub DEBUG_DATA () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.52';
+$VERSION = '0.53';
 
 use Carp qw(croak);
 use POSIX;
@@ -230,7 +230,7 @@ sub poco_weeble_start {
           "| from      : ", no_undef($heap->{from}), "\n",
           "| proxy     : ", no_undef_list($heap->{proxy}), "\n",
           "| no_proxy  : ", no_undef_list($heap->{no_proxy}), "\n",
-          "'-----------------------------------------\n",
+          "`-----------------------------------------\n",
         );
   };
 
@@ -297,9 +297,11 @@ sub poco_weeble_request {
   }
 
   # Add an agent header if one isn't included.
-  if (@{$heap->{agent}}) {
-    my $this_agent = $heap->{agent}->[rand @{$heap->{agent}}];
-    $http_request->user_agent($this_agent);
+  unless (defined $http_request->user_agent()) {
+    if (@{$heap->{agent}}) {
+      my $this_agent = $heap->{agent}->[rand @{$heap->{agent}}];
+      $http_request->user_agent($this_agent);
+    }
   }
 
   # Add a from header if one isn't included.
@@ -507,6 +509,8 @@ sub poco_weeble_connect_ok {
       ErrorEvent   => 'got_socket_error',
     );
 
+  DEBUG and warn "wheel $wheel_id became wheel ", $new_wheel->ID, "\n";
+
   # Add the new wheel ID to the lookup table.
 
   $heap->{wheel_to_request}->{ $new_wheel->ID() } = $request_id;
@@ -514,7 +518,7 @@ sub poco_weeble_connect_ok {
   # Switch wheels.  This is a bit cumbersome, but it works around a
   # bug in older versions of POE.
 
-  undef $request->[REQ_WHEEL];
+  $request->[REQ_WHEEL] = undef;
   $request->[REQ_WHEEL] = $new_wheel;
 
   # We're now in a sending state.
@@ -568,7 +572,7 @@ sub poco_weeble_connect_error {
 
   # Drop the wheel and its cross-references.
   my $request_id = delete $heap->{wheel_to_request}->{$wheel_id};
-  die unless defined $request_id;
+  die "expected a request ID, but there is none" unless defined $request_id;
 
   my $request = delete $heap->{request}->{$request_id};
 
@@ -588,11 +592,14 @@ sub poco_weeble_timeout {
 
   DEBUG and warn "request $request_id timed out\n";
 
-  # Drop the wheel and its cross-references.
+  # Discard the request.  Keep a copy for a few bits of cleanup.
   my $request = delete $heap->{request}->{$request_id};
 
+  # There's a wheel attached to the request.  Shut it down.
   if (defined $request->[REQ_WHEEL]) {
-    delete $heap->{wheel_to_request}->{ $request->[REQ_WHEEL]->ID() };
+    my $wheel_id = $request->[REQ_WHEEL]->ID();
+    DEBUG and warn "request $request_id is wheel $wheel_id\n";
+    delete $heap->{wheel_to_request}->{$wheel_id};
   }
 
   # No need to remove the alarm here because it's already gone.
@@ -1064,10 +1071,10 @@ PoCo::Client::HTTP's C<spawn> method takes a few named parameters:
 
 =item Agent => \@list_of_agents
 
-C<Agent> defines the string that identifies the component to other
-servers.  By default, PoCo::Client::HTTP will advertise itself and its
-version.  You may want to change this to help identify your own
-programs instead.
+If a UserAgent header is not present in the HTTP::Request, a random
+one will be used from those specified by the C<Agent> parameter.  If
+none are supplied, POE::Component::Client::HTTP will advertise itself
+to the server.
 
 C<Agent> may contain a reference to a list of user agents.  If this is
 the case, PoCo::Client::HTTP will choose one of them at random for

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: Makefile.PL,v 1.14 2002/09/10 03:33:21 rcaputo Exp $
+# $Id: Makefile.PL,v 1.16 2003/05/04 06:08:08 rcaputo Exp $
 
 use strict;
 use lib qw(./mylib);
@@ -11,9 +11,9 @@ open(CHANGES, ">>CHANGES") and close CHANGES;
 
 # Prompt for optional things.
 ExtUtils::AutoInstall->import
-  ( -version => '0.32',
+  ( -version => '0.50',
     -core    =>
-    [ 'POE'            => 0.22,
+    [ 'POE'            => 0.25,
       'HTTP::Request'  => 1.27,
       'HTTP::Response' => 1.33,
       'URI'            => 1.11,
@@ -24,9 +24,6 @@ ExtUtils::AutoInstall->import
       'Net::SSLeay::Handle' => 0.61,
     ],
   );
-
-# To mollify a recent warning in POE::Kernel.
-$POE::Kernel::poe_kernel->run();
 
 # Write that makefile.
 WriteMakefile
