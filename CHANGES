@@ -1,4 +1,21 @@
 =========================
+2003-11-22 06:02:39 v0_59
+=========================
+
+  2003-11-22 06:02:39 by rcaputo; HTTP.pm 1.45; t/01_request.t 1.16
+
+    Jeff (last name lost) discovered that redirects weren't properly
+    setting the Host header for the new location. This commit fixes his
+    rt.cpan.org ticket, number 3805. 
+
+  2003-11-03 07:23:09 by rcaputo; HTTP.pm 1.44
+
+    "Jaymes" requested that the progress indicator return raw octets
+    along with the progress information. We may later want to disable the
+    HTTP::Response, or to disable content building for it, to do
+    progressive or streaming downloads of large things. 
+
+=========================
 2003-10-30 23:21:30 v0_57
 =========================
 
