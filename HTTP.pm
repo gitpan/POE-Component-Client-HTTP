@@ -9,7 +9,7 @@ sub DEBUG      () { 0 }
 sub DEBUG_DATA () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.56';
+$VERSION = '0.57';
 
 use Carp qw(croak);
 use POSIX;
