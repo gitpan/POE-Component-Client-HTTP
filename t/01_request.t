@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 01_request.t,v 1.7 2002/06/29 06:10:14 rcaputo Exp $
+# $Id: 01_request.t,v 1.8 2002/07/04 13:33:03 rcaputo Exp $
 
 use strict;
 
@@ -16,6 +16,16 @@ $| = 1;
 print "1..4\n";
 
 my @test_results = ( 'not ok 1', 'not ok 2', 'not ok 3', 'not ok 4' );
+
+BEGIN {
+  eval { require Net::SSLeay::Handle; };
+  if ($@) {
+    eval "sub HAS_SSL () { 0 }";
+  }
+  else {
+    eval "sub HAS_SSL () { 1 }";
+  }
+}
 
 #------------------------------------------------------------------------------
 
@@ -42,10 +52,15 @@ sub client_start {
                  GET 'http://poe.perl.org/misc/test.cgi?cgi_field_fiv=555',
                );
 
-  my $secure_request = GET 'https://sourceforge.net/projects/poe/';
-  $kernel->post( weeble => request => got_response =>
-                 $secure_request,
-               );
+  if (HAS_SSL) {
+    my $secure_request = GET 'https://sourceforge.net/projects/poe/';
+    $kernel->post( weeble => request => got_response =>
+                   $secure_request,
+                 );
+  }
+  else {
+    $test_results[3] = 'ok 4 # skipped: need Net::SSLeay::Handle to test SSL';
+  }
 
   if (TEST_BIG_STUFF) {
     $kernel->post( weeble => request => got_response =>

@@ -1,3 +1,13 @@
+2002-07-04 13:33  rcaputo
+
+	* HTTP.pm: Bump the version to 0.43 for release.
+
+2002-07-04 13:33  rcaputo
+
+	* t/01_request.t: I forgot to test for Net::SSLeay::Handle before
+	testing https.	The result?  Mondo crashage at the CPAN testers. 
+	Oy!
+
 2002-07-03 05:14  rcaputo
 
 	* HTTP.pm, README: Prepare for 0.42 release.

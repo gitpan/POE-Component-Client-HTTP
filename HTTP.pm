@@ -1,4 +1,4 @@
-# $Id: HTTP.pm,v 1.14 2002/07/03 05:14:04 rcaputo Exp $
+# $Id: HTTP.pm,v 1.15 2002/07/04 13:33:28 rcaputo Exp $
 # License and documentation are after __END__.
 
 package POE::Component::Client::HTTP;
@@ -8,7 +8,7 @@ use strict;
 sub DEBUG () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.42';
+$VERSION = '0.43';
 
 use Carp qw(croak);
 use POSIX;
