@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.3 2000/09/20 17:05:53 rcaputo Exp $
+$Id: CHANGES,v 1.4 2001/05/29 17:02:42 rcaputo Exp $
 
 ============
 Things to do
@@ -15,6 +15,14 @@ marked with "(???)" are just information.
 
 Note to self: Don't forget to tag the version after a new distribution
 is released.  For example: `cvs tag -Rc v1_00 .'
+
+---------------
+0.37 2001.10.15
+---------------
+
+Add a MaxSize parameter to the Component's constructor.  When used, it
+can prevent the world from blowing up when someone hands you
+<http://localhost:19/>.
 
 ---------------
 0.36 2001.05.29
