@@ -1,4 +1,52 @@
 =========================
+2003-03-14 06:09:41 v0_52
+=========================
+
+  2003-03-14 06:09:41 by rcaputo; HTTP.pm 1.33
+
+    Bump the version number to 0.52 for release. 
+
+===========================
+2003-03-10 17:42:10 v0_5102
+===========================
+
+  2003-03-10 17:42:10 by rcaputo; HTTP.pm 1.32
+
+    Bump version to 0.5102. 
+
+  2003-03-10 17:40:53 by rcaputo; HTTP.pm 1.31
+
+    Mike Mindel found a server that emits the status line as a single
+    entity and the response headers as another. This broke the newline
+    detection code and discarded the status line altogether. Fixed. 
+
+===========================
+2003-03-08 04:36:32 v0_5101
+===========================
+
+  2003-03-08 04:36:32 by rcaputo; HTTP.pm 1.30
+
+    Mike Mindel discovered that the DNS timeout was hardcoded to 90
+    seconds no matter what the HTTP component's timeout was set to. Fixed
+    the use of PoCo::Client::DNS so that requests don't take longer than
+    the specified timeout.
+
+    Added a commissioned feature: Requests may be load balanced through
+    multiple proxies, chosen at random from a list.
+
+    Added a commissioned feature: User-agent strings may be chosen at
+    random from a list. 
+
+  2003-02-28 04:47:31 by rcaputo; HTTP.pm 1.29
+
+    (!!! May break backward compatibility !!!) Applied Ilya Martynov's
+    patch to replace HTTP::Headers with HTTP::Response during streaming
+    content. This is unfortunately necessary because HTTP::Headers does
+    not include the status code, so you can't tell whether the request
+    was successful. While this changes the public interface, it does not
+    break the existing tests. We obviously need better tests, then. 
+
+=========================
 2002-12-02 21:03:32 v0_51
 =========================
 
@@ -231,14 +279,6 @@
 
     Implemented the Timeout parameter. Fixed content length calculations.
     Replaced deprecated FooState parameters with FooEvent. 
-
-=========================
-2001-12-06 16:21:12 v0_38
-=========================
-
-  2001-12-06 16:21:12 by rcaputo; HTTP.pm 1.6; t/01_request.t 1.4
-
-    add code behind Timeout 
 
 =============================
 Beginning of Recorded History
