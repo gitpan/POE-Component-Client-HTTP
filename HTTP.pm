@@ -8,7 +8,7 @@ use strict;
 sub DEBUG () { 0 };
 
 use vars qw($VERSION);
-$VERSION = '0.38';
+$VERSION = '0.39';
 
 use Carp qw(croak);
 use POSIX;
@@ -327,11 +327,9 @@ sub poco_weeble_connect_error {
 
   my $request = delete $heap->{request}->{$request_id};
 
-  if (defined $request->[REQ_TIMER]) {
-    my $alarm_id =
-      delete $heap->{timer_to_request}->{ $request->[REQ_TIMER] };
+  my $alarm_id = $request->[REQ_TIMER];
+  if (delete $heap->{timer_to_request}->{ $alarm_id }) {
     $kernel->alarm_remove( $alarm_id );
-    undef $request->[REQ_TIMER];
   }
 
   # Post an error response back to the requesting session.
@@ -355,10 +353,7 @@ sub poco_weeble_timeout {
   }
 
   # No need to remove the alarm here because it's already gone.
-  if (defined $request->[REQ_TIMER]) {
-    delete $heap->{timer_to_request}->{ $request->[REQ_TIMER] };
-    undef $request->[REQ_TIMER];
-  }
+  delete $heap->{timer_to_request}->{ $request->[REQ_TIMER] };
 
   # Post an error response back to the requesting session.
   $request->[REQ_POSTBACK]->
@@ -394,11 +389,9 @@ sub poco_weeble_io_error {
   my $request = delete $heap->{request}->{$request_id};
 
   # Stop the timeout timer for this wheel, too.
-  my $timer_id = $request->[REQ_TIMER];
-  if (exists $heap->{timer_to_request}->{$timer_id}) {
-    $kernel->alarm_remove( $timer_id );
-    delete $heap->{timer_to_request}->{$timer_id};
-    undef $request->[REQ_TIMER];
+  my $alarm_id = $request->[REQ_TIMER];
+  if (delete $heap->{timer_to_request}->{$alarm_id}) {
+    $kernel->alarm_remove( $alarm_id );
   }
 
   # If there was a non-zero error, then something bad happened.  Post
@@ -613,11 +606,9 @@ HEADER:
       my $request = delete $heap->{request}->{$request_id};
 
       # Stop the timeout timer for this wheel, too.
-      my $timer_id = $request->[REQ_TIMER];
-      if (defined $timer_id) {
-        $kernel->alarm_remove( $timer_id );
-        delete $heap->{timer_to_request}->{$timer_id};
-        undef $request->[REQ_TIMER];
+      my $alarm_id = $request->[REQ_TIMER];
+      if (delete $heap->{timer_to_request}->{$alarm_id}) {
+        $kernel->alarm_remove( $alarm_id );
       }
 
       $request->[REQ_POSTBACK]->($request->[REQ_RESPONSE]);
