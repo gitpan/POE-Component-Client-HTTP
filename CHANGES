@@ -1,4 +1,27 @@
 =========================
+2004-01-14 19:21:53 v0_60
+=========================
+
+  2004-01-14 19:21:53 by rcaputo; HTTP.pm 1.48
+
+    Bump the release version to 0.60. 
+
+  2004-01-14 19:21:27 by rcaputo; HTTP.pm 1.47
+
+    Graham Barr discovered a problem where shutdown_output() was causing
+    IIS servers to disconnect before sending responses. He suspects it's
+    a race condition that only shows up over connections with
+    Internet-scale latency. It didn't appear in localhost testing.
+    Nevertheless, this isn't the first time where shutdown_output()
+    caused problems, so I've left the call in a comment and clearly
+    marked why it's that way. 
+
+  2003-11-29 06:17:18 by rcaputo; HTTP.pm 1.46
+
+    Apply Richard Harmon's patch, rt.cpan.org ticket 4521, to support
+    "ICY" http status lines. These apparently are Shoutcast mp3 streams. 
+
+=========================
 2003-11-22 06:02:39 v0_59
 =========================
 
@@ -165,27 +188,6 @@
     not include the status code, so you can't tell whether the request
     was successful. While this changes the public interface, it does not
     break the existing tests. We obviously need better tests, then. 
-
-=========================
-2002-12-02 21:03:32 v0_51
-=========================
-
-  2002-12-02 21:03:32 by rcaputo; HTTP.pm 1.28
-
-    I aborted an upload of 0.50 because I had forgotten to tag the files
-    for CHANGES. Unfortunately, PAUSE registered the upload before I
-    could stop it, so to upload a good version I need to burn a version
-    number. Blah, but the security feature is understandable. 
-
-=========================
-2002-12-02 20:54:56 v0_50
-=========================
-
-  2002-12-02 20:54:56 by rcaputo; HTTP.pm 1.27
-
-    Applied Prakash Kailasa's patch to omit port 80 from the Host header.
-    The original patch also omitted 443 for https, but that broke test 8
-    (https). The modified patch being committed works for all tests. 
 
 =============================
 Beginning of Recorded History
