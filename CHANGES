@@ -17,6 +17,22 @@ Note to self: Don't forget to tag the version after a new distribution
 is released.  For example: `cvs tag -Rc v1_00 .'
 
 ---------------
+0.40 2002.03.17
+---------------
+
+Erick Calder <e@arix.com> discovered that Client::HTTP was cutting
+responses short.  It turns out that 0.39 was counting the headers
+towards the content length.  Rocco reset the received octets count at
+the end of the headers.
+
+---------------
+0.39 2001.12.06
+---------------
+
+Rocco installed Client::HTTP in a live program, and it promptly broke.
+This release fixes the new timer code in 0.38.
+
+---------------
 0.38 2001.12.06
 ---------------
 

@@ -5,10 +5,10 @@ package POE::Component::Client::HTTP;
 
 use strict;
 
-sub DEBUG () { 0 };
+sub DEBUG () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.39';
+$VERSION = '0.40';
 
 use Carp qw(croak);
 use POSIX;
@@ -525,6 +525,10 @@ HEADER:
           warn "wheel $wheel_id got a blank line... moving to content.\n";
 
         $request->[REQ_STATE] = RS_IN_CONTENT;
+
+        # Reset the octets got so that the headers do not count
+        # towards the content length.
+        $request->[REQ_OCTETS_GOT] = length($request->[REQ_BUFFER]);
         last HEADER;
       }
     }
