@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.4 2001/05/29 17:02:42 rcaputo Exp $
+$Id: CHANGES,v 1.6 2001/12/06 16:21:12 rcaputo Exp $
 
 ============
 Things to do
@@ -15,6 +15,15 @@ marked with "(???)" are just information.
 
 Note to self: Don't forget to tag the version after a new distribution
 is released.  For example: `cvs tag -Rc v1_00 .'
+
+---------------
+0.38 2001.12.06
+---------------
+
+Fixed the SYNOPSIS per Jason Boxman's recommendation.
+
+Made the Timeout parameter significant.  There was no code behind it
+before now.
 
 ---------------
 0.37 2001.10.15

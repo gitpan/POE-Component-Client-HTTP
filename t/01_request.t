@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 01_request.t,v 1.2 2000/09/01 20:54:42 rcaputo Exp $
+# $Id: 01_request.t,v 1.4 2001/12/06 16:21:12 rcaputo Exp $
 
 use strict;
 
@@ -79,7 +79,10 @@ sub client_got_response {
 #------------------------------------------------------------------------------
 
 # Create a weeble component.
-POE::Component::Client::HTTP->spawn( MaxSize => 4096 );
+POE::Component::Client::HTTP->spawn
+  ( MaxSize => 4096,
+    Timeout => 180,
+  );
 
 # Create a session that will make some requests.
 POE::Session->create
