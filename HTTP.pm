@@ -1,4 +1,4 @@
-# $Id: HTTP.pm,v 1.56 2004/07/13 18:02:37 rcaputo Exp $
+# $Id: HTTP.pm,v 1.58 2004/10/02 15:37:11 rcaputo Exp $
 # License and documentation are after __END__.
 
 package POE::Component::Client::HTTP;
@@ -9,7 +9,7 @@ sub DEBUG      () { 0 }
 sub DEBUG_DATA () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.64';
+$VERSION = '0.65';
 
 use Carp qw(croak);
 use POSIX;
@@ -850,7 +850,7 @@ HEADER:
         my $line = $1;
 
         # New header.
-        if ($line =~ /^([\w\-]+)\s*\:\s*(.+)\s*$/) {
+        if ($line =~ /^([\w\-]+)\s*\:\s*(.+?)\s*$/) {
           DEBUG and warn "wheel $wheel_id got a new header: $1 ...\n";
 
           $request->[REQ_LAST_HEADER] = $1;
@@ -1046,7 +1046,7 @@ HEADER:
     }
   }
 
-  $request->[REQ_BUFFER] = '';
+  $request->[REQ_BUFFER] = '' unless $request->[REQ_STATE] & RS_IN_HEADERS;
 
   unless ($request->[REQ_STATE] & RS_DONE) {
     if (

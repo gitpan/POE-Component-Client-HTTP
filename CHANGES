@@ -1,4 +1,19 @@
 =========================
+2004-10-02 15:37:11 v0_65
+=========================
+
+  2004-10-02 15:37:11 by rcaputo; HTTP.pm 1.58
+
+    Bump version to 0.65 for release. 
+
+  2004-10-01 04:04:39 by rcaputo; HTTP.pm 1.57
+
+    David Davis discovered that HTTP response headers may be discarded if
+    they are incomplete at the end of a read buffer. This commits a fix
+    for his findings: Don't discard the remaining read buffer if we're
+    still processing headers. 
+
+=========================
 2004-07-13 18:03:43 v0_64
 =========================
 
@@ -152,23 +167,6 @@
 
     We are now relying on a feature of POE 0.27. Bump up the dependency
     version number. 
-
-=========================
-2003-08-19 19:07:17 v0_56
-=========================
-
-  2003-08-19 19:07:17 by rcaputo; HTTP.pm 1.40; t/01_request.t 1.14
-
-    Applied Averell Dalton's redirect patch, which is loosely based on
-    Prakash Kailasa's original patch. Averell's version includes a flag
-    to enable redirect following and to limit the number of redirects
-    that will be followed. 
-
-  2003-07-27 19:51:48 by rcaputo; HTTP.pm 1.39; t/01_request.t 1.13
-
-    Apply Ask Bjoern Hansen's accessor patch so programs can find out how
-    many requests are pending. Bumped the version number to 0.55 for the
-    next release. 
 
 =============================
 Beginning of Recorded History
