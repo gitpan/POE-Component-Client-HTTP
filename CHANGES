@@ -1,3 +1,33 @@
+2002-07-10 16:04  rcaputo
+
+	* Makefile.PL: Mexnix noticed the POE::Kernel run() warning in
+	Makefile.PL.  This fix gets rid of that warning.
+
+2002-07-10 15:27  rcaputo
+
+	* HTTP.pm: Increase the version to 0.45.
+
+2002-07-10 15:26  rcaputo
+
+	* HTTP.pm: Generate HTTP 500 errors for https requests without
+	Net::SSLeay, and for failed DNS lookups.  Improve Net::SSLeay
+	detection (watch the versions of modules as well as their
+	presence).
+
+2002-07-10 15:25  rcaputo
+
+	* t/01_request.t: Skip the SSL test if Net::SSLeay isn't installed.
+
+2002-07-10 15:24  rcaputo
+
+	* SSL.pm: Fix indenting.  Nothing really changed here but
+	whitespace.
+
+2002-07-10 15:24  rcaputo
+
+	* MANIFEST, Makefile.PL: Make Net::SSLeay an optional dependency,
+	not a mandatory one.  Add in AutoInstall to make things easier.
+
 2002-07-10 05:22  rcaputo
 
 	* Makefile.PL: Add a recent version of Net::SSLeay to

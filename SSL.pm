@@ -1,4 +1,4 @@
-# $Id: SSL.pm,v 1.2 2002/06/29 06:19:53 rcaputo Exp $
+# $Id: SSL.pm,v 1.3 2002/07/10 15:24:45 rcaputo Exp $
 # License and documentation are after __END__.
 
 package POE::Component::Client::HTTP::SSL;
@@ -6,25 +6,25 @@ package POE::Component::Client::HTTP::SSL;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = (qw($Revision: 1.2 $ ))[1];
+$VERSION = (qw($Revision: 1.3 $ ))[1];
 
 use Net::SSLeay::Handle;
 use vars qw(@ISA);
 @ISA = qw(Net::SSLeay::Handle);
 
 sub READ {
-    my ($socket, $buf, $len, $offset) = \ (@_);
-    my $ssl = $$socket->_get_ssl();
-    defined($$offset) or
-      return length($$buf = Net::SSLeay::read($ssl, $$len));
+  my ($socket, $buf, $len, $offset) = \ (@_);
+  my $ssl = $$socket->_get_ssl();
+  defined($$offset) or
+    return length($$buf = Net::SSLeay::read($ssl, $$len));
 
-    defined(my $read = Net::SSLeay::read($ssl, $$len))
-      or return undef;
+  defined(my $read = Net::SSLeay::read($ssl, $$len))
+    or return undef;
 
-    my $buf_len = length($$buf);
-    $$offset > $buf_len and $$buf .= chr(0) x ($$offset - $buf_len);
-    substr($$buf, $$offset) = $read;
-    return length($read);
+  my $buf_len = length($$buf);
+  $$offset > $buf_len and $$buf .= chr(0) x ($$offset - $buf_len);
+  substr($$buf, $$offset) = $read;
+  return length($read);
 }
 
 1;

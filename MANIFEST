@@ -1,6 +1,7 @@
-# $Id: MANIFEST,v 1.5 2002/06/29 05:50:38 rcaputo Exp $
+# $Id: MANIFEST,v 1.6 2002/07/10 15:24:18 rcaputo Exp $
 CHANGES
 CHANGES.OLD
+mylib/ExtUtils/AutoInstall.pm
 HTTP.pm
 MANIFEST
 Makefile.PL
