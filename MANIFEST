@@ -1,0 +1,7 @@
+# $Id: MANIFEST,v 1.3 2000/09/02 20:12:44 rcaputo Exp $
+CHANGES
+HTTP.pm
+MANIFEST
+Makefile.PL
+README
+t/01_request.t
