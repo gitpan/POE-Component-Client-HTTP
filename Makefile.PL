@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: Makefile.PL,v 1.11 2002/07/10 16:04:32 rcaputo Exp $
+# $Id: Makefile.PL,v 1.12 2002/09/04 20:31:22 rcaputo Exp $
 
 use strict;
 use lib qw(./mylib);
@@ -46,8 +46,8 @@ WriteMakefile
     dist         =>
     { COMPRESS   => 'gzip -9f',
       SUFFIX     => 'gz',
-      PREOP      => ( 'cvs2cl.pl -l "-d\'a year ago<\'" ' .
-                    '--utc --stdout > $(DISTNAME)-$(VERSION)/CHANGES'
+      PREOP      => ( 'cvs-log.perl | ' .
+                      'tee ./$(DISTNAME)-$(VERSION)/CHANGES > ./CHANGES'
                     ),
     },
   );

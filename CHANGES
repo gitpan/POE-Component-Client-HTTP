@@ -1,162 +1,189 @@
-2002-07-19 15:26  rcaputo
+=========================
+2002-09-04 20:33:26 v0_47
+=========================
 
-	* HTTP.pm: Removed a spurious warn() left over from debugging. 
-	Bumped the version number to 0.46.
+  2002-09-04 20:33:26; rcaputo; HTTP.pm 1.21
 
-2002-07-10 16:04  rcaputo
+	Thibaut B discovered that Domino Go servers will send multi-line
+	STATUS lines (probably in addition to multi-line headers). The
+	component hadn't anticipated that, but now it's fixed. 
 
-	* Makefile.PL: Mexnix noticed the POE::Kernel run() warning in
-	Makefile.PL.  This fix gets rid of that warning.
+  2002-09-04 20:31:22; rcaputo; Makefile.PL 1.12
 
-2002-07-10 15:27  rcaputo
+	Move to the new CVS log reporter. 
 
-	* HTTP.pm: Increase the version to 0.45.
+  2002-07-19 15:26:59; rcaputo; HTTP.pm 1.20
 
-2002-07-10 15:26  rcaputo
+	Removed a spurious warn() left over from debugging. Bumped the
+	version number to 0.46. 
 
-	* HTTP.pm: Generate HTTP 500 errors for https requests without
-	Net::SSLeay, and for failed DNS lookups.  Improve Net::SSLeay
-	detection (watch the versions of modules as well as their
-	presence).
+=========================
+2002-07-10 16:04:32 v0_45
+=========================
 
-2002-07-10 15:25  rcaputo
+  2002-07-10 16:04:32; rcaputo; Makefile.PL 1.11
 
-	* t/01_request.t: Skip the SSL test if Net::SSLeay isn't installed.
+	Mexnix noticed the POE::Kernel run() warning in Makefile.PL. This
+	fix gets rid of that warning. 
 
-2002-07-10 15:24  rcaputo
+  2002-07-10 15:27:17; rcaputo; HTTP.pm 1.19
 
-	* SSL.pm: Fix indenting.  Nothing really changed here but
-	whitespace.
+	Increase the version to 0.45. 
 
-2002-07-10 15:24  rcaputo
+  2002-07-10 15:26:49; rcaputo; HTTP.pm 1.18
 
-	* MANIFEST, Makefile.PL: Make Net::SSLeay an optional dependency,
-	not a mandatory one.  Add in AutoInstall to make things easier.
+	Generate HTTP 500 errors for https requests without Net::SSLeay,
+	and for failed DNS lookups. Improve Net::SSLeay detection (watch
+	the versions of modules as well as their presence). 
 
-2002-07-10 05:22  rcaputo
+  2002-07-10 15:25:31; rcaputo; t/01_request.t 1.10
 
-	* Makefile.PL: Add a recent version of Net::SSLeay to
-	Client::HTTP's dependencies.  The dependencies include a recent
-	version of Net::SSLeay::Handle, but it seems that isn't enough.
+	Skip the SSL test if Net::SSLeay isn't installed. 
 
-2002-07-10 05:21  rcaputo
+  2002-07-10 15:24:45; rcaputo; SSL.pm 1.3
 
-	* HTTP.pm: Randal Schwartz gave a compelling reason for
-	Client::HTTP to do nonblocking lookups internally.  This change
-	adds that feature.
+	Fix indenting. Nothing really changed here but whitespace. 
 
-2002-07-10 02:30  rcaputo
+  2002-07-10 15:24:18; rcaputo; Makefile.PL 1.10; MANIFEST 1.6
 
-	* t/01_request.t: Add a test case for Randal Schwartz's uncanonical
-	URI bug.
+	Make Net::SSLeay an optional dependency, not a mandatory one. Add
+	in AutoInstall to make things easier. 
 
-2002-07-10 00:43  rcaputo
+=========================
+2002-07-10 05:22:50 v0_44
+=========================
 
-	* HTTP.pm: Randal Schwartz noticed that Client::HTTP did not
-	canonicalize URIs it's given.  This fix does that.
+  2002-07-10 05:22:50; rcaputo; Makefile.PL 1.9
 
-2002-07-04 13:33  rcaputo
+	Add a recent version of Net::SSLeay to Client::HTTP's
+	dependencies. The dependencies include a recent version of
+	Net::SSLeay::Handle, but it seems that isn't enough. 
 
-	* HTTP.pm: Bump the version to 0.43 for release.
+  2002-07-10 05:21:40; rcaputo; HTTP.pm 1.17
 
-2002-07-04 13:33  rcaputo
+	Randal Schwartz gave a compelling reason for Client::HTTP to do
+	nonblocking lookups internally. This change adds that feature. 
 
-	* t/01_request.t: I forgot to test for Net::SSLeay::Handle before
-	testing https.	The result?  Mondo crashage at the CPAN testers. 
-	Oy!
+  2002-07-10 02:30:19; rcaputo; t/01_request.t 1.9
 
-2002-07-03 05:14  rcaputo
+	Add a test case for Randal Schwartz's uncanonical URI bug. 
 
-	* HTTP.pm, README: Prepare for 0.42 release.
+  2002-07-10 00:43:33; rcaputo; HTTP.pm 1.16
 
-2002-07-03 03:55  rcaputo
+	Randal Schwartz noticed that Client::HTTP did not canonicalize
+	URIs it's given. This fix does that. 
 
-	* HTTP.pm: No noticeable changes.  Everything I tried was simply
-	ineffectual.
+  2002-07-04 13:33:28; rcaputo; HTTP.pm 1.15
 
-2002-07-02 21:33  rcaputo
+	Bump the version to 0.43 for release. 
 
-	* HTTP.pm: Update the User-Agent string slightly to follow
-	Mozilla's format.  Adds (rv:$VERSION) to the string.
+  2002-07-04 13:33:03; rcaputo; t/01_request.t 1.8
 
-2002-06-29 06:19  rcaputo
+	I forgot to test for Net::SSLeay::Handle before testing https.
+	The result? Mondo crashage at the CPAN testers. Oy! 
 
-	* SSL.pm: Remove WRITE (which is in Net::SSLeay::Handle) and do
-	some other little cleanups.
+=========================
+2002-07-03 05:14:04 v0_42
+=========================
 
-2002-06-29 06:10  rcaputo
+  2002-07-03 05:14:04; rcaputo; README 1.4; HTTP.pm 1.14
 
-	* HTTP.pm, t/01_request.t: Cosmetic change that may facilitate
-	changes later.
+	Prepare for 0.42 release. 
 
-2002-06-29 05:50  rcaputo
+  2002-07-03 03:55:16; rcaputo; HTTP.pm 1.13
 
-	* HTTP.pm, MANIFEST, Makefile.PL, SSL.pm, t/01_request.t: Add SSL
-	support.  https URLs should now be fetchable, albeit slowly.
+	No noticeable changes. Everything I tried was simply ineffectual. 
 
-2002-06-29 05:49  rcaputo
+  2002-07-02 21:33:39; rcaputo; HTTP.pm 1.12
 
-	* README: Note that the tests require a working internet
-	connection.
+	Update the User-Agent string slightly to follow Mozilla's format.
+	Adds (rv:$VERSION) to the string. 
 
-2002-06-09 18:45  rcaputo
+  2002-06-29 06:19:53; rcaputo; SSL.pm 1.2
 
-	* Makefile.PL: Fixed the CHANGES generation so that change logs are
-	included in tarballs.
+	Remove WRITE (which is in Net::SSLeay::Handle) and do some other
+	little cleanups. 
 
-2002-06-09 18:45  rcaputo
+  2002-06-29 06:10:14; rcaputo; t/01_request.t 1.7; HTTP.pm 1.11
 
-	* HTTP.pm, t/01_request.t: Applied Ryan Briones' proxying support. 
-	Thanks, Ryan!  Added a GET test (with parameters) to ensure that
-	GET and POST parameters pass through proxies.
+	Cosmetic change that may facilitate changes later. 
 
-2002-06-09 03:53  rcaputo
+  2002-06-29 05:50:38; rcaputo; Makefile.PL 1.8; MANIFEST 1.5;
+  t/01_request.t 1.6; HTTP.pm 1.10; SSL.pm 1.1
 
-	* Makefile.PL: Added a dependency for URI version 1.11.  Newer
-	versions of LWP require an interface change that exists in 1.11 but
-	not in previous versions.
+	Add SSL support. https URLs should now be fetchable, albeit
+	slowly. 
 
-2002-05-22 04:00  rcaputo
+  2002-06-29 05:49:49; rcaputo; README 1.3
 
-	* HTTP.pm: Apply ekkis' patch to add the request tag to the
-	progress callback.
+	Note that the tests require a working internet connection. 
 
-2002-05-19 02:47  rcaputo
+  2002-06-09 18:45:37; rcaputo; Makefile.PL 1.7
 
-	* Makefile.PL: "make dist" fails if it can't find CHANGES (which is
-	in the MANIFEST).  Add a little bit of code to ensure CHANGES
-	exists before "make dist" can happen.
+	Fixed the CHANGES generation so that change logs are included in
+	tarballs. 
 
-2002-05-18 17:03  rcaputo
+  2002-06-09 18:45:01; rcaputo; t/01_request.t 1.5
 
-	* CHANGES: Removed CHANGES from the repository since it's now
-	generated from CVS's commit log.
+	Applied Ryan Briones' proxying support. Thanks, Ryan! Added a GET
+	test (with parameters) to ensure that GET and POST parameters
+	pass through proxies. 
 
-2002-05-18 17:02  rcaputo
+  2002-06-09 18:45:00; rcaputo; HTTP.pm 1.9
 
-	* MANIFEST: Added CHANGES.OLD, so people can see old stuff.
+	Applied Ryan Briones' proxying support. Thanks, Ryan! Added a GET
+	test (with parameters) to ensure that GET and POST parameters
+	pass through proxies. 
 
-2002-05-18 17:02  rcaputo
+  2002-06-09 03:53:39; rcaputo; Makefile.PL 1.6
 
-	* Makefile.PL: Added "make dist" magic to auto-generate ./CHANGES
-	with the last year's worth of changes.
+	Added a dependency for URI version 1.11. Newer versions of LWP
+	require an interface change that exists in 1.11 but not in
+	previous versions. 
 
-2002-05-18 16:59  rcaputo
+  2002-05-22 04:00:55; rcaputo; HTTP.pm 1.8
 
-	* CHANGES.OLD: Moved the old, hand-edited CHANGES to CHANGES.OLD. 
-	When the newest thing in it becomes a year old, it will be removed.
+	Apply ekkis' patch to add the request tag to the progress
+	callback. 
 
-2002-05-18 16:58  rcaputo
+  2002-05-19 02:47:43; rcaputo; Makefile.PL 1.5
 
-	* HTTP.pm: Implemented the Timeout parameter.  Fixed content length
-	calculations.  Replaced deprecated FooState parameters with
-	FooEvent.
+	"make dist" fails if it can't find CHANGES (which is in the
+	MANIFEST). Add a little bit of code to ensure CHANGES exists
+	before "make dist" can happen. 
 
-2001-12-06 16:21  rcaputo
+  2002-05-18 17:02:21; rcaputo; MANIFEST 1.4
 
-	* CHANGES, HTTP.pm, t/01_request.t: add code behind Timeout
+	Added CHANGES.OLD, so people can see old stuff. 
 
-2001-10-15 19:43  rcaputo
+  2002-05-18 17:02:01; rcaputo; Makefile.PL 1.4
 
-	* CHANGES, HTTP.pm, t/01_request.t: add maxsize ability
+	Added "make dist" magic to auto-generate ./CHANGES with the last
+	year's worth of changes. 
 
+  2002-05-18 16:59:06; rcaputo; CHANGES.OLD 1.1
+
+	Moved the old, hand-edited CHANGES to CHANGES.OLD. When the
+	newest thing in it becomes a year old, it will be removed. 
+
+  2002-05-18 16:58:07; rcaputo; HTTP.pm 1.7
+
+	Implemented the Timeout parameter. Fixed content length
+	calculations. Replaced deprecated FooState parameters with
+	FooEvent. 
+
+=========================
+2001-12-06 16:21:12 v0_38
+=========================
+
+  2001-12-06 16:21:12; rcaputo; t/01_request.t 1.4; HTTP.pm 1.6
+
+	add code behind Timeout 
+
+  2001-10-15 19:44:00; rcaputo; t/01_request.t 1.3; HTTP.pm 1.5
+
+	add maxsize ability 
+
+=============================
+Beginning of Recorded History
+=============================
