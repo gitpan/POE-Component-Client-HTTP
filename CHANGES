@@ -1,4 +1,15 @@
 =========================
+2002-12-02 21:03:32 v0_51
+=========================
+
+  2002-12-02 21:03:32 by rcaputo; HTTP.pm 1.28
+
+    I aborted an upload of 0.50 because I had forgotten to tag the files
+    for CHANGES. Unfortunately, PAUSE registered the upload before I
+    could stop it, so to upload a good version I need to burn a version
+    number. Blah, but the security feature is understandable. 
+
+=========================
 2002-12-02 20:54:56 v0_50
 =========================
 
