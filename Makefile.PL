@@ -1,7 +1,11 @@
 #!/usr/bin/perl
-# $Id: Makefile.PL,v 1.3 2000/09/02 20:12:44 rcaputo Exp $
+# $Id: Makefile.PL,v 1.8 2002/06/29 05:50:38 rcaputo Exp $
 
 use ExtUtils::MakeMaker;
+
+# Ensure that ./CHANGES exists.
+open(CHANGES, ">>CHANGES");
+close CHANGES;
 
 WriteMakefile
   ( NAME         => 'POE::Component::Client::HTTP',
@@ -9,12 +13,20 @@ WriteMakefile
     ABSTRACT     => 'POE component for non-blocking/concurrent HTTP queries.',
     VERSION_FROM => 'HTTP.pm',
 
-    PM           => { 'HTTP.pm'      => '$(INST_LIBDIR)/HTTP.pm' },
-    PREREQ_PM    => { POE            => 0.1106,
-                      HTTP::Request  => 1.27,
-                      HTTP::Response => 1.33,
+    PM           => { 'HTTP.pm'        => '$(INST_LIBDIR)/HTTP.pm',
+                      'SSL.pm'         => '$(INST_LIBDIR)/HTTP/SSL.pm',
                     },
-    dist         => { COMPRESS       => 'gzip -9f',
-                      SUFFIX         => 'gz',
+    PREREQ_PM    => { 'POE'                 => 0.1106,
+                      'HTTP::Request'       => 1.27,
+                      'HTTP::Response'      => 1.33,
+                      'Net::SSLeay::Handle' => 0.61,
+                      'URI'                 => 1.11,
                     },
+    dist         =>
+    { COMPRESS   => 'gzip -9f',
+      SUFFIX     => 'gz',
+      PREOP      => ( 'cvs2cl.pl -l "-d\'a year ago<\'" ' .
+                    '--utc --stdout > $(DISTNAME)-$(VERSION)/CHANGES'
+                    ),
+    },
   );

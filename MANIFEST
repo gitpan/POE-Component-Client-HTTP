@@ -1,7 +1,9 @@
-# $Id: MANIFEST,v 1.3 2000/09/02 20:12:44 rcaputo Exp $
+# $Id: MANIFEST,v 1.5 2002/06/29 05:50:38 rcaputo Exp $
 CHANGES
+CHANGES.OLD
 HTTP.pm
 MANIFEST
 Makefile.PL
 README
+SSL.pm
 t/01_request.t

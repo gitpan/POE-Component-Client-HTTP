@@ -1,4 +1,4 @@
-$Id: README,v 1.2 2001/05/29 17:02:42 rcaputo Exp $
+$Id: README,v 1.4 2002/07/03 05:14:04 rcaputo Exp $
 
 --------
 Abstract
@@ -6,18 +6,23 @@ Abstract
 
 POE::Component::Client::HTTP is an asynchronous, event driven HTTP
 user agent.  It accepts events containing HTTP::Request objects, and
-it returns events carrying HTTP::Response objects.  It supports
-several simultaneous HTTP transactions from an arbitrary number of
-other sessions.
+it returns events carrying HTTP::Response objects.  It supports https
+and simultaneous HTTP transactions.
 
 ------------
 Requirements
 ------------
 
+POE::Component::Client::HTTP requires http://poe.perl.org/ to be
+available.  Transient network problems (or testing the module from a
+disconnected machine) may cause it to fail.
+
 This module requires POE, HTTP::Request, and HTTP::Response.  The
 requirements are encoded in Makefile.PL, so the CPAN shell should do
 the right thing.  If this is installed without the CPAN shell, the
 person installing it will have to do the right thing manually.
+
+SSL (https) support requires Net::SSLeay::Handle.
 
 ------------------
 Basic Installation

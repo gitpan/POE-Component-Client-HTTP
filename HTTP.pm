@@ -1,4 +1,4 @@
-# $Id: HTTP.pm,v 1.6 2001/12/06 16:21:12 rcaputo Exp $
+# $Id: HTTP.pm,v 1.14 2002/07/03 05:14:04 rcaputo Exp $
 # License and documentation are after __END__.
 
 package POE::Component::Client::HTTP;
@@ -8,26 +8,29 @@ use strict;
 sub DEBUG () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.41';
+$VERSION = '0.42';
 
 use Carp qw(croak);
 use POSIX;
+use Symbol qw(gensym);
 use HTTP::Response;
 
 use POE qw( Wheel::SocketFactory Wheel::ReadWrite
             Driver::SysRW Filter::Stream
           );
 
-sub REQ_POSTBACK    () { 0 }
-sub REQ_WHEEL       () { 1 }
-sub REQ_REQUEST     () { 2 }
-sub REQ_STATE       () { 3 }
-sub REQ_RESPONSE    () { 4 }
-sub REQ_BUFFER      () { 5 }
-sub REQ_LAST_HEADER () { 6 }
-sub REQ_OCTETS_GOT  () { 7 }
-sub REQ_NEWLINE     () { 8 }
-sub REQ_TIMER       () { 9 }
+sub REQ_POSTBACK      () {  0 }
+sub REQ_WHEEL         () {  1 }
+sub REQ_REQUEST       () {  2 }
+sub REQ_STATE         () {  3 }
+sub REQ_RESPONSE      () {  4 }
+sub REQ_BUFFER        () {  5 }
+sub REQ_LAST_HEADER   () {  6 }
+sub REQ_OCTETS_GOT    () {  7 }
+sub REQ_NEWLINE       () {  8 }
+sub REQ_TIMER         () {  9 }
+sub REQ_PROG_POSTBACK () { 10 }
+sub REQ_USING_PROXY   () { 11 }
 
 sub RS_CONNECT      () { 0x01 }
 sub RS_SENDING      () { 0x02 }
@@ -36,9 +39,27 @@ sub RS_IN_HEADERS   () { 0x08 }
 sub RS_IN_CONTENT   () { 0x10 }
 sub RS_DONE         () { 0x20 }
 
+sub PROXY_HOST () { 0 }
+sub PROXY_PORT () { 1 }
+
+sub TRUE  () { 1 }
+sub FALSE () { 0 }
+
 # Unique request ID, independent of wheel and timer IDs.
 
 my $request_seq = 0;
+
+# Bring in HTTPS support.
+
+BEGIN {
+  eval "use POE::Component::Client::HTTP::SSL";
+  if ($@) {
+    eval "sub HAS_SSL () { 0 }";
+  }
+  else {
+    eval "sub HAS_SSL () { 1 }";
+  }
+};
 
 #------------------------------------------------------------------------------
 # Spawn a new PoCo::Client::HTTP session.  This basically is a
@@ -60,9 +81,10 @@ sub spawn {
   $timeout = 180 unless defined $timeout and $timeout >= 0;
 
   my $agent = delete $params{Agent};
-  $agent = sprintf( 'POE-Component-Client-HTTP/%.03f (perl; N; POE; en)',
-                    $VERSION,
-                  ) unless defined $agent and length $agent;
+  $agent =
+    sprintf( 'POE-Component-Client-HTTP/%.03f (perl; N; POE; en; rv:%.03f)',
+             $VERSION, $VERSION
+           ) unless defined $agent and length $agent;
 
   my $max_size = delete $params{MaxSize};
 
@@ -73,6 +95,31 @@ sub spawn {
   my $from       = delete $params{From};
   my $proxy      = delete $params{Proxy};
   my $no_proxy   = delete $params{NoProxy};
+
+  # Process HTTP_PROXY and NO_PROXY environment variables.
+
+  $proxy    = $ENV{HTTP_PROXY} unless defined $proxy;
+  $no_proxy = $ENV{NO_PROXY}   unless defined $no_proxy;
+
+  # Translate environment variable formats into internal versions.
+
+  if (defined $proxy) {
+    if (ref($proxy) eq 'ARRAY') {
+      croak "Proxy must contain [HOST,PORT]" unless @$proxy == 2;
+    }
+    else {
+      $proxy =~ s/^http:\/+//;
+      $proxy =~ s/\/+$//;
+      croak "Proxy must contain host:port" unless $proxy =~ /^(.+):(\d+)$/;
+      $proxy = [ $1, $2 ];
+    }
+  }
+
+  if (defined $no_proxy) {
+    unless (ref($no_proxy) eq 'ARRAY') {
+      $no_proxy = [ split(/\,/, $no_proxy) ];
+    }
+  }
 
   croak( "$type doesn't know these parameters: ",
          join(', ', sort keys %params)
@@ -125,17 +172,18 @@ sub poco_weeble_start {
      ) = @_[KERNEL, HEAP, ARG0..$#_];
 
   DEBUG and do {
-    sub no_undef { (defined $_[0]) ? $_[0] : '(undef)' };
+    sub no_undef { (defined $_[0]) ? $_[0] : "(undef)" };
+    sub no_undef_list { (defined $_[0]) ? "@{$_[0]}" : "(undef)" };
     warn ",--- starting a http client component ----\n";
     warn "| alias     : $alias\n";
     warn "| timeout   : $timeout\n";
     warn "| agent     : $agent\n";
     warn "| protocol  : $protocol\n";
-    warn "| max_size  : ", &no_undef($max_size), "\n";
-    warn "| cookie_jar: ", &no_undef($cookie_jar), "\n";
-    warn "| from      : ", &no_undef($from), "\n";
-    warn "| proxy     : ", &no_undef($proxy), "\n";
-    warn "| no_proxy  : ", &no_undef($no_proxy), "\n";
+    warn "| max_size  : ", no_undef($max_size), "\n";
+    warn "| cookie_jar: ", no_undef($cookie_jar), "\n";
+    warn "| from      : ", no_undef($from), "\n";
+    warn "| proxy     : ", no_undef_list($proxy), "\n";
+    warn "| no_proxy  : ", no_undef_list($no_proxy), "\n";
     warn "'-----------------------------------------\n";
   };
 
@@ -166,8 +214,9 @@ sub poco_weeble_stop {
 #------------------------------------------------------------------------------
 
 sub poco_weeble_request {
-  my ( $kernel, $heap, $sender, $response_event, $http_request, $tag
-     ) = @_[KERNEL, HEAP, SENDER, ARG0, ARG1, ARG2];
+  my ( $kernel, $heap, $sender,
+       $response_event, $http_request, $tag, $progress_event
+     ) = @_[KERNEL, HEAP, SENDER, ARG0, ARG1, ARG2, ARG3];
 
   # Add a protocol if one isn't included.
   $http_request->protocol( $heap->{protocol} )
@@ -175,11 +224,34 @@ sub poco_weeble_request {
              and length $http_request->protocol()
            );
 
+  # Croak if no SSL and we need it.
+  croak "POE::Component::Client::HTTP requires Net::SSLeay::Handle for https"
+    if $http_request->uri->scheme() eq 'https' and !HAS_SSL;
+
+  # MEXNIX 2002-06-01: If we have a proxy set, and the request URI is
+  # not in our no_proxy, then use the proxy.  Otherwise use the
+  # request URI.
+
+  # Get the host and port from the request object.
+  my ($host, $port, $using_proxy);
+
+  eval {
+    $host = $http_request->uri()->host();
+    $port = $http_request->uri()->port();
+  };
+  warn($@), return if $@;
+
+  if (defined $heap->{proxy} and not _in_no_proxy($host, $heap->{no_proxy})) {
+    $host = $heap->{proxy}->[PROXY_HOST];
+    $port = $heap->{proxy}->[PROXY_PORT];
+    $using_proxy = TRUE;
+  }
+  else {
+    $using_proxy = FALSE;
+  }
+
   # Add a host header if one isn't included.
-  $http_request->header( Host =>
-                         $http_request->uri->host . ':' .
-                         $http_request->uri->port
-                       )
+  $http_request->header( Host => "$host:$port" )
     unless ( defined $http_request->header('Host')
              and length $http_request->header('Host')
            );
@@ -198,16 +270,17 @@ sub poco_weeble_request {
              );
   }
 
+  # Create a progress postback if requested.
+  my $progress_postback;
+  $progress_postback = $sender->postback($progress_event, $http_request, $tag)
+    if defined $progress_event;
+
   # If we have a cookie jar, have it frob our headers.  LWP rocks!
   if (defined $heap->{cookie_jar}) {
     $heap->{cookie_jar}->add_cookie_header($http_request);
   }
 
   DEBUG and warn "weeble got a request...\n";
-
-  # Get the host and port from the request object.
-  my $host = $http_request->uri()->host();
-  my $port = $http_request->uri()->port();
 
   # Get a unique request ID.
   my $request_id = ++$request_seq;
@@ -217,8 +290,8 @@ sub poco_weeble_request {
     POE::Wheel::SocketFactory->new
       ( RemoteAddress => $host,
         RemotePort    => $port,
-        SuccessState  => 'got_connect_done',
-        FailureState  => 'got_connect_error',
+        SuccessEvent  => 'got_connect_done',
+        FailureEvent  => 'got_connect_error',
       );
 
   # Create a timeout timer.
@@ -230,15 +303,17 @@ sub poco_weeble_request {
 
   $heap->{request}->{$request_id} =
     [ $sender->postback( $response_event, $http_request, $tag ), # REQ_POSTBACK
-      $socket_factory,   # REQ_WHEEL
-      $http_request,     # REQ_REQUEST
-      RS_CONNECT,        # REQ_STATE
-      undef,             # REQ_RESPONSE
-      '',                # REQ_BUFFER
-      '',                # REQ_LAST_HEADER
-      0,                 # REQ_OCTETS_GOT
-      "\x0D\x0A",        # REQ_NEWLINE
-      $timer_id,         # REQ_TIMER
+      $socket_factory,    # REQ_WHEEL
+      $http_request,      # REQ_REQUEST
+      RS_CONNECT,         # REQ_STATE
+      undef,              # REQ_RESPONSE
+      '',                 # REQ_BUFFER
+      '',                 # REQ_LAST_HEADER
+      0,                  # REQ_OCTETS_GOT
+      "\x0D\x0A",         # REQ_NEWLINE
+      $timer_id,          # REQ_TIMER
+      $progress_postback, # REQ_PROG_POSTBACK
+      $using_proxy,       # REQ_USING_PROXY
     ];
 
   # Cross-reference the wheel and timer IDs back to the request.
@@ -264,14 +339,34 @@ sub poco_weeble_connect_ok {
 
   my $request = $heap->{request}->{$request_id};
 
+  # Switch the handle to SSL if we're doing that.
+  if ($request->[REQ_REQUEST]->uri->scheme() eq 'https') {
+    DEBUG and warn "wheel $wheel_id switching to SSL...\n";
+
+    # Net::SSLeay needs nonblocking for setup.
+    my $old_socket = $socket;
+    my $flags = fcntl($old_socket, F_GETFL, 0) or die $!;
+    until (fcntl($old_socket, F_SETFL, $flags & ~O_NONBLOCK)) {
+      die $! unless $! == EAGAIN or $! == EWOULDBLOCK;
+    }
+
+    $socket = gensym();
+    tie(*$socket,
+        "POE::Component::Client::HTTP::SSL",
+        $old_socket
+       ) or die $!;
+
+    DEBUG and warn "wheel $wheel_id switched to SSL...\n";
+  }
+
   # Make a ReadWrite wheel to interact on the socket.
   my $new_wheel = POE::Wheel::ReadWrite->new
     ( Handle       => $socket,
       Driver       => POE::Driver::SysRW->new(),
       Filter       => POE::Filter::Stream->new(),
-      InputState   => 'got_socket_input',
-      FlushedState => 'got_socket_flush',
-      ErrorState   => 'got_socket_error',
+      InputEvent   => 'got_socket_input',
+      FlushedEvent => 'got_socket_flush',
+      ErrorEvent   => 'got_socket_error',
     );
 
   # Add the new wheel ID to the lookup table.
@@ -292,9 +387,21 @@ sub poco_weeble_connect_ok {
   # put the request in pieces.
 
   my $http_request = $request->[REQ_REQUEST];
+
+  # MEXNIX 2002-06-01: Check for proxy.  Request query is a bit
+  # different...
+
+  my $request_uri;
+  if ($request->[REQ_USING_PROXY]) {
+    $request_uri = $http_request->uri();
+  }
+  else {
+    $request_uri = $http_request->uri()->path_query();
+  }
+
   my $request_string =
     ( $http_request->method() . ' ' .
-      $http_request->uri()->path_query() . ' ' .
+      $request_uri . ' ' .
       $http_request->protocol() . "\x0D\x0A" .
       $http_request->headers_as_string("\x0D\x0A") . "\x0D\x0A" .
       $http_request->content() # . "\x0D\x0A"
@@ -304,9 +411,9 @@ sub poco_weeble_connect_ok {
     my $formatted_request_string = $request_string;
     $formatted_request_string =~ s/([^\n])$/$1\n/;
     $formatted_request_string =~ s/^/| /mg;
-    print ",----- SENDING REQUEST ", '-' x 56, "\n";
-    print $formatted_request_string;
-    print "`", '-' x 78, "\n";
+    warn ",----- SENDING REQUEST ", '-' x 56, "\n";
+    warn $formatted_request_string;
+    warn "`", '-' x 78, "\n";
   };
 
   $request->[REQ_WHEEL]->put( $request_string );
@@ -372,7 +479,9 @@ sub poco_weeble_io_flushed {
   # bad to assume we won't get a response until a request has flushed.
   my $request_id = $heap->{wheel_to_request}->{$wheel_id};
   die unless defined $request_id;
-  $heap->{request}->{$request_id}->[REQ_STATE] = RS_IN_STATUS;
+
+  my $request = $heap->{request}->{$request_id};
+  $request->[REQ_STATE] = RS_IN_STATUS;
 }
 
 #------------------------------------------------------------------------------
@@ -554,6 +663,15 @@ HEADER:
     # greater than our content length.
     if ( $request->[REQ_RESPONSE]->content_length() ) {
 
+      my $progress = int( ($request->[REQ_OCTETS_GOT] * 100) /
+                          $request->[REQ_RESPONSE]->content_length()
+                        );
+
+      $request->[REQ_PROG_POSTBACK]->
+        ( $request->[REQ_OCTETS_GOT],
+          $request->[REQ_RESPONSE]->content_length()
+        ) if  $request->[REQ_PROG_POSTBACK];
+
       if ( $request->[REQ_OCTETS_GOT] >=
            $request->[REQ_RESPONSE]->content_length()
          )
@@ -612,6 +730,17 @@ HEADER:
   }
 }
 
+#------------------------------------------------------------------------------
+# Determine whether a host is in a no-proxy list.
+
+sub _in_no_proxy {
+  my ($host, $no_proxy) = @_;
+  foreach my $no_proxy_domain (@$no_proxy) {
+    return 1 if $host =~ /\Q$no_proxy_domain\E$/i;
+  }
+  return 0;
+}
+
 1;
 
 __END__
@@ -630,6 +759,9 @@ POE::Component::Client::HTTP - a HTTP user-agent component
     From     => 'spiffster@perl.org',   # defaults to undef (no header)
     Protocol => 'HTTP/0.9',             # defaults to 'HTTP/1.0'
     Timeout  => 60,                     # defaults to 180 seconds
+    Proxy    => "http://localhost:80",  # defaults to HTTP_PROXY env. variable
+    NoProxy  => [ "localhost", "127.0.0.1" ],
+                                        # defaults to NO_PROXY env. variable
   );
 
   $kernel->post( 'ua',        # posts to the 'ua' alias
@@ -700,11 +832,38 @@ C<From> holds an e-mail address where the client's administrator
 and/or maintainer may be reached.  It defaults to undef, which means
 no From header will be included in requests.
 
+=item NoProxy => [ $host_1, $host_2, ..., $host_N ]
+
+=item NoProxy => "host1,host2,hostN"
+
+C<NoProxy> specifies a list of server hosts that will not be proxied.
+It is useful for local hosts and hosts that do not properly support
+proxying.  I NoProxy is not specified, a list will be taken from the
+NO_PROXY environment variable.
+
+  NoProxy => [ "localhost", "127.0.0.1" ],
+  NoProxy => "localhost,127.0.0.1",
+
 =item Protocol => $http_protocol_string
 
 C<Protocol> advertises the protocol that the client wishes to see.
 Under normal circumstances, it should be left to its default value:
 "HTTP/1.0".
+
+=item Proxy => [ $proxy_host, $proxy_port ]
+
+=item Proxy => $proxy_url
+
+C<Proxy> specifies a proxy host that requests will be passed through.
+If not specified, a proxy server will be taken from the HTTP_PROXY
+environment variable.  If Proxy and HTTP_PROXY do not exist, then no
+proxying will occur.
+
+The proxy can be specified either as a host and port, or as an URL.
+Proxy URLs must specify the proxy port, even if it is 80.
+
+  Proxy => [ "127.0.0.1", 80 ],
+  Proxy => "http://127.0.0.1:80/",
 
 =item Timeout => $query_timeout
 
@@ -723,13 +882,17 @@ an HTTP::Request object which defines the request.  For example:
                  'response',                # my state to receive responses
                  GET 'http://poe.perl.org', # a simple HTTP request
                  'unique id',               # a tag to identify the request
+                 'progress',                # an event to indicate progress
                );
 
 Requests include the state to which responses will be posted.  In the
 previous example, the handler for a 'response' state will be called
-with each HTTP response.
+with each HTTP response.  The "progress" handler is optional and if
+installed, the component will provide progress metrics (see sample
+handler below).
 
-HTTP responses come with two list references:
+In addition to all the usual POE parameters, HTTP responses come with
+two list references:
 
   my ($request_packet, $response_packet) = @_[ARG0, ARG1];
 
@@ -748,6 +911,37 @@ HTTP::Response object.
 Please see the HTTP::Request and HTTP::Response manpages for more
 information.
 
+The example progress handler shows how to calculate a percentage of
+download completion.
+
+  sub progress_handler {
+    my $gen_args  = $_[ARG0];    # args passed to all calls
+    my $call_args = $_[ARG1];    # args specific to the call
+
+    my $req = $gen_args->[0];    # HTTP::Request object being serviced
+    my $tag = $gen_args->[1];    # Request ID tag from.
+    my $got = $call_args->[0];   # Bytes retrieved so far.
+    my $tot = $call_args->[1];   # Total bytes to be retrieved.
+
+    my $percent = $got / $tot * 100;
+
+    printf( "-- %.0f%% [%d/%d]: %s\n",
+            $percent, $got, $tot, $req->uri()
+          );
+  }
+
+=head1 ENVIRONMENT
+
+POE::Component::Client::HTTP uses two standard environment variables:
+HTTP_PROXY and NO_PROXY.
+
+HTTP_PROXY sets the proxy server that Client::HTTP will forward
+requests through.  NO_PROXY sets a list of hosts that will not be
+forwarded through a proxy.
+
+See the Proxy and NoProxy constructor parameters for more information
+about these variables.
+
 =head1 SEE ALSO
 
 This component is built upon HTTP::Request, HTTP::Response, and POE.
@@ -763,11 +957,13 @@ distribution.
 HTTP/1.1 requests are not supported.
 
 The following spawn() parameters are accepted but not yet implemented:
-Timeout, Proxy, NoProxy.
+Timeout.
+
+There is no support for CGI_PROXY or CgiProxy.
 
 =head1 AUTHOR & COPYRIGHTS
 
-POE::Component::Client::HTTP is Copyright 1999-2000 by Rocco Caputo.
+POE::Component::Client::HTTP is Copyright 1999-2002 by Rocco Caputo.
 All rights are reserved.  POE::Component::Client::HTTP is free
 software; you may redistribute it and/or modify it under the same
 terms as Perl itself.

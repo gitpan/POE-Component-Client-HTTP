@@ -1,119 +1,95 @@
-$Id: CHANGES,v 1.6 2001/12/06 16:21:12 rcaputo Exp $
+2002-07-03 05:14  rcaputo
 
-============
-Things to do
-============
+	* HTTP.pm, README: Prepare for 0.42 release.
 
-Nothing at the moment.
+2002-07-03 03:55  rcaputo
 
-=================================================
-Revision history for POE::Component::Client::HTTP
-=================================================
+	* HTTP.pm: No noticeable changes.  Everything I tried was simply
+	ineffectual.
 
-Changes marked with "(!!!)" may break backward compatibility.  Changes
-marked with "(???)" are just information.
+2002-07-02 21:33  rcaputo
 
-Note to self: Don't forget to tag the version after a new distribution
-is released.  For example: `cvs tag -Rc v1_00 .'
+	* HTTP.pm: Update the User-Agent string slightly to follow
+	Mozilla's format.  Adds (rv:$VERSION) to the string.
 
----------------
-0.41 2002.03.25
----------------
+2002-06-29 06:19  rcaputo
 
-Just 0.4001 after people confirmed that it actually works. :)
+	* SSL.pm: Remove WRITE (which is in Net::SSLeay::Handle) and do
+	some other little cleanups.
 
------------------------------
-0.4001 (private test release)
------------------------------
+2002-06-29 06:10  rcaputo
 
-Frank Konen discovered that this component's Content-Length and header
-size calculations were incorrect before Erick Calder.  Hopefully 0.41
-will fix things for everyone.
+	* HTTP.pm, t/01_request.t: Cosmetic change that may facilitate
+	changes later.
 
-Erick Calder discovered a site that didn't work with 0.40.  This
-release patches the fix in 0.40 so both his test cases work, but it's
-not generally relased in case he discovers another problem.  0.41
-should be released in a couple days if all goes well.
+2002-06-29 05:50  rcaputo
 
----------------
-0.40 2002.03.17
----------------
+	* HTTP.pm, MANIFEST, Makefile.PL, SSL.pm, t/01_request.t: Add SSL
+	support.  https URLs should now be fetchable, albeit slowly.
 
-Erick Calder <e@arix.com> discovered that Client::HTTP was cutting
-responses short.  It turns out that 0.39 was counting the headers
-towards the content length.  Rocco reset the received octets count at
-the end of the headers.
+2002-06-29 05:49  rcaputo
 
----------------
-0.39 2001.12.06
----------------
+	* README: Note that the tests require a working internet
+	connection.
 
-Rocco installed Client::HTTP in a live program, and it promptly broke.
-This release fixes the new timer code in 0.38.
+2002-06-09 18:45  rcaputo
 
----------------
-0.38 2001.12.06
----------------
+	* Makefile.PL: Fixed the CHANGES generation so that change logs are
+	included in tarballs.
 
-Fixed the SYNOPSIS per Jason Boxman's recommendation.
+2002-06-09 18:45  rcaputo
 
-Made the Timeout parameter significant.  There was no code behind it
-before now.
+	* HTTP.pm, t/01_request.t: Applied Ryan Briones' proxying support. 
+	Thanks, Ryan!  Added a GET test (with parameters) to ensure that
+	GET and POST parameters pass through proxies.
 
----------------
-0.37 2001.10.15
----------------
+2002-06-09 03:53  rcaputo
 
-Add a MaxSize parameter to the Component's constructor.  When used, it
-can prevent the world from blowing up when someone hands you
-<http://localhost:19/>.
+	* Makefile.PL: Added a dependency for URI version 1.11.  Newer
+	versions of LWP require an interface change that exists in 1.11 but
+	not in previous versions.
 
----------------
-0.36 2001.05.29
----------------
+2002-05-22 04:00  rcaputo
 
-Martijn van Beers sent in a patch to have the client send an entire
-query, parameters and all, and not just the path.
+	* HTTP.pm: Apply ekkis' patch to add the request tag to the
+	progress callback.
 
-Some servers return bad newlines in the headers.  Detect the newline
-style in the status line, and use that throughout the headers.
+2002-05-19 02:47  rcaputo
 
-Added a new parameter to the 'request' event: A tag that can be used
-to match requests to responses regardless of the URL.  The tag will be
-passed back with a response, in offset 1 of the request packet.
+	* Makefile.PL: "make dist" fails if it can't find CHANGES (which is
+	in the MANIFEST).  Add a little bit of code to ensure CHANGES
+	exists before "make dist" can happen.
 
-Removed the requirement that an HTTP status line have a protocol type
-and version.
+2002-05-18 17:03  rcaputo
 
-Added the HTTP::Request to the HTTP::Response this module returns.
-The CookieJar needs this, as does everyone who expects this module to
-work properly.
+	* CHANGES: Removed CHANGES from the repository since it's now
+	generated from CVS's commit log.
 
----------------
-0.35 2000.09.20
----------------
+2002-05-18 17:02  rcaputo
 
-Added cookies support, and documented the CookieJar parameter for
-PoCo::Client::HTTP->spawn().
+	* MANIFEST: Added CHANGES.OLD, so people can see old stuff.
 
----------------
-0.34 2000.09.02
----------------
+2002-05-18 17:02  rcaputo
 
-On crysflame's recommendation, I moved the HTTP.pm file out of
-POE/Component/Client and added a PM directive to Makefile.PL.  Now
-HTTP.pm gets installed.  Fixed the MANIFEST and cleaned up Makefile.PL
-a little while I was in there.
+	* Makefile.PL: Added "make dist" magic to auto-generate ./CHANGES
+	with the last year's worth of changes.
 
----------------
-0.33 2000.09.01
----------------
+2002-05-18 16:59  rcaputo
 
-Initial release.  Arbitrarily versioned at 0.33 to indicate the
-author's confidence in its completion (that is, it's about 1/3 of the
-way).  It works for simple GET and POST requests; others may also
-work, but they haven't been tested.
+	* CHANGES.OLD: Moved the old, hand-edited CHANGES to CHANGES.OLD. 
+	When the newest thing in it becomes a year old, it will be removed.
 
-===========================
-EOF: Thank you for reading.
-===========================
+2002-05-18 16:58  rcaputo
+
+	* HTTP.pm: Implemented the Timeout parameter.  Fixed content length
+	calculations.  Replaced deprecated FooState parameters with
+	FooEvent.
+
+2001-12-06 16:21  rcaputo
+
+	* CHANGES, HTTP.pm, t/01_request.t: add code behind Timeout
+
+2001-10-15 19:43  rcaputo
+
+	* CHANGES, HTTP.pm, t/01_request.t: add maxsize ability
+
