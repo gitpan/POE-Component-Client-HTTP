@@ -1,4 +1,4 @@
-# $Id: HTTP.pm,v 1.23 2002/09/07 21:52:20 rcaputo Exp $
+# $Id: HTTP.pm,v 1.27 2002/12/02 20:54:56 rcaputo Exp $
 # License and documentation are after __END__.
 
 package POE::Component::Client::HTTP;
@@ -9,7 +9,7 @@ sub DEBUG      () { 0 }
 sub DEBUG_DATA () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.48';
+$VERSION = '0.50';
 
 use Carp qw(croak);
 use POSIX;
@@ -174,9 +174,6 @@ sub spawn {
 
         # I/O timeout.
         got_timeout       => \&poco_weeble_timeout,
-
-        # Sorry, don't handle signals.
-        _signal           => sub { 0 },
       },
       heap =>
       { alias       => $alias,
@@ -248,11 +245,12 @@ sub poco_weeble_request {
   # request URI.
 
   # Get the host and port from the request object.
-  my ($host, $port, $using_proxy);
+  my ($host, $port, $scheme, $using_proxy);
 
   eval {
-    $host = $http_request->uri()->host();
-    $port = $http_request->uri()->port();
+    $host   = $http_request->uri()->host();
+    $port   = $http_request->uri()->port();
+    $scheme = $http_request->uri()->scheme();
   };
   warn($@), return if $@;
 
@@ -266,10 +264,17 @@ sub poco_weeble_request {
   }
 
   # Add a host header if one isn't included.
-  $http_request->header( Host => "$host:$port" )
-    unless ( defined $http_request->header('Host')
-             and length $http_request->header('Host')
-           );
+  unless ( defined $http_request->header('Host')
+           and length $http_request->header('Host')
+         ) {
+    # Add port only if non-standard.
+    if ($port == 80) {
+      $http_request->header( Host => $host );
+    }
+    else {
+      $http_request->header( Host => "$host:$port" )
+    }
+  }
 
   # Add an agent header if one isn't included.
   $http_request->user_agent( $heap->{agent} )
@@ -1223,5 +1228,7 @@ POE::Component::Client::HTTP is Copyright 1999-2002 by Rocco Caputo.
 All rights are reserved.  POE::Component::Client::HTTP is free
 software; you may redistribute it and/or modify it under the same
 terms as Perl itself.
+
+Rocco may be contacted by e-mail via rcaputo@cpan.org.
 
 =cut

@@ -1,14 +1,13 @@
 #!/usr/bin/perl
-# $Id: Makefile.PL,v 1.13 2002/09/07 21:43:50 rcaputo Exp $
+# $Id: Makefile.PL,v 1.14 2002/09/10 03:33:21 rcaputo Exp $
 
 use strict;
 use lib qw(./mylib);
 use ExtUtils::MakeMaker;
 use ExtUtils::AutoInstall;
 
-# Ensure that ./CHANGES exists.
-open(CHANGES, ">>CHANGES");
-close CHANGES;
+# Touch CHANGES so it exists.
+open(CHANGES, ">>CHANGES") and close CHANGES;
 
 # Prompt for optional things.
 ExtUtils::AutoInstall->import
@@ -32,7 +31,7 @@ $POE::Kernel::poe_kernel->run();
 # Write that makefile.
 WriteMakefile
   ( NAME         => 'POE::Component::Client::HTTP',
-    AUTHOR       => 'Rocco Caputo <troc+poe@pobox.com>',
+    AUTHOR       => 'Rocco Caputo <rcaputo@cpan.org>',
     ABSTRACT     => 'POE component for non-blocking/concurrent HTTP queries.',
     VERSION_FROM => 'HTTP.pm',
     PM           => { 'HTTP.pm'        => '$(INST_LIBDIR)/HTTP.pm',

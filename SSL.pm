@@ -1,4 +1,4 @@
-# $Id: SSL.pm,v 1.3 2002/07/10 15:24:45 rcaputo Exp $
+# $Id: SSL.pm,v 1.4 2002/09/10 03:33:21 rcaputo Exp $
 # License and documentation are after __END__.
 
 package POE::Component::Client::HTTP::SSL;
@@ -6,7 +6,7 @@ package POE::Component::Client::HTTP::SSL;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = (qw($Revision: 1.3 $ ))[1];
+$VERSION = (qw($Revision: 1.4 $ ))[1];
 
 use Net::SSLeay::Handle;
 use vars qw(@ISA);
@@ -63,5 +63,7 @@ POE::Component::Client::HTTP::SSL is Copyright 1999-2002 by Rocco
 Caputo.  All rights are reserved.  This module is free software; you
 may redistribute it and/or modify it under the same terms as Perl
 itself.
+
+Rocco may be contacted by e-mail via rcaputo@cpan.org.
 
 =cut

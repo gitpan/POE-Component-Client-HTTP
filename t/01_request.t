@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 01_request.t,v 1.11 2002/09/07 21:50:07 rcaputo Exp $
+# $Id: 01_request.t,v 1.12 2002/10/21 00:41:46 rcaputo Exp $
 
 use strict;
 
@@ -220,7 +220,6 @@ POE::Session->create
       got_response        => \&client_got_response,
       got_big_response    => \&client_got_big_response,
       got_stream_response => \&client_got_stream_response,
-      _signal             => sub { 0 },
     }
   );
 
