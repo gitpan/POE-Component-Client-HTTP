@@ -1,4 +1,4 @@
-# $Id: HTTP.pm,v 1.52 2004/02/27 18:59:36 rcaputo Exp $
+# $Id: HTTP.pm,v 1.56 2004/07/13 18:02:37 rcaputo Exp $
 # License and documentation are after __END__.
 
 package POE::Component::Client::HTTP;
@@ -9,7 +9,7 @@ sub DEBUG      () { 0 }
 sub DEBUG_DATA () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.63';
+$VERSION = '0.64';
 
 use Carp qw(croak);
 use POSIX;
@@ -142,7 +142,7 @@ sub spawn {
 
   my $max_size = delete $params{MaxSize};
 
-  my $streams = delete $params{Streaming};
+  my $streaming = delete $params{Streaming};
 
   my $protocol = delete $params{Protocol};
   $protocol = 'HTTP/1.0' unless defined $protocol and length $protocol;
@@ -224,7 +224,7 @@ sub spawn {
       from        => $from,
       protocol    => $protocol,
       max_size    => $max_size,
-      streams     => $streams,
+      streaming   => $streaming,
     },
   );
 
@@ -246,7 +246,7 @@ sub poco_weeble_start {
       "| agent     : ", no_undef_list($heap->{agent}), "\n",
       "| protocol  : $heap->{protocol}\n",
       "| max_size  : ", no_undef($heap->{max_size}), "\n",
-      "| streams   : ", no_undef($heap->{streams}), "\n",
+      "| streaming : ", no_undef($heap->{streaming}), "\n",
       "| cookie_jar: ", no_undef($heap->{cookie_jar}), "\n",
       "| from      : ", no_undef($heap->{from}), "\n",
       "| proxy     : ", no_undef_list($heap->{proxy}), "\n",
@@ -527,7 +527,7 @@ sub poco_weeble_connect_ok {
   if ($request->[REQ_REQUEST]->uri->scheme() eq 'https') {
     DEBUG and warn "wheel $wheel_id switching to SSL...\n";
 
-    # Net::SSLeay needs nonblocking for setup.
+    # Net::SSLeay needs blocking for setup.
     #
     # ActiveState Perl 5.8.0 dislikes the Win32-specific code to make
     # a socket blocking, so we use IO::Handle's blocking(1) method.
@@ -546,7 +546,7 @@ sub poco_weeble_connect_ok {
       unless ($^O eq 'MSWin32') {
         my $flags = fcntl($old_socket, F_GETFL, 0)
           or die "fcntl($old_socket, F_GETFL, etc.) fails: $!";
-        until (fcntl($old_socket, F_SETFL, $flags | ~O_NONBLOCK)) {
+        until (fcntl($old_socket, F_SETFL, $flags & ~O_NONBLOCK)) {
           die "fcntl($old_socket, FSETFL, etc) fails: $!"
             unless $! == EAGAIN or $! == EWOULDBLOCK;
         }
@@ -828,6 +828,11 @@ sub poco_weeble_io_read {
       $request->[REQ_RESPONSE] = HTTP::Response->new();
       $request->[REQ_STATE] = RS_IN_CONTENT;
     }
+
+    # We need more data to match the status line.
+    else {
+      return;
+    }
   }
 
   # Parse the input for headers.  This isn't in an else clause because
@@ -989,7 +994,7 @@ HEADER:
     # If we are streaming, send the chunk back to the client session.
     # Otherwise add the new octets to the response's content.  -><-
     # This should only add up to content-length octets total!
-    if ($heap->{streams}) {
+    if ($heap->{streaming}) {
       $request->[REQ_POSTBACK]->(
         $request->[REQ_RESPONSE], $request->[REQ_BUFFER]
       );
@@ -1162,7 +1167,7 @@ sub _respond {
       my $tmpresponse = $response;
       while (defined $heap->{redir}->{$request_id}->{from}) {
         my $prev = $heap->{redir}->{$request_id}->{from};
-        $tmpresponse->previous(delete$heap->{redir}->{$prev}->{response});
+        $tmpresponse->previous(delete $heap->{redir}->{$prev}->{response});
         $tmpresponse = $tmpresponse->previous();
 	$request_id = $prev;
       }

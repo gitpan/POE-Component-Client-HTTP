@@ -1,4 +1,37 @@
 =========================
+2004-07-13 18:03:43 v0_64
+=========================
+
+  2004-07-13 18:03:43 by rcaputo; mylib/ExtUtils/AutoInstall.pm 1.2
+
+    Upgrade the included ExtUtils::AutoInstall. 
+
+  2004-07-13 18:02:37 by rcaputo; HTTP.pm 1.56
+
+    Oh, duh. Increase the version number for a new release. 
+
+  2004-07-13 18:01:56 by rcaputo; HTTP.pm 1.55
+
+    Matt Cashner and an unidentified AOL Employee that some call... Tim
+    pointed out that SSL wasn't working. "But it was for me!" I said. So
+    we hunted it down to an incorrect bitwise operator in the
+    set-it-blocking code for non-ActiveState Perl versions prior to
+    5.8.0. This bug TOTALLY BROKE SSL for these Perl versions, just going
+    to show that you can't test too much or on too many platforms. Or
+    something. 
+
+  2004-05-02 19:42:43 by rcaputo; HTTP.pm 1.54
+
+    Scott Beck reported that the streaming code uses two different hash
+    keys for the same heap member. This patch makes them consistent, and
+    it resolves rt.cpan.org ticket #5810. 
+
+  2004-05-02 19:25:25 by rcaputo; HTTP.pm 1.53
+
+    Applied Scott Beck's patch to handle interrupted status lines. This
+    commit resolves rt.cpan.org ticket #5816. 
+
+=========================
 2004-02-27 18:59:36 v0_63
 =========================
 
@@ -136,95 +169,6 @@
     Apply Ask Bjoern Hansen's accessor patch so programs can find out how
     many requests are pending. Bumped the version number to 0.55 for the
     next release. 
-
-=========================
-2003-06-30 03:06:40 v0_54
-=========================
-
-  2003-06-30 03:06:40 by rcaputo; HTTP.pm 1.38
-
-    Applied Ask Bjoern Hansen's patch to move Host checking before we
-    reset the host for proxying. This improves Client::HTTP's cooperation
-    with proxies (specifically squid, in Ask's case). 
-
-=========================
-2003-05-04 06:08:08 v0_53
-=========================
-
-  2003-05-04 06:08:08 by rcaputo; HTTP.pm 1.37; Makefile.PL 1.16
-
-    Update version numbers in requisite modules and itself. 
-
-  2003-05-03 01:39:28 by rcaputo; HTTP.pm 1.36
-
-    Various minor stylistic tweaks while hunting down an error that
-    eventually turned out to be in POE::Wheel::SocketFactory. 
-
-  2003-05-02 20:20:19 by rcaputo; HTTP.pm 1.35
-
-    Removed the shutdown() code. In extended tests, it was causing some
-    servers to disconnect before sending HTTP responses.
-    
-    Added code to match comments. If an HTTP request contains a UserAgent
-    header, use that instead of writing over it with one of ours. This
-    allows proxies written with this component to pass on proper values. 
-
-  2003-05-02 12:58:19 by rcaputo; Makefile.PL 1.15
-
-    Update the revisions of things we require. 
-
-  2003-05-02 12:57:19 by rcaputo; HTTP.pm 1.34
-
-    Use shutdown() to signal the end of a request. Requires POE 0.2501 or
-    newer. 
-
-=========================
-2003-03-14 06:09:41 v0_52
-=========================
-
-  2003-03-14 06:09:41 by rcaputo; HTTP.pm 1.33
-
-    Bump the version number to 0.52 for release. 
-
-===========================
-2003-03-10 17:42:10 v0_5102
-===========================
-
-  2003-03-10 17:42:10 by rcaputo; HTTP.pm 1.32
-
-    Bump version to 0.5102. 
-
-  2003-03-10 17:40:53 by rcaputo; HTTP.pm 1.31
-
-    Mike Mindel found a server that emits the status line as a single
-    entity and the response headers as another. This broke the newline
-    detection code and discarded the status line altogether. Fixed. 
-
-===========================
-2003-03-08 04:36:32 v0_5101
-===========================
-
-  2003-03-08 04:36:32 by rcaputo; HTTP.pm 1.30
-
-    Mike Mindel discovered that the DNS timeout was hardcoded to 90
-    seconds no matter what the HTTP component's timeout was set to. Fixed
-    the use of PoCo::Client::DNS so that requests don't take longer than
-    the specified timeout.
-    
-    Added a commissioned feature: Requests may be load balanced through
-    multiple proxies, chosen at random from a list.
-    
-    Added a commissioned feature: User-agent strings may be chosen at
-    random from a list. 
-
-  2003-02-28 04:47:31 by rcaputo; HTTP.pm 1.29
-
-    (!!! May break backward compatibility !!!) Applied Ilya Martynov's
-    patch to replace HTTP::Headers with HTTP::Response during streaming
-    content. This is unfortunately necessary because HTTP::Headers does
-    not include the status code, so you can't tell whether the request
-    was successful. While this changes the public interface, it does not
-    break the existing tests. We obviously need better tests, then. 
 
 =============================
 Beginning of Recorded History
