@@ -1,4 +1,4 @@
-# $Id: HTTP.pm,v 1.49 2004/01/15 21:04:51 rcaputo Exp $
+# $Id: HTTP.pm,v 1.51 2004/02/23 23:24:31 rcaputo Exp $
 # License and documentation are after __END__.
 
 package POE::Component::Client::HTTP;
@@ -9,7 +9,7 @@ sub DEBUG      () { 0 }
 sub DEBUG_DATA () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.61';
+$VERSION = '0.62';
 
 use Carp qw(croak);
 use POSIX;
@@ -645,6 +645,7 @@ sub poco_weeble_connect_error {
 
   my $request = delete $heap->{request}->{$request_id};
 
+  # Stop the timeout timer for this wheel, too.
   my $alarm_id = $request->[REQ_TIMER];
   if (delete $heap->{timer_to_request}->{ $alarm_id }) {
     $kernel->alarm_remove( $alarm_id );
@@ -709,6 +710,8 @@ sub poco_weeble_io_error {
 
   # Drop the wheel.
   my $request_id = delete $heap->{wheel_to_request}->{$wheel_id};
+  die "expected a request ID, but there is none" unless defined $request_id;
+
   my $request = delete $heap->{request}->{$request_id};
 
   # Stop the timeout timer for this wheel, too.

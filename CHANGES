@@ -1,4 +1,21 @@
 =========================
+2004-02-23 23:24:31 v0_62
+=========================
+
+  2004-02-23 23:24:31 by rcaputo; HTTP.pm 1.51; Makefile.PL 1.20
+
+    Matt Cashner pointed out that HTTP.pm uses a feature from a recent
+    version of POE. Makefile.PL specified the correct version for
+    ExtUtils::AutoInstall, but it had the old version for
+    ExtUtils::MakeMaker. This commit bumps the version to 0.62 for
+    release, and it uses the same set of mandatory dependencies for both
+    installer libraries. 
+
+  2004-02-13 02:16:09 by rcaputo; HTTP.pm 1.50
+
+    A comment and another internal test are added. 
+
+=========================
 2004-01-15 21:04:51 v0_61
 =========================
 
@@ -79,7 +96,7 @@
 
     Alan Hasting discovered an error in the bitmap for the redirect phase
     of HTTP parsing. This should fix that error.
-
+    
     Also we are now using delay_adjust() since it's available in POE
     0.27. This should avoid the potential for bad timeouts during long
     downloads. 
@@ -137,7 +154,7 @@
 
     Removed the shutdown() code. In extended tests, it was causing some
     servers to disconnect before sending HTTP responses.
-
+    
     Added code to match comments. If an HTTP request contains a UserAgent
     header, use that instead of writing over it with one of ours. This
     allows proxies written with this component to pass on proper values. 
@@ -183,10 +200,10 @@
     seconds no matter what the HTTP component's timeout was set to. Fixed
     the use of PoCo::Client::DNS so that requests don't take longer than
     the specified timeout.
-
+    
     Added a commissioned feature: Requests may be load balanced through
     multiple proxies, chosen at random from a list.
-
+    
     Added a commissioned feature: User-agent strings may be chosen at
     random from a list. 
 
