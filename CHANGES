@@ -1,4 +1,14 @@
 =========================
+2004-01-15 21:04:51 v0_61
+=========================
+
+  2004-01-15 21:04:51 by rcaputo; HTTP.pm 1.49
+
+    Apply Graham Barr's patch to accept HTTP status codes without
+    messages. Uses HTTP::Status to generate a default message in this
+    case. 
+
+=========================
 2004-01-14 19:21:53 v0_60
 =========================
 
