@@ -1,4 +1,14 @@
 =========================
+2004-02-27 18:59:36 v0_63
+=========================
+
+  2004-02-27 18:59:36 by rcaputo; HTTP.pm 1.52; MANIFEST 1.7
+
+    Applied Graham Barr's suggestions to (a) use Time::HiRes if it's
+    available for better timeout accuracy, and (b) return an error 408
+    (not 400) when a connection times out. 
+
+=========================
 2004-02-23 23:24:31 v0_62
 =========================
 
