@@ -1,8 +1,8 @@
-# $File: //member/autrijus/ExtUtils-AutoInstall/AutoInstall.pm $ 
-# $Revision: 1.3 $ $Change: 4934 $ $DateTime: 2003/03/25 16:52:18 $
+# $File: //member/autrijus/ExtUtils-AutoInstall/lib/ExtUtils/AutoInstall.pm $ 
+# $Revision: 1.1 $ $Change: 8105 $ $DateTime: 2003/09/13 20:57:40 $
 
 package ExtUtils::AutoInstall;
-$ExtUtils::AutoInstall::VERSION = '0.50';
+$ExtUtils::AutoInstall::VERSION = '0.54';
 
 use strict;
 
@@ -15,8 +15,8 @@ ExtUtils::AutoInstall - Automatic install of dependencies via CPAN
 
 =head1 VERSION
 
-This document describes version 0.50 of B<ExtUtils::AutoInstall>,
-released March 26, 2002.
+This document describes version 0.54 of B<ExtUtils::AutoInstall>,
+released September 14, 2003.
 
 =head1 SYNOPSIS
 
@@ -47,7 +47,7 @@ In F<Makefile.PL>:
 	-version	=> '0.40',	# required AutoInstall version
 	                                # usually 0.40 is sufficient
 	-config		=> {
-	    make_args	=> '--hello'	# option(s) for CPAN::Config
+	    make_args	=> '--hello',	# option(s) for CPAN::Config
 	    force	=> 1,		# pseudo-option to force install
 	    do_once	=> 1,		# skip previously failed modules
 	},
@@ -392,7 +392,7 @@ sub import {
 		$DisabledTests{$_} = 1 for map { glob($_) } @skiptests;
 	    }
 	    else {
-		print "failed! (need".($arg ? "s $arg" : 'ed').")\n";
+		print "failed!" . ($arg ? " (needs $arg)" : '') . "\n";
 		push @required, $mod => $arg;
 	    }
 	}
@@ -488,7 +488,7 @@ sub install {
     my %args = @config;
     my %failed;
     local *FAILED;
-    if ($args{do_once} and open(FAILED, '.autoinstall.failed')) {
+    if ($args{do_once} and open(FAILED, '.#autoinstall.failed')) {
 	while (<FAILED>) { chomp; $failed{$_}++ }
 	close FAILED;
 
@@ -513,7 +513,7 @@ sub install {
 	if (defined(_version_check(_load($pkg), $ver))) {
 	    push @installed, $pkg;
 	}
-	elsif ($args{do_once} and open(FAILED, '>> .autoinstall.failed')) {
+	elsif ($args{do_once} and open(FAILED, '>> .#autoinstall.failed')) {
 	    print FAILED "$pkg\n";
 	}
     }
@@ -598,6 +598,8 @@ sub _install_cpan {
     my $installed = 0;
     my %args;
 
+    require CPAN; CPAN::Config->load;
+
     return unless _can_write(MM->catfile($CPAN::Config->{cpan_home}, 'sources'));
 
     # if we're root, set UNINST=1 to avoid trouble unless user asked for it.
@@ -614,8 +616,6 @@ sub _install_cpan {
 	    if $opt =~ /^force$/; # pseudo-option
 	$CPAN::Config->{$opt} = $arg;
     }
-
-    require CPAN; CPAN::Config->load;
 
     while (my ($pkg, $ver) = splice(@modules, 0, 2)) {
 	MY::preinstall($pkg, $ver) or next if defined &MY::preinstall;
@@ -821,7 +821,7 @@ sub _make_args {
     ) if $Config;
 
     $PostambleActions = (
-	$missing ? "\$(PERLRUN) $0 --config=$config --installdeps=$missing"
+	$missing ? "\$(PERL) $0 --config=$config --installdeps=$missing"
 		 : "\@\$(NOOP)"
     );
 

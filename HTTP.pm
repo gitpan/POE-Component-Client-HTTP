@@ -1,4 +1,4 @@
-# $Id: HTTP.pm,v 1.40 2003/08/19 19:07:17 rcaputo Exp $
+# $Id: HTTP.pm,v 1.43 2003/10/30 23:21:30 rcaputo Exp $
 # License and documentation are after __END__.
 
 package POE::Component::Client::HTTP;
@@ -9,13 +9,14 @@ sub DEBUG      () { 0 }
 sub DEBUG_DATA () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.57';
+$VERSION = '0.58';
 
 use Carp qw(croak);
 use POSIX;
 use Symbol qw(gensym);
 use HTTP::Response;
 use URI;
+use HTML::HeadParser;
 
 use POE qw( Wheel::SocketFactory Wheel::ReadWrite
             Driver::SysRW Filter::Stream
@@ -45,14 +46,15 @@ sub REQ_USING_PROXY   () { 11 }
 sub REQ_HOST          () { 12 }
 sub REQ_PORT          () { 13 }
 sub REQ_START_TIME    () { 14 }
+sub REQ_HEAD_PARSER   () { 15 }
 
 sub RS_CONNECT      () { 0x01 }
 sub RS_SENDING      () { 0x02 }
 sub RS_IN_STATUS    () { 0x04 }
 sub RS_IN_HEADERS   () { 0x08 }
-sub RS_CHK_REDIRECT () { 0x09 }
-sub RS_IN_CONTENT   () { 0x10 }
-sub RS_DONE         () { 0x20 }
+sub RS_CHK_REDIRECT () { 0x10 }
+sub RS_IN_CONTENT   () { 0x20 }
+sub RS_DONE         () { 0x40 }
 
 sub PROXY_HOST () { 0 }
 sub PROXY_PORT () { 1 }
@@ -355,6 +357,7 @@ sub poco_weeble_request {
       $host,              # REQ_HOST
       $port,              # REQ_PORT
       time(),             # REQ_START_TIME
+      undef,              # REQ_HEAD_PARSER
     ];
 
   if($heap->{frmax}) {
@@ -362,7 +365,7 @@ sub poco_weeble_request {
     if (defined $tag && $tag =~ s/_redir_//) {
       $request->[REQ_POSTBACK] = $heap->{request}->{$tag}->[REQ_POSTBACK];
       $heap->{redir}->{$request_id}->{from} = $tag;
-      @{$heap->{redir}->{$request_id}->{hist}} = 
+      @{$heap->{redir}->{$request_id}->{hist}} =
         @{$heap->{redir}->{$tag}->{hist}};
     }
     push @{$heap->{redir}->{$request_id}->{hist}}, $uri;
@@ -504,10 +507,40 @@ sub poco_weeble_connect_ok {
     DEBUG and warn "wheel $wheel_id switching to SSL...\n";
 
     # Net::SSLeay needs nonblocking for setup.
+    #
+    # ActiveState Perl 5.8.0 dislikes the Win32-specific code to make
+    # a socket blocking, so we use IO::Handle's blocking(1) method.
+    # Perl 5.005_03 doesn't like blocking(), so we only use it in
+    # 5.8.0 and beyond.
+    #
+    # TODO - This code should probably become a POE::Kernel method,
+    # seeing as it's rather baroque and potentially useful in a number
+    # of places.
     my $old_socket = $socket;
-    my $flags = fcntl($old_socket, F_GETFL, 0) or die $!;
-    until (fcntl($old_socket, F_SETFL, $flags & ~O_NONBLOCK)) {
-      die $! unless $! == EAGAIN or $! == EWOULDBLOCK;
+    if ($] >= 5.008) {
+      $old_socket->blocking(1);
+    }
+    else {
+      # Make the handle blocking, the POSIX way.
+      unless ($^O eq 'MSWin32') {
+        my $flags = fcntl($old_socket, F_GETFL, 0)
+          or die "fcntl($old_socket, F_GETFL, etc.) fails: $!";
+        until (fcntl($old_socket, F_SETFL, $flags | ~O_NONBLOCK)) {
+          die "fcntl($old_socket, FSETFL, etc) fails: $!"
+            unless $! == EAGAIN or $! == EWOULDBLOCK;
+        }
+      }
+      # Do it the Win32 way.
+      else {
+        my $set_it = "0";
+
+        # 126 is FIONBIO (some docs say 0x7F << 16)
+        ioctl( $old_socket,
+               0x80000000 | (4 << 16) | (ord('f') << 8) | 126,
+               $set_it
+             )
+          or die "ioctl($old_socket, FIONBIO, $set_it) fails: $!";
+      }
     }
 
     $socket = gensym();
@@ -644,7 +677,7 @@ sub poco_weeble_io_flushed {
   # We sent the request.  Now we're looking for a response.  It may be
   # bad to assume we won't get a response until a request has flushed.
   my $request_id = $heap->{wheel_to_request}->{$wheel_id};
-  die unless defined $request_id;
+  die "request id needed" unless defined $request_id;
 
   my $request = $heap->{request}->{$request_id};
   $request->[REQ_STATE] = RS_IN_STATUS;
@@ -721,12 +754,8 @@ sub poco_weeble_io_read {
   DEBUG and warn "wheel $wheel_id got input...\n";
   DEBUG_DATA and warn(_hexdump($input), "\n");
 
-  # Reset the timeout if we get data.  -><- I think it is possible for
-  # this to gradually lose time, eventually timing out anyway over the
-  # course of a long download.  It may be more proper to have a
-  # delay_adjust() in POE::Kernel that resets an alarm to an offset
-  # from the current time.
-  $kernel->alarm_adjust( $request->[REQ_TIMER], $heap->{timeout} );
+  # Reset the timeout if we get data.
+  $kernel->delay_adjust($request->[REQ_TIMER], $heap->{timeout});
 
   # Aggregate the new input.
   $request->[REQ_BUFFER] .= $input;
@@ -831,11 +860,19 @@ HEADER:
     }
   }
 
-  # Check for redirection, if enabled. Yield request to ourselves.
-  # Prevent looping, either through maximum hops, or repeat.
+  # Edge case between RS_IN_HEADERS and RS_IN_CONTENT.  We'll see if
+  # HTML header parsing is necessary (and enable it if it is).  We'll
+  # also check for redirection, if enabled.
   if ($request->[REQ_STATE] & RS_CHK_REDIRECT) {
-    $request->[REQ_STATE] = RS_IN_CONTENT; #We go here once per request.
+    # We only go through this once per request.
+    $request->[REQ_STATE] = RS_IN_CONTENT;
 
+    # Check for redirection, if enabled. Yield request to ourselves.
+    # Prevent looping, either through maximum hops, or repeat.
+    #
+    # -><- I wonder.  Will we need to defer the redirect check until
+    # the HTML <HEAD></HEAD> section is loaded?  Headers in there may
+    # alter the response's base() result.  Would that be significant?
     if ($request->[REQ_RESPONSE]->is_redirect() && $heap->{frmax}) {
       my $uri = $request->[REQ_RESPONSE]->header('Location');
       # Canonicalize relative URIs.
@@ -861,11 +898,27 @@ HEADER:
         $heap->{redir}->{$request_id}->{followed} = 1; # Mark redirected.
       }
     }
+
+    # Not a redirect.  Begin parsing headers if this is HTML.
+    else {
+      if ($request->[REQ_RESPONSE]->content_type() eq "text/html") {
+        $request->[REQ_HEAD_PARSER] = HTML::HeadParser->new(
+          $request->[REQ_RESPONSE]->{_headers}
+        );
+      }
+    }
   }
 
   # We're in a content state.  This isn't an else clause because we
   # may go from header to content in the same read.
   if ($request->[REQ_STATE] & RS_IN_CONTENT) {
+
+    # First pass the new chunk through our HeadParser, if we have one.
+    # This also destroys the HeadParser if its purpose is done.
+    if ($request->[REQ_HEAD_PARSER]) {
+      $request->[REQ_HEAD_PARSER]->parse($request->[REQ_BUFFER]) or
+        $request->[REQ_HEAD_PARSER] = undef;
+    }
 
     # Count how many octets we've received.  -><- This may fail on
     # perl 5.8 if the input has been identified as Unicode.  Then

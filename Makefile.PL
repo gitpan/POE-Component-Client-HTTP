@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: Makefile.PL,v 1.16 2003/05/04 06:08:08 rcaputo Exp $
+# $Id: Makefile.PL,v 1.19 2003/10/19 20:01:09 rcaputo Exp $
 
 use strict;
 use lib qw(./mylib);
@@ -11,12 +11,13 @@ open(CHANGES, ">>CHANGES") and close CHANGES;
 
 # Prompt for optional things.
 ExtUtils::AutoInstall->import
-  ( -version => '0.50',
+  ( -version => '0.54',
     -core    =>
-    [ 'POE'            => 0.25,
-      'HTTP::Request'  => 1.27,
-      'HTTP::Response' => 1.33,
-      'URI'            => 1.11,
+    [ 'POE'            => 0.27,
+      'HTTP::Request'  => 1.30,
+      'HTTP::Response' => 1.37,
+      'URI'            => 1.24,
+      'HTML::Parser'   => 3.33,  # For HTML::HeadParser
     ],
     "Optional modules for SSL support." =>
     [ -default              => 0,
