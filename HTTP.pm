@@ -8,7 +8,7 @@ use strict;
 sub DEBUG () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.40';
+$VERSION = '0.41';
 
 use Carp qw(croak);
 use POSIX;
@@ -463,16 +463,12 @@ sub poco_weeble_io_read {
       $request->[REQ_RESPONSE] = HTTP::Response->new( $2, $3 );
       $request->[REQ_RESPONSE]->protocol( $protocol );
       $request->[REQ_RESPONSE]->request( $request->[REQ_REQUEST] );
-
-      # Reset the octets count for testing the body size.
-      $request->[REQ_OCTETS_GOT] = length($request->[REQ_BUFFER]);
     }
 
     # No status line.  We go straight into content.  Since we don't
     # know the status, we don't purport to.
     else {
       DEBUG and warn "wheel $wheel_id got no status... moving to content.\n";
-
       $request->[REQ_RESPONSE] = HTTP::Response->new();
       $request->[REQ_STATE] = RS_IN_CONTENT;
     }
@@ -525,10 +521,6 @@ HEADER:
           warn "wheel $wheel_id got a blank line... moving to content.\n";
 
         $request->[REQ_STATE] = RS_IN_CONTENT;
-
-        # Reset the octets got so that the headers do not count
-        # towards the content length.
-        $request->[REQ_OCTETS_GOT] = length($request->[REQ_BUFFER]);
         last HEADER;
       }
     }
