@@ -1,6 +1,13 @@
-============================
-2003-07-27 19:51:48 untagged
-============================
+=========================
+2003-08-19 19:07:17 v0_56
+=========================
+
+  2003-08-19 19:07:17 by rcaputo; HTTP.pm 1.40; t/01_request.t 1.14
+
+    Applied Averell Dalton's redirect patch, which is loosely based on
+    Prakash Kailasa's original patch. Averell's version includes a flag
+    to enable redirect following and to limit the number of redirects
+    that will be followed. 
 
   2003-07-27 19:51:48 by rcaputo; HTTP.pm 1.39; t/01_request.t 1.13
 
