@@ -1,4 +1,4 @@
-# $Id: HTTP.pm,v 1.19 2002/07/10 15:27:17 rcaputo Exp $
+# $Id: HTTP.pm,v 1.20 2002/07/19 15:26:59 rcaputo Exp $
 # License and documentation are after __END__.
 
 package POE::Component::Client::HTTP;
@@ -8,7 +8,7 @@ use strict;
 sub DEBUG () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.45';
+$VERSION = '0.46';
 
 use Carp qw(croak);
 use POSIX;
@@ -369,7 +369,7 @@ sub poco_weeble_dns_answer {
 
   my $requests = delete $heap->{resolve}->{$request_address};
 
-  warn $request_address;
+  DEBUG and warn $request_address;
 
   # No requests are on record for this lookup.
   die unless defined $requests;
