@@ -1,3 +1,25 @@
+2002-07-10 05:22  rcaputo
+
+	* Makefile.PL: Add a recent version of Net::SSLeay to
+	Client::HTTP's dependencies.  The dependencies include a recent
+	version of Net::SSLeay::Handle, but it seems that isn't enough.
+
+2002-07-10 05:21  rcaputo
+
+	* HTTP.pm: Randal Schwartz gave a compelling reason for
+	Client::HTTP to do nonblocking lookups internally.  This change
+	adds that feature.
+
+2002-07-10 02:30  rcaputo
+
+	* t/01_request.t: Add a test case for Randal Schwartz's uncanonical
+	URI bug.
+
+2002-07-10 00:43  rcaputo
+
+	* HTTP.pm: Randal Schwartz noticed that Client::HTTP did not
+	canonicalize URIs it's given.  This fix does that.
+
 2002-07-04 13:33  rcaputo
 
 	* HTTP.pm: Bump the version to 0.43 for release.

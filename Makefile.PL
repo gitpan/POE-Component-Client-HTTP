@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: Makefile.PL,v 1.8 2002/06/29 05:50:38 rcaputo Exp $
+# $Id: Makefile.PL,v 1.9 2002/07/10 05:22:50 rcaputo Exp $
 
 use ExtUtils::MakeMaker;
 
@@ -19,6 +19,7 @@ WriteMakefile
     PREREQ_PM    => { 'POE'                 => 0.1106,
                       'HTTP::Request'       => 1.27,
                       'HTTP::Response'      => 1.33,
+                      'Net::SSLeay'         => 1.17,
                       'Net::SSLeay::Handle' => 0.61,
                       'URI'                 => 1.11,
                     },
