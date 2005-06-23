@@ -1,11 +1,18 @@
-# $Id: MANIFEST,v 1.7 2004/02/27 18:59:36 rcaputo Exp $
+# $Id: MANIFEST 177 2005-06-21 17:53:32Z rcaputo $
 CHANGES
 CHANGES.OLD
-mylib/ExtUtils/AutoInstall.pm
 HTTP.pm
+HTTPChunk.pm
+HTTPHead.pm
 MANIFEST
 Makefile.PL
 README
-SSL.pm
+Request.pm
+RequestFactory.pm
 t/01_request.t
+t/02_keepalive.t
+t/03_head_filter.t
+t/04_chunk_filter.t
+t/05_request.t
+t/06_factory.t
 META.yml                                 Module meta-data (added by MakeMaker)
