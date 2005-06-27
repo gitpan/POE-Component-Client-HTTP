@@ -1,4 +1,4 @@
-# $Id: 04_chunk_filter.t 178 2005-06-22 16:22:17Z rcaputo $
+# $Id: 04_chunk_filter.t 181 2005-06-27 05:33:49Z rcaputo $
 # vim: filetype=perl
 
 use strict;
@@ -14,7 +14,6 @@ use POE qw(
   Filter::Stream
   Filter::HTTPHead
   Filter::HTTPChunk
-  Filter::XML
 );
 
 ok (defined $INC{"POE/Filter/HTTPChunk.pm"}, "loaded");

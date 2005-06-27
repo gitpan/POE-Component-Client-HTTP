@@ -1,4 +1,4 @@
-# $Id: 03_head_filter.t 178 2005-06-22 16:22:17Z rcaputo $
+# $Id: 03_head_filter.t 181 2005-06-27 05:33:49Z rcaputo $
 # vim: filetype=perl
 
 use strict;
@@ -12,7 +12,6 @@ use POE qw(
   Filter::Line
   Filter::Stream
   Filter::HTTPHead
-  Filter::XML
 );
 
 ok(defined $INC{"POE/Filter/HTTPHead.pm"}, "loaded");
