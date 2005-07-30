@@ -1,4 +1,4 @@
-# $Id: 02_keepalive.t 179 2005-06-23 01:08:34Z rcaputo $
+# $Id: 02_keepalive.t 191 2005-07-24 21:02:52Z rcaputo $
 # vim: filetype=perl
 
 use strict;
@@ -29,49 +29,13 @@ sub client_start {
   DEBUG and warn "client starting...\n";
 
   $kernel->post( weeble => request => got_first_response =>
-    #GET 'http://poe.perl.org/misc/test.html'
     GET(
-      'http://devel.exitexchange.com/~rob/test.html',
+      "http://poe.perl.org/misc/test.cgi?TESTA",
       Connection => "Keep-Alive",
     ),
   );
 
   $heap->{ka_count} = 5;
-
-  $kernel->post(
-    chunk => request => got_response =>
-    # GET 'http://poe.perl.org/misc/test.html'
-
-    # one packet, multiple chunks
-    # GET 'http://www.searchrequest.net/'
-
-    # BIG chunked response
-    # GET 'http://www.dack.com/'
-
-    # CHUNKED WITH REDIRECT
-    GET(
-      'http://www.overture.com/',
-      Connection => 'close',
-    ),
-
-    # CHUNKED W/O REDIRECT
-    # GET('http://www.content.overture.com/d/', Connection => 'close')
-
-    # ONLY redirect
-    # GET 'http://devel.exitexchange.com/scripts/poe_redir'
-  );
-
-  #$kernel->yield('check_counts', 2, 2);
-}
-
-sub client_check_counts {
-  my ($kernel, $test_number, $expected_count) = @_[KERNEL, ARG0, ARG1];
-
-  # a better test would be to also keep track of the responses we are
-  # receiving and checking that pending_requests_count decrements properly.
-  my $count = $kernel->call( weeble => 'pending_requests_count' );
-  $test_results[$test_number-1] = "ok $test_number"
-    if $expected_count == $count;
 }
 
 sub client_stop {
@@ -90,10 +54,8 @@ sub client_got_first_response {
   my $http_request  = $request_packet->[0];
   my $http_response = $response_packet->[0];
 
-  # DEBUG and "client FIRST_RESPONSE: START";
-
   DEBUG and do {
-    warn "client got request...\n";
+    warn "got_first_response...\n";
 
     my $response_string = $http_response->as_string();
     $response_string =~ s/^/| /mg;
@@ -105,22 +67,21 @@ sub client_got_first_response {
 
   my $request_path = $http_request->uri->path . ''; # stringify
 
-  if (defined $http_response->code) {
-    my $response_string = $http_response->as_string();
-    if ($http_response->code == 200) {
-      $test_results[0] = 'ok 1' if $request_path =~ m/\/test\.html$/;
+  return unless defined $http_response->code;
+  return unless $http_response->code == 200;
+  return unless $request_path =~ /\/test\.cgi$/;
+  return unless $heap->{ka_count}--;
 
-      $kernel->post(
-        weeble => request => got_response =>
-        GET(
-          'http://devel.exitexchange.com/~rob/test1.html',
-          Connection => "Keep-Alive",
-        ),
-      ) if $request_path =~ /\/test\.html$/ and $heap->{ka_count}--;
-    }
-  }
+  $test_results[0] = 'ok 1';
 
-  # DEBUG and "client FIRST_RESPONSE: DONE";
+  # Send a keep-alive request.
+  $kernel->post(
+    weeble => request => got_response =>
+    GET(
+      "http://poe.perl.org/misc/test.cgi?TEST1",
+      Connection => "Keep-Alive",
+    ),
+  );
 }
 
 sub client_got_response {
@@ -146,82 +107,93 @@ sub client_got_response {
   my $request_path = $http_request->uri->path . ''; # stringify
   my $request_uri  = $http_request->uri       . ''; # stringify
 
-  if (defined $http_response->code) {
-    my $response_string = $http_response->as_string();
-    if ($http_response->code == 200) {
-      $test_results[0] = 'ok 1' if $request_path =~ m/\/test\.html$/;
+  return unless defined $http_response->code();
 
-      $kernel->post(
-        weeble => request => got_response =>
-        GET(
-          'http://devel.exitexchange.com/~rob/test2.html',
-          Connection => "Keep-Alive",
-        ),
-      ) if $request_path =~ /\/test1\.html$/ and $heap->{ka_count}--;
+  my $response_string = $http_response->as_string();
 
-      $test_results[1] = 'ok 2' if $response_string =~ /TEST1/;
+  return unless $http_response->code == 200;
 
-      if ($response_string =~ /TEST2/) {
-        $test_results[2] = 'ok 3';
-        $kernel->post(
-          weeble => request => got_response =>
-          GET('http://devel.exitexchange.com/~rob/test3.html'),
-        ) if $heap->{ka_count}--;
-      }
-
-      if ($response_string =~ /TEST3/) {
-        $test_results[3] = 'ok 4';
-        $kernel->post(
-          weeble => request => got_response =>
-          GET(
-            'http://devel.exitexchange.com/~rob/test4.html',
-            Connection => "Close"
-          ),
-        );
-      }
-
-      if ($response_string =~ /TEST4/) {
-        $test_results[4] = 'ok 5';
-        $kernel->post( chunk => request => got_response =>
-          GET(
-            'http://exit-val.looksmart.com/r_search?isp=exi&key=dogs',
-            Connection => 'close',
-          ),
-        );
-      }
-
-      if ($request_uri =~ /=dogs$/) {
-        $test_results[5] = 'ok 6';
-        $kernel->post( chunk => request => got_response =>
-          # GET 'http://poe.perl.org/misc/test.html'
-          # GET 'http://www.searchrequest.net/'
-          # GET 'http://www.dack.com/'
-          GET(
-            'http://exit-val.looksmart.com/r_search?isp=exi&key=cats',
-            Connection => 'close',
-          ),
-        );
-      }
-
-      if ($request_uri =~ /=cats$/) {
-        $test_results[6] = 'ok 7';
-        $kernel->post( chunk => request => got_response =>
-          # GET 'http://poe.perl.org/misc/test.html'
-          # GET 'http://www.searchrequest.net/'
-          # GET 'http://www.dack.com/'
-          GET(
-            'http://www.overture.com/images-affiliates/befree/ologo.gif',
-            Connection => 'close',
-          ),
-        );
-      }
-    }
-    elsif ($http_response->code == 404) {
-      $request_path;
-      $test_results[7] = 'ok 8' if $request_path =~ /ologo\.gif$/;
-    }
+  # Received a keep-alive response.  Send another, and test that the
+  # socket is reused.
+  if ($response_string =~ /TEST1/ and $heap->{ka_count}--) {
+    $test_results[1] = 'ok 2';
+    $kernel->post(
+      weeble => request => got_response =>
+      GET(
+        "http://poe.perl.org/misc/test.cgi?TEST2",
+        Connection => "Keep-Alive",
+      ),
+    );
+    return;
   }
-  # DEBUG and "client SECOND_RESPONSE: DONE";
+
+  # Received a second keep-alive response.  Send a request with no
+  # Connection header.
+  if ($response_string =~ /TEST2/ and $heap->{ka_count}--) {
+    $test_results[2] = 'ok 3';
+    $kernel->post(
+      weeble => request => got_response =>
+      GET("http://poe.perl.org/misc/test.cgi?TEST3"),
+    );
+    return;
+  }
+
+  # Received response from request without Connection header.  Send a
+  # close-after-response request.
+  if ($response_string =~ /TEST3/) {
+    $test_results[3] = 'ok 4';
+    $kernel->post(
+      weeble => request => got_response =>
+      GET(
+        "http://poe.perl.org/misc/test.cgi?TEST4",
+        Connection => "Close"
+      ),
+    );
+    return;
+  }
+
+  # Received close-after-response request.  Send a request to test
+  # chunking.
+  if ($response_string =~ /TEST4/) {
+    $test_results[4] = 'ok 5';
+    $kernel->post( chunk => request => got_response =>
+      GET(
+        "http://poe.perl.org/misc/test.cgi?DOGS",
+        Connection => 'close',
+      ),
+    );
+    return;
+  }
+
+  # Received chunked response.  Make another chunked request.
+  if ($response_string =~ /DOGS/) {
+    $test_results[5] = 'ok 6';
+    $kernel->post( chunk => request => got_response =>
+      GET(
+        "http://poe.perl.org/misc/test.cgi?CATS",
+        Connection => 'close',
+      ),
+    );
+    return;
+  }
+
+  # Make a chunked redirection test.
+  if ($response_string =~ /CATS/) {
+    $test_results[6] = 'ok 7';
+    $kernel->post( chunk => request => got_response =>
+      GET(
+        'http://poe.perl.org/misc/redir-test.cgi',
+        Connection => 'close',
+      ),
+    );
+    return;
+  }
+
+  # Chunked redirection was fine.  Hey, we're done!
+  if ($request_uri =~ /redir-test/ and $response_string =~ /Test Page/) {
+    $test_results[7] = 'ok 8';
+    return;
+  }
 }
 
 #------------------------------------------------------------------------------
@@ -256,7 +228,6 @@ POE::Session->create(
     got_big_response    => \&client_got_big_response,
     got_stream_response => \&client_got_stream_response,
     got_redir_response  => \&client_got_redir_response,
-    check_counts        => \&client_check_counts,
   },
 );
 

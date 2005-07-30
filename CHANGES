@@ -1,4 +1,110 @@
 ===========================
+2005-07-30 20:44:35 v0_7002
+===========================
+
+  2005-07-30 20:44:26 (r198) by rcaputo; HTTP.pm M
+
+    Bump version for release. 
+
+  2005-07-29 15:37:54 (r197) by rcaputo
+  t/52_reiss_bad_length.t M; HTTPHead.pm M
+
+    Charles Reiss sent in a test case for a crash related to invalid
+    status lines on HTTP responses. This commit adds his test case and a
+    fix for the problem. 
+
+  2005-07-28 03:27:36 (r196) by rcaputo
+  Request.pm M; t/52_reiss_bad_length.t M; HTTP.pm M; HTTPHead.pm M
+
+    Charles Reiss sent in a patch for the content-length issues he's been
+    having. The ones illustrated in t/52_reiss_bad_length.t. I'm just
+    applying them here, along with some tab squashing in other files. 
+
+  2005-07-27 22:31:00 (r195) by rcaputo
+  t/52_reiss_bad_length.t M; HTTP.pm M
+
+    Charles Reiss pointed out that a response containing just
+    "HTTP::Response" triggers an isa() check if HTTP::Response is loaded.
+    This commit includes his new test case and a small fix that first
+    checks whether input is some sort of Perl reference. 
+
+  2005-07-27 04:12:22 (r194) by rcaputo
+  MANIFEST M; t/52_reiss_bad_length.t A
+
+    Charles Reiss provided a test case for bad content-length headers.
+    They do not trigger responses of any kind! This adds his test case,
+    but it doesn't fix his issue. 
+
+  2005-07-27 02:56:15 (r193) by rcaputo; t/01_request.t M; HTTP.pm M
+
+    Charles Reiss pointed out that invalid URLs, such as "http:bad" would
+    cause the component to die rather than throw an error with code 400.
+    His patch, applied here, corrects this oversight. 
+
+  2005-07-24 22:00:50 (r192) by rcaputo; HTTP.pm M
+
+    Ensure that a timeout is removed wherever its request is deleted. 
+
+  2005-07-24 21:02:52 (r191) by rcaputo; t/02_keepalive.t M
+
+    Turn off debugging. I had left it on in the previous commit. 
+
+  2005-07-24 21:01:55 (r190) by rcaputo; t/02_keepalive.t M
+
+    I seem to have broken the keepalive test in a previous commit. This
+    fixes up the requests so the chain of responses matches expectations. 
+
+  2005-07-24 18:55:42 (r189) by rcaputo; Request.pm M; HTTP.pm M
+
+    Add in a hard die() if an active timer is overwritten. This is a big
+    problem, as the old timer will still fire if it hasn't been removed
+    previously.
+    
+    Set the request's REQ_TIMER to undef in remove_timeout() so multiple
+    calls to it won't attempt to alarm_remove() the timer again.
+    
+    Replace a $request->timer(undef) call with
+    $request->remove_timeout(). Setting the timer to undef does not call
+    alarm_remove(), but remove_timeout() does this necessary magic. 
+
+  2005-07-08 04:06:16 (r188) by rcaputo; t/02_keepalive.t M
+
+    Removed the last of the foreign web sites from the keep-alive tests. 
+
+  2005-07-08 03:31:01 (r187) by rcaputo; t/02_keepalive.t M
+
+    Replace Rob Bloodgood's test files with data served from
+    poe.perl.org. This eliminates some of the foreign web dependencies of
+    the keepalive tests. 
+
+  2005-07-08 02:51:59 (r186) by rcaputo
+  t/50_davis_zerolength.t M; t/51_santos_status.t A; MANIFEST M
+
+    Nilson Santos F. Jr. reported that bittorrent tracker responses
+    weren't being parsed properly. Many of them respond with a status
+    line and content---and no other headers. This commit adds a
+    regression test to verify that status+content responses are parsed
+    correctly. It closes rt.cpan.org ticket 12363. 
+
+  2005-07-07 14:35:07 (r185) by rcaputo
+  t/50_davis_zerolength.t A; MANIFEST M; HTTP.pm M
+
+    Dave Davis discovered that zero-length content causes HTTP.pm to
+    reach a state where a response isn't sent for the request. His bug
+    report, rt.cpan.org #13557, was very detailed and included a working
+    test case that has become t/50_davis_zerolength.t. 
+
+  2005-07-07 14:33:04 (r184) by rcaputo; t/02_keepalive.t M
+
+    Clean up some of the URLs left over in this test. Other URLs are
+    still being used, so they must be cleaned up later. 
+
+  2005-07-07 14:30:58 (r183) by rcaputo; Makefile.PL M
+
+    Remove the repository URL from svn-log.perl's command line. The
+    utility is smart enough to figure it out on its own now. 
+
+===========================
 2005-06-27 05:36:25 v0_7001
 ===========================
 
@@ -405,39 +511,6 @@
     they are incomplete at the end of a read buffer. This commits a fix
     for his findings: Don't discard the remaining read buffer if we're
     still processing headers. 
-
-=========================
-2004-07-13 18:03:43 v0_64
-=========================
-
-  2004-07-13 18:03:43 (r111) by rcaputo; mylib/ExtUtils/AutoInstall.pm M
-
-    Upgrade the included ExtUtils::AutoInstall. 
-
-  2004-07-13 18:02:37 (r110) by rcaputo; HTTP.pm M
-
-    Oh, duh. Increase the version number for a new release. 
-
-  2004-07-13 18:01:56 (r109) by rcaputo; HTTP.pm M
-
-    Matt Cashner and an unidentified AOL Employee that some call... Tim
-    pointed out that SSL wasn't working. "But it was for me!" I said. So
-    we hunted it down to an incorrect bitwise operator in the
-    set-it-blocking code for non-ActiveState Perl versions prior to
-    5.8.0. This bug TOTALLY BROKE SSL for these Perl versions, just going
-    to show that you can't test too much or on too many platforms. Or
-    something. 
-
-  2004-05-02 19:42:43 (r108) by rcaputo; HTTP.pm M
-
-    Scott Beck reported that the streaming code uses two different hash
-    keys for the same heap member. This patch makes them consistent, and
-    it resolves rt.cpan.org ticket #5810. 
-
-  2004-05-02 19:25:25 (r107) by rcaputo; HTTP.pm M
-
-    Applied Scott Beck's patch to handle interrupted status lines. This
-    commit resolves rt.cpan.org ticket #5816. 
 
 ==============
 End of Excerpt

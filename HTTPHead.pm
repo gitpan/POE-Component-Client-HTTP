@@ -1,4 +1,4 @@
-# $Id: HTTPHead.pm 178 2005-06-22 16:22:17Z rcaputo $
+# $Id: HTTPHead.pm 197 2005-07-29 15:37:54Z rcaputo $
 
 package POE::Filter::HTTPHead_Line;
 use strict;
@@ -19,7 +19,7 @@ sub new {
   my $type = shift;
 
   my $self = bless [
-    [],            # FRAMING_BUFFER
+    [],           # FRAMING_BUFFER
     STATE_STATUS, # CURRENT_STATE
     undef,        # WORK_RESPONSE
     "0.9",        # PROTOCOL_VERSION
@@ -43,8 +43,8 @@ sub get_one {
     DEBUG and warn "LINE $line";
     if ($self->[CURRENT_STATE] == STATE_STATUS) {
       DEBUG and warn "in status";
-      #expect a status line
-      if ($line =~ m|^(?:HTTP/(\d+\.\d+) )?(\d{3})(?: (.+))?$|) {
+      # Expect a status line.
+      if ($line =~ m|^(?:HTTP/(\d+\.\d+) )?(\d{3})\s*(.+)?$|) {
         $self->[PROTOCOL_VERSION] = $1 if defined $1;
         $self->[WORK_RESPONSE] = HTTP::Response->new ($2, $3);
         $self->[CURRENT_STATE] = STATE_HEADER;

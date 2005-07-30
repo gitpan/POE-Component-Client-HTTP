@@ -1,4 +1,4 @@
-# $Id: MANIFEST 177 2005-06-21 17:53:32Z rcaputo $
+# $Id: MANIFEST 194 2005-07-27 04:12:22Z rcaputo $
 CHANGES
 CHANGES.OLD
 HTTP.pm
@@ -15,4 +15,7 @@ t/03_head_filter.t
 t/04_chunk_filter.t
 t/05_request.t
 t/06_factory.t
+t/50_davis_zerolength.t
+t/51_santos_status.t
+t/52_reiss_bad_length.t
 META.yml                                 Module meta-data (added by MakeMaker)

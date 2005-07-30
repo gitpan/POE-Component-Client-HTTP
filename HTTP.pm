@@ -1,4 +1,4 @@
-# $Id: HTTP.pm 181 2005-06-27 05:33:49Z rcaputo $
+# $Id: HTTP.pm 198 2005-07-30 20:44:26Z rcaputo $
 
 package POE::Component::Client::HTTP;
 
@@ -11,7 +11,7 @@ sub DEBUG         () { 0 }
 sub DEBUG_DATA    () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.7001';
+$VERSION = '0.7002';
 
 use Carp qw(croak);
 use POSIX;
@@ -127,7 +127,8 @@ sub poco_weeble_start {
 
 sub poco_weeble_stop {
   my $heap = shift;
-  delete $heap->{request};
+  my $request = delete $heap->{request};
+  $request->remove_timeout() if $request;
   DEBUG and warn "$heap->{alias} stopped.";
 }
 
@@ -163,15 +164,23 @@ sub poco_weeble_request {
     );
   }
 
-  # get a connection from Client::Keepalive
-  $heap->{cm}->allocate(
-    scheme  => $http_request->uri->scheme,
-    addr    => $http_request->uri->host,
-    port    => $http_request->uri->port,
-    context => $request->ID,
-    event   => 'got_connect_done',
-    @timeout,
-  );
+  
+  eval {
+      # get a connection from Client::Keepalive
+      $heap->{cm}->allocate(
+        scheme  => $http_request->uri->scheme,
+        addr    => $http_request->uri->host,
+        port    => $http_request->uri->port,
+        context => $request->ID,
+        event   => 'got_connect_done',
+        @timeout,
+      );
+  };
+  if ($@) {
+      delete $heap->{request}->{$request->ID};
+      # we can reach here for things like host being invalid.
+      $request->error(400, $@);
+  }
 }
 
 # }}} poco_weeble_request
@@ -230,6 +239,7 @@ sub poco_weeble_connect_done {
 
     DEBUG and warn "I/O: removing request $request_id";
     my $request = delete $heap->{request}->{$request_id};
+    $request->remove_timeout();
 
     # Post an error response back to the requesting session.
     $request->connect_error("$operation error $errnum: $errstr");
@@ -258,7 +268,7 @@ sub poco_weeble_timeout {
   }
 
   DEBUG and warn "TKO: request $request_id has timer ", $request->timer;
-  $request->timer(undef);
+  $request->remove_timeout();
 
   # There's a wheel attached to the request.  Shut it down.
   if (defined $request->wheel) {
@@ -422,6 +432,10 @@ sub poco_weeble_io_read {
     if (
       $request->[REQ_REQUEST]->method eq 'HEAD'
       or $input->code =~ /^(?:1|[23]04)/
+      or (
+        defined($input->content_length())
+        and $input->content_length() == 0
+      )
     ) {
       $request->[REQ_STATE] |= RS_DONE;
     }
@@ -469,7 +483,7 @@ sub poco_weeble_io_read {
 
   # We're in a content state.
   if ($request->[REQ_STATE] & RS_IN_CONTENT) {
-    if (UNIVERSAL::isa ($input, 'HTTP::Response')) {
+    if (ref($input) and UNIVERSAL::isa($input, 'HTTP::Response')) {
       # there was a problem in the input filter
       # $request->close_connection;
     }
@@ -540,10 +554,8 @@ sub _finish_request {
     );
   }
 
-  # If we're streaming, the response is HTTP::Response without
-  # content and undef to signal the end of the stream.  Otherwise
-  # it's the entire HTTP::Response object we've carefully built.
-  $request->return_response;
+  # XXX What does this do?
+  $request->add_eof;
 
   # KeepAlive: added the RS_POSTED flag
   $request->[REQ_STATE] |= RS_POSTED;
@@ -557,16 +569,16 @@ sub _finish_request {
     #wait a bit with removing the request, so there's
     #time to receive the EOF event in case the connection
     #gets closed.
-    my $alarm_id = $poe_kernel->delay_set ('remove_request', 0.5, $request_id);
+    my $alarm_id = $poe_kernel->delay_set('remove_request', 0.5, $request_id);
 
     # remove the old timeout first
-    $request->remove_timeout;
-
-    $request->timer ($alarm_id);
+    $request->remove_timeout();
+    $request->timer($alarm_id);
   }
   else {
     DEBUG and warn "I/O: removing request $request_id";
     my $request = delete $heap->{request}->{$request_id};
+    $request->remove_timeout() if $request;
   }
 }
 
@@ -577,8 +589,9 @@ sub poco_weeble_remove_request {
   my ($kernel, $heap, $request_id) = @_[KERNEL, HEAP, ARG0];
 
   my $request = delete $heap->{request}->{$request_id};
-  if (DEBUG and defined $request) {
-    warn "I/O: removed request $request_id";
+  if (defined $request) {
+    DEBUG and warn "I/O: removed request $request_id";
+    $request->remove_timeout();
   }
 }
 #}}} _remove_request
