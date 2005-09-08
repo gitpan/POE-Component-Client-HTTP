@@ -1,4 +1,4 @@
-# $Id: HTTPChunk.pm 178 2005-06-22 16:22:17Z rcaputo $
+# $Id: HTTPChunk.pm 200 2005-08-02 14:24:42Z rcaputo $
 
 package POE::Filter::HTTPChunk;
 use strict;
@@ -91,7 +91,7 @@ sub get_one {
 
     if ($self->[CURRENT_STATE] & STATE_SIZE) {
       DEBUG and warn "Finding chunk length marker";
-      if ($chunk =~ s/^($HEX+)(?:;.*)?\015?\012//s) {
+      if ($chunk =~ s/^($HEX+)(?:;.*?)?[^\S\015\012]*\015?\012//s) {
         my $length = hex($1);
         DEBUG and warn "Chunk should be $length bytes";
         $self->[CHUNK_SIZE] = $length;

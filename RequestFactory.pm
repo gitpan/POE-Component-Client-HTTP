@@ -1,4 +1,4 @@
-# $Id: RequestFactory.pm 178 2005-06-22 16:22:17Z rcaputo $
+# $Id: RequestFactory.pm 214 2005-09-08 17:48:08Z rcaputo $
 
 package POE::Component::Client::HTTP::RequestFactory;
 use strict;
@@ -115,7 +115,7 @@ sub new {
   my $from             = delete $params->{From};
   my $no_proxy         = delete $params->{NoProxy};
   my $proxy            = delete $params->{Proxy};
-  my $follow_redirects = delete $params->{FollowRedirects};
+  my $follow_redirects = delete $params->{FollowRedirects} || 0;
   my $timeout          = delete $params->{Timeout};
 
   # Process HTTP_PROXY and NO_PROXY environment variables.
@@ -125,22 +125,8 @@ sub new {
 
   # Translate environment variable formats into internal versions.
 
-  if (defined $proxy) {
-    if (ref($proxy) eq 'ARRAY') {
-      croak "Proxy must contain [HOST,PORT]" unless @$proxy == 2;
-      $proxy = [ $proxy ];
-    }
-    else {
-      my @proxies = split /\s*\,\s*/, $proxy;
-      foreach (@proxies) {
-        s/^http:\/+//;
-        s/\/+$//;
-        croak "Proxy must contain host:port" unless /^(.+):(\d+)$/;
-        $_ = [ $1, $2 ];
-      }
-      $proxy = \@proxies;
-    }
-  }
+  $class->parse_proxy($proxy)
+    if (defined $proxy);
 
   if (defined $no_proxy) {
     unless (ref($no_proxy) eq 'ARRAY') {
@@ -235,8 +221,8 @@ Creates a new L<POE::Component::Client::HTTP::Request>
 =cut
 
 sub create_request {
-  my ($self, $http_request, $response_event, $tag, $progress_event, $sender) =
-    @_;
+  my ($self, $http_request, $response_event, $tag,
+      $progress_event, $proxy_override, $sender) =  @_;
 
   # Add a protocol if one isn't included.
   $http_request->protocol( $self->[FCT_PROTOCOL] ) unless (
@@ -256,6 +242,16 @@ sub create_request {
     unless (defined $req_from and length $req_from) {
       $http_request->from( $self->from );
     }
+  }
+
+  # Add a Content-Length header if this request has content but
+  # doesn't have a Content-Length header already.
+  if (
+    length($http_request->content()) and
+    !$http_request->content_length()
+  ) {
+    use bytes;
+    $http_request->content_length(length($http_request->content()));
   }
 
   my ($last_request, $postback);
@@ -287,21 +283,21 @@ sub create_request {
   # not in our no_proxy, then use the proxy.  Otherwise use the
   # request URI.
 
-  my $proxy = $self->[FCT_PROXY];
-  my $using_proxy;
+  my $proxy = $proxy_override || $self->[FCT_PROXY];
+
   if (defined $proxy) {
   # This request qualifies for proxying.  Replace the host and port
   # with the proxy's host and port.  This comes after the Host:
   # header is set, so it doesn't break the request object.
     my $host = $http_request->uri->host;
-    if (not _in_no_proxy ($host, $self->[FCT_NOPROXY])) {
-      my $using_proxy = $proxy->[@$proxy];
-    }
+
+    undef $proxy
+      if _in_no_proxy ($host, $self->[FCT_NOPROXY]);
   }
 
   my $request = POE::Component::Client::HTTP::Request->new (
     Request => $http_request,
-    Proxy => $using_proxy,
+    Proxy => $proxy,
     Postback => $postback,
     Tag => $tag,
     Progress => $progress_postback,
@@ -387,4 +383,45 @@ sub max_redirect_count {
   }
   return $self->[FCT_FOLLOWREDIRECTS];
 }
+
+=head2 parse_proxy $proxy
+
+This static method is used for parsing proxies. The $proxy can be
+array reference like [host, port] or comma separated string like
+"http://1.2.3.4:80/,http://2.3.4.5:80/".
+
+parse_proxy() returns an array reference of two-element tuples (also
+array ferences), each containing a host and a port:
+
+  [ [ host1, port1 ],
+    [ host2, port2 ],
+    ...
+  ]
+
+=cut
+
+sub parse_proxy {
+  my $proxy = $_[1];
+
+  if (ref($proxy) eq 'ARRAY') {
+    croak "Proxy must contain [HOST,PORT]" unless @$proxy == 2;
+    $proxy = [ $proxy ];
+  } else {
+    my @proxies = split /\s*\,\s*/, $proxy;
+    foreach (@proxies) {
+      s/^http:\/+//;
+      s/\/+$//;
+      croak "Proxy must contain host:port" unless /^(.+):(\d+)$/;
+      $_ = [ $1, $2 ];
+    }
+    if (@proxies) {
+      $proxy = \@proxies;
+    } else {
+      undef $proxy; # Empty proxy list means not to use proxy
+    }
+  }
+
+  $_[1] = $proxy;
+}
+
 1;

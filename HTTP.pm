@@ -1,4 +1,4 @@
-# $Id: HTTP.pm 198 2005-07-30 20:44:26Z rcaputo $
+# $Id: HTTP.pm 216 2005-09-08 17:53:57Z rcaputo $
 
 package POE::Component::Client::HTTP;
 
@@ -7,11 +7,11 @@ package POE::Component::Client::HTTP;
 use strict;
 #use bytes; # for utf8 compatibility
 
-sub DEBUG         () { 0 }
-sub DEBUG_DATA    () { 0 }
+sub DEBUG      () { 0 }
+sub DEBUG_DATA () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.7002';
+$VERSION = '0.71';
 
 use Carp qw(croak);
 use POSIX;
@@ -148,12 +148,17 @@ sub poco_weeble_pending_requests_count {
 sub poco_weeble_request {
   my (
     $kernel, $heap, $sender,
-    $response_event, $http_request, $tag, $progress_event
-  ) = @_[KERNEL, HEAP, SENDER, ARG0, ARG1, ARG2, ARG3];
+    $response_event, $http_request, $tag, $progress_event,
+    $proxy_override
+  ) = @_[KERNEL, HEAP, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4];
 
+  if (defined $proxy_override) {
+    POE::Component::Client::HTTP::RequestFactory->parse_proxy($proxy_override);
+  }
 
   my $request = $heap->{factory}->create_request(
-    $http_request, $response_event, $tag, $progress_event, $sender
+    $http_request, $response_event, $tag, $progress_event,
+    $proxy_override, $sender
   );
   $heap->{request}->{$request->ID} = $request;
 
@@ -164,13 +169,12 @@ sub poco_weeble_request {
     );
   }
 
-  
   eval {
       # get a connection from Client::Keepalive
       $heap->{cm}->allocate(
-        scheme  => $http_request->uri->scheme,
-        addr    => $http_request->uri->host,
-        port    => $http_request->uri->port,
+        scheme  => $request->scheme,
+        addr    => $request->host,
+        port    => $request->port,
         context => $request->ID,
         event   => 'got_connect_done',
         @timeout,
@@ -253,7 +257,7 @@ sub poco_weeble_connect_done {
 sub poco_weeble_timeout {
   my ($kernel, $heap, $request_id) = @_[KERNEL, HEAP, ARG0];
 
-  DEBUG and warn "TKO: request $request_id timed out";
+  DEBUG and warn "T/O: request $request_id timed out";
 
   # Discard the request.  Keep a copy for a few bits of cleanup.
   DEBUG and warn "I/O: removing request $request_id";
@@ -261,42 +265,45 @@ sub poco_weeble_timeout {
 
   unless (defined $request) {
     die(
-      "TKO: unexpectedly undefined request for id $request_id\n",
-      "TKO: known request IDs: ", join(", ", keys %{$heap->{request}}), "\n",
+      "T/O: unexpectedly undefined request for id $request_id\n",
+      "T/O: known request IDs: ", join(", ", keys %{$heap->{request}}), "\n",
       "...",
     );
   }
 
-  DEBUG and warn "TKO: request $request_id has timer ", $request->timer;
+  DEBUG and warn "T/O: request $request_id has timer ", $request->timer;
   $request->remove_timeout();
 
   # There's a wheel attached to the request.  Shut it down.
   if (defined $request->wheel) {
     my $wheel_id = $request->wheel->ID();
-    DEBUG and warn "TKO: request $request_id is wheel $wheel_id";
+    DEBUG and warn "T/O: request $request_id is wheel $wheel_id";
     delete $heap->{wheel_to_request}->{$wheel_id};
   }
 
   DEBUG and do {
-    die( "TKO: request $request_id is unexpectedly zero" )
+    die( "T/O: request $request_id is unexpectedly zero" )
       unless $request->[REQ_STATE];
-    warn "TKO: request_state = " . sprintf("%#04x\n", $request->[REQ_STATE]);
+    warn "T/O: request_state = " . sprintf("%#04x\n", $request->[REQ_STATE]);
   };
 
-  if (
-    $request->[REQ_STATE] & (RS_IN_CONTENT | RS_DONE) and
-    not $request->[REQ_STATE] & RS_POSTED
-  ) {
-    #warn "request_id is $request_id, while request's id is $request->[REQ_ID]";
-    _finish_request($heap, $request, 0);
-    return;
-  }
-  elsif ($request->[REQ_STATE] & RS_POSTED) {
+  # Hey, we haven't sent back a response yet!
+  if (not $request->[REQ_STATE] & RS_POSTED) {
+
+    # Well, we have a response.  Isn't that nice?  Let's send it.
+    if ($request->[REQ_STATE] & (RS_IN_CONTENT | RS_DONE)) {
+      _finish_request($heap, $request, 0);
+      return;
+    }
+
+    # Shut down the connection so it's not reused.
+    $request->[REQ_CONNECTION]->wheel()->shutdown_input();
+
+    # Post an error response back to the requesting session.
     DEBUG and warn "I/O: Disconnect, keepalive timeout or HTTP/1.0.";
     $request->error(408, "Request timed out") if $request->[REQ_STATE];
     return;
   }
-  # Post an error response back to the requesting session.
 }
 
 # }}} poco_weeble_timeout
@@ -373,7 +380,26 @@ sub poco_weeble_io_error {
       DEBUG and warn "I/O: Disconnect, remote keepalive timeout or HTTP/1.0.";
       return;
     }
-
+    elsif (not defined $request->[REQ_RESPONSE]) {
+      # never got a response, check for pending data indicating
+      # a LF-free HTTP 0.9 response
+      my $lines = $request->wheel->get_input_filter()->get_pending();
+      my $text = join '' => @$lines;
+      DEBUG and warn "Got ", length($text), " bytes of data without LF.";
+      if ($text =~ /\S/) {
+        # generate response
+        DEBUG and warn(
+          "Generating HTTP response for HTTP/0.9 response without LF."
+        );
+        $request->[REQ_RESPONSE] = HTTP::Response->new(
+          200, 'OK', [ 'Content-Type' => 'text/html' ], $text
+        );
+        $request->[REQ_RESPONSE]->protocol('HTTP/0.9');
+        $request->[REQ_STATE] = RS_DONE;
+        $request->return_response;
+        return;
+      }
+    }
     # We haven't built a proper response.  Send back an error.
     $request->error (400, "incomplete response $request_id");
   }
@@ -422,7 +448,9 @@ sub poco_weeble_io_read {
       #warn "NO INPUT";
     }
 
-    # FIXME: LordVorp gets here without $input being a HTTP::Response
+    # FIXME: LordVorp gets here without $input being a HTTP::Response.
+    # FIXME: This happens when the response is HTTP/0.9 and doesn't
+    # include a status line.  See t/53_response_parser.t.
     $request->[REQ_RESPONSE] = $input;
 
     # Some responses are without content by definition
@@ -446,33 +474,59 @@ sub poco_weeble_io_read {
         #       request is in, and only then do the new request, so we
         #       can reuse the connection.
         DEBUG and warn "Redirected $request_id ", $input->code;
+        my @proxy;
+        if ($request->[REQ_USING_PROXY]) {
+          push @proxy, (
+            'http://' .  $request->host .  ':' .  $request->port .  '/'
+          );
+        }
         $kernel->yield (
           request =>
           $request,
           $newrequest,
           "_redir_".$request->ID,
-          $request->[REQ_PROG_POSTBACK]
+          $request->[REQ_PROG_POSTBACK],
+          @proxy
         );
         return
       }
 
-      my $filter;
+      # RFC 2616 14.41:  If multiple encodings have been applied to an
+      # entity, the transfer-codings MUST be listed in the order in
+      # which they were applied.
+
+      my ($filter, @filters);
+
       my $te = $input->header('Transfer-Encoding');
       if (defined $te) {
-        $filter = POE::Filter::Stackable->new;
         my @te = split(/\s*,\s*/, lc($te));
-        while (my $encoding = pop @te) {
+
+        while (@te and exists $te_filters{$te[-1]}) {
+          my $encoding = pop @te;
           my $fclass = $te_filters{$encoding};
-          last unless (defined $fclass);
-          $filter->push ($fclass->new);
+          push @filters, $fclass->new();
         }
-        $input->header('Transfer-Encoding', join(', ', @te));
+
+        if (@te) {
+          $input->header('Transfer-Encoding', join(', ', @te));
+        }
+        else {
+          $input->header('Transfer-Encoding', undef);
+        }
+      }
+
+      if (@filters > 1) {
+        $filter = POE::Filter::Stackable->new( Filters => \@filters );
+      }
+      elsif (@filters) {
+        $filter = $filters[0];
       }
       else {
         $filter = POE::Filter::Stream->new;
       }
+
       # do this last, because it triggers a read
-      $request->wheel->set_input_filter ($filter);
+      $request->wheel->set_input_filter($filter);
     }
     return;
   }
@@ -826,13 +880,16 @@ an HTTP::Request object which defines the request.  For example:
     GET 'http://poe.perl.org', # a simple HTTP request
     'unique id',               # a tag to identify the request
     'progress',                # an event to indicate progress
+    'http://1.2.3.4:80/'       # proxy to use for this request
   );
 
 Requests include the state to which responses will be posted.  In the
 previous example, the handler for a 'response' state will be called
 with each HTTP response.  The "progress" handler is optional and if
 installed, the component will provide progress metrics (see sample
-handler below).
+handler below).  The "proxy" parameter is optional and if not defined,
+a default proxy will be used if configured.  No proxy will be used if
+neither a default one nor a "proxy" parameter is defined.
 
 =head2 pending_requests_count
 

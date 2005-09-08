@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: Makefile.PL 183 2005-07-07 14:30:58Z rcaputo $
+# $Id: Makefile.PL 202 2005-08-02 15:18:11Z rcaputo $
 
 use strict;
 use lib qw(./mylib);

@@ -1,10 +1,10 @@
-# $Id: 04_chunk_filter.t 181 2005-06-27 05:33:49Z rcaputo $
+# $Id: 04_chunk_filter.t 200 2005-08-02 14:24:42Z rcaputo $
 # vim: filetype=perl
 
 use strict;
 use warnings;
 
-use Test::More tests => 8;
+use Test::More tests => 9;
 sub DEBUG () { 0 }
 
 use POE qw(
@@ -28,6 +28,7 @@ my $session = POE::Session->create(
     input   => \&input,
     error   => \&error,
     flushed => \&flushed,
+    _stop   => \&parser_tests,
   },
 );
 
@@ -97,6 +98,34 @@ sub error {
   is ($errno, 0, "Got EOF");
 
   delete $heap->{wheel};
+}
+
+sub parser_tests {
+  my $f = POE::Filter::HTTPChunk->new();
+
+  # Yuri Karaban discovered that chunk lengths with trailing
+  # whitespace were not being recognized.  The result was responses
+  # with empty content.
+  #
+  # TODO - Make this data driven when we get more test cases.
+  $f->get_one_start(
+    [
+      "d\n",
+      "regular chunk\n",
+      "25   \t   \n",
+      "chunk length with trailing whitespace",
+      "0\n",
+    ],
+  );
+
+  my $result = $f->get_one();
+  is_deeply(
+    $result, [
+      "regular chunk",
+      "chunk length with trailing whitespace"
+    ],
+    "chunk length with trailing whitespace"
+  );
 }
 
 __DATA__

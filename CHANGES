@@ -1,3 +1,115 @@
+=========================
+2005-09-08 17:55:43 v0_71
+=========================
+
+  2005-09-08 17:53:57 (r216) by rcaputo; HTTP.pm M
+
+    Bump up the version for release. 
+
+  2005-09-08 17:48:59 (r215) by rcaputo; HTTP.pm M; t/07_proxy.t M
+
+    Apply Yuri Karaban's tests for preserving proxy settings through
+    redirects. Previously the proxy would be lost. 
+
+  2005-09-08 17:48:08 (r214) by rcaputo; RequestFactory.pm M
+
+    Add a Content-Length header if a request has content but no
+    Content-Length. I'm not sure this is the right thing to do in all
+    cases, but it does address a problem brought up on the mailing list. 
+
+  2005-09-04 18:55:34 (r213) by rcaputo
+  t/08_discard.t A; MANIFEST M; HTTP.pm M
+
+    Applied Yuri Karaban's patch for a case where Client::HTTP doesn't
+    send back a 408 (timeout) error response. Also his test case (thank
+    you, Yuri!). 
+
+  2005-09-01 13:59:29 (r212) by rcaputo; HTTP.pm M
+
+    Yuri Karaban fixed redirects to use the proxy of the original
+    request. 
+
+  2005-08-30 13:56:50 (r211) by rcaputo; RequestFactory.pm M
+
+    Yuri Karaban corrected an undefined value warning. This resolves
+    rt.cpan.org ticket 14365. 
+
+  2005-08-08 16:50:50 (r210) by rcaputo; MANIFEST M
+
+    Charles Reiss: You forgot to add t/07_proxy.t to MANIFEST.
+    
+    Rocco Caputo: Oh, heck. 
+
+  2005-08-08 16:20:16 (r209) by rcaputo; t/07_proxy.t A
+
+    Yuri Karaban fixed up proxy support a little while ago. Now he's
+    contributed tests for the proxy support so it should never lapse
+    again. Most excellent! 
+
+  2005-08-08 16:09:57 (r208) by rcaputo
+  t/03_head_filter.t M; t/53_response_parser.t M; HTTP.pm M; HTTPHead.pm
+  M
+
+    Charles Reiss patched the HTTP head parser to support HTTP/0.9
+    content-only responses. He added a test to t/53_response_parser.t,
+    and suggested a required change in t/03_head_filter.t. It used a
+    content-only message as a bad response, and suddenly it was good.
+    Something had to be done. 
+
+  2005-08-04 04:45:38 (r207) by rcaputo; HTTP.pm M
+
+    This commit fixes an error where the Filter::Stackable is empty when
+    Transfer-Encoding's last (i.e. first) coding marker is not supported.
+    It also documents the order that Transfer-Encoding's codings are
+    parsed in.
+    
+    It also documents a bug in HTTP/0.9 parsing. The bug relates to the
+    failing test in t/53_response_parser.t circa changeset:205. 
+
+  2005-08-04 04:41:58 (r206) by rcaputo; t/52_reiss_bad_length.t M
+
+    Insignificant changes related to a test case patch that was pulled
+    out and made into t/53_response_parser.t 
+
+  2005-08-04 04:41:15 (r205) by rcaputo
+  MANIFEST M; t/53_response_parser.t A
+
+    Created a new regression test framework for HTTP parser issues that
+    do return some type of response. This is a superset of the
+    functionality of t/52_reiss_bad_length.t, and perhaps the tests from
+    that file should be ported forward into this one. 
+
+  2005-08-02 19:14:09 (r204) by rcaputo; HTTP.pm M; RequestFactory.pm M
+
+    Applied Yuri Karaban's patch to support a different proxy for
+    potentially every request. This resolves rt.cpan.org tickets #13990
+    and #1700. 
+
+  2005-08-02 16:02:33 (r203) by rcaputo
+  Request.pm M; HTTP.pm M; RequestFactory.pm M
+
+    Yuri Karaban has updated proxy support to work with the new
+    Client::Keepalive connection code. Now we need some proxy tests. 
+
+  2005-08-02 15:18:11 (r202) by rcaputo; Makefile.PL M
+
+    We require the absolute latest PoCo::Client::Keepalive. 
+
+  2005-08-02 15:17:49 (r201) by rcaputo; HTTP.pm M
+
+    Update the Transfer-Encoding logic to preserve unknown encodings and
+    any that come later than the first one. It still uses pop(), which
+    assumes that encodings are read right-to-left. We're not sure if
+    that's correct, however. 
+
+  2005-08-02 14:24:42 (r200) by rcaputo
+  HTTPChunk.pm M; t/04_chunk_filter.t M
+
+    Yuri Karaban discovered that chunk lengths with trailing whitespace
+    weren't being recognized. The result was responses with empty
+    content. I've committed his fix (slightly fixed itself) and a test
+    case. This closes rt.cpan.org ticket 13973. 
+
 ===========================
 2005-07-30 20:44:35 v0_7002
 ===========================
