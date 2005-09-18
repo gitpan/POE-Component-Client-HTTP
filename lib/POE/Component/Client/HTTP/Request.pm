@@ -1,4 +1,4 @@
-# $Id: Request.pm 203 2005-08-02 16:02:33Z rcaputo $
+# $Id: Request.pm 222 2005-09-17 18:04:07Z rcaputo $
 
 package POE::Component::Client::HTTP::Request;
 use strict;
@@ -418,7 +418,7 @@ sub check_redirect {
     last if ($history > $max);
   }
 
-  if ($history > $max) {
+  if ($history >= $max) {
     #$self->[REQ_STATE] |= RS_DONE;
     DEBUG and warn "RED: Too much redirection";
   }

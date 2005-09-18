@@ -1,4 +1,4 @@
-# $Id: HTTP.pm 216 2005-09-08 17:53:57Z rcaputo $
+# $Id: HTTP.pm 227 2005-09-18 22:03:20Z rcaputo $
 
 package POE::Component::Client::HTTP;
 
@@ -11,7 +11,7 @@ sub DEBUG      () { 0 }
 sub DEBUG_DATA () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.71';
+$VERSION = '0.72';
 
 use Carp qw(croak);
 use POSIX;
@@ -275,9 +275,12 @@ sub poco_weeble_timeout {
   $request->remove_timeout();
 
   # There's a wheel attached to the request.  Shut it down.
-  if (defined $request->wheel) {
-    my $wheel_id = $request->wheel->ID();
+  if (defined(my $wheel = $request->wheel())) {
+    my $wheel_id = $wheel->ID();
     DEBUG and warn "T/O: request $request_id is wheel $wheel_id";
+
+    # Shut down the connection so it's not reused.
+    $wheel->shutdown_input();
     delete $heap->{wheel_to_request}->{$wheel_id};
   }
 
@@ -288,16 +291,13 @@ sub poco_weeble_timeout {
   };
 
   # Hey, we haven't sent back a response yet!
-  if (not $request->[REQ_STATE] & RS_POSTED) {
+  unless ($request->[REQ_STATE] & (RS_REDIRECTED | RS_POSTED)) {
 
     # Well, we have a response.  Isn't that nice?  Let's send it.
     if ($request->[REQ_STATE] & (RS_IN_CONTENT | RS_DONE)) {
       _finish_request($heap, $request, 0);
       return;
     }
-
-    # Shut down the connection so it's not reused.
-    $request->[REQ_CONNECTION]->wheel()->shutdown_input();
 
     # Post an error response back to the requesting session.
     DEBUG and warn "I/O: Disconnect, keepalive timeout or HTTP/1.0.";
@@ -355,19 +355,21 @@ sub poco_weeble_io_error {
     my $request = delete $heap->{request}->{$request_id};
     $request->remove_timeout;
 
-    # If there was a non-zero error, then something bad happened.  Post
-    # an error response back.
-    if ($errnum) {
-      $request->error(400, "$operation error $errnum: $errstr");
-      return;
-    }
-
     # Otherwise the remote end simply closed.  If we've got a
     # pending response, then post it back to the client.
     DEBUG and warn "STATE is ", $request->[REQ_STATE];
 
     # except when we're redirected
-    return if ($request->[REQ_STATE] == RS_REDIRECTED);
+    return if ($request->[REQ_STATE] & RS_REDIRECTED);
+
+    # If there was a non-zero error, then something bad happened.  Post
+    # an error response back, if we haven't posted anything before.
+    if ($errnum) {
+      unless ($request->[REQ_STATE] & RS_POSTED) {
+        $request->error(400, "$operation error $errnum: $errstr");
+      }
+      return;
+    }
 
     if (
       $request->[REQ_STATE] & (RS_IN_CONTENT | RS_DONE) and
@@ -428,7 +430,7 @@ sub poco_weeble_io_read {
   # Reset the timeout if we get data.
   $kernel->delay_adjust($request->timer, $heap->{factory}->timeout);
 
-  if ($request->[REQ_STATE] == RS_REDIRECTED) {
+  if ($request->[REQ_STATE] & RS_REDIRECTED) {
     DEBUG and warn "input for request that was redirected";
     return;
   }

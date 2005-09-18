@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: Makefile.PL 202 2005-08-02 15:18:11Z rcaputo $
+# $Id: Makefile.PL 222 2005-09-17 18:04:07Z rcaputo $
 
 use strict;
 use lib qw(./mylib);
@@ -21,14 +21,7 @@ WriteMakefile(
   NAME         => 'POE::Component::Client::HTTP',
   AUTHOR       => 'Rocco Caputo <rcaputo@cpan.org>',
   ABSTRACT     => 'Non-blocking/concurrent HTTP queries with POE',
-  VERSION_FROM => 'HTTP.pm',
-  PM           => {
-    'HTTP.pm'           => '$(INST_LIBDIR)/HTTP.pm',
-    'Request.pm'        => '$(INST_LIBDIR)/HTTP/Request.pm',
-    'RequestFactory.pm' => '$(INST_LIBDIR)/HTTP/RequestFactory.pm',
-    'HTTPHead.pm'       => '$(INST_LIBDIR)/../../Filter/HTTPHead.pm',
-    'HTTPChunk.pm'      => '$(INST_LIBDIR)/../../Filter/HTTPChunk.pm',
-  },
+  VERSION_FROM => 'lib/POE/Component/Client/HTTP.pm',
   PREREQ_PM    => \%prereq,
   dist         => {
     COMPRESS   => 'gzip -9f',

@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 01_request.t 193 2005-07-27 02:56:15Z rcaputo $
+# $Id: 01_request.t 223 2005-09-17 18:14:00Z rcaputo $
 # vim: filetype=perl
 
 use strict;
@@ -291,7 +291,7 @@ sub client_got_stream_response {
 # Create a weeble component.
 POE::Component::Client::HTTP->spawn(
   MaxSize           => MAX_BIG_REQUEST_SIZE,
-  Timeout           => 5,
+  Timeout           => 60,
   Protocol          => 'HTTP/1.1',
   ConnectionManager => $cm1,
 );

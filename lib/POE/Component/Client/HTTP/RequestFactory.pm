@@ -1,4 +1,4 @@
-# $Id: RequestFactory.pm 214 2005-09-08 17:48:08Z rcaputo $
+# $Id: RequestFactory.pm 222 2005-09-17 18:04:07Z rcaputo $
 
 package POE::Component::Client::HTTP::RequestFactory;
 use strict;

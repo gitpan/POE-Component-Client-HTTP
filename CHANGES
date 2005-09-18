@@ -1,3 +1,80 @@
+==============================
+9999-99-99 99:99:99 (untagged)
+==============================
+
+  2005-09-18 22:03:20 (r227) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Increase version for release. 
+
+  2005-09-18 18:35:41 (r226) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Applied Yuri Karaban's patch to unconditionally invalidate a socket
+    when there's a timeout. This is done to avoid stale responses on
+    reused sockets. 
+
+  2005-09-17 18:36:44 (r225) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Apply Yuri Karaban's patch to prevent double-responses on redirects.
+    This one was submitted through IRC, so there's no RT audit trail. 
+
+  2005-09-17 18:22:10 (r224) by rcaputo
+  lib/POE/Filter/HTTPChunk.pm M; lib/POE/Component/Client/HTTP.pm M
+
+    Remove tabs. Some day I'm gonna get sick of this and retabify
+    everything. Then you'll be sorry you ever crossed me, you damn
+    whitespace demons! 
+
+  2005-09-17 18:14:00 (r223) by rcaputo
+  t/01_request.t M; t/02_keepalive.t M
+
+    Increase the timeouts to 60 seconds. This should not affect most
+    people, as we expect the tests to pass relatively quickly. A
+    semi-anonymous user reported problems with the tests timing out too
+    quickly on his dialup in Thailand. This resolves his rt.cpan.org
+    ticket, number 14526. 
+
+  2005-09-17 18:04:07 (r222) by rcaputo
+  lib/POE/Component/Request.pm D;
+  lib/POE/Component/Client/HTTP/RequestFactory.pm A;
+  lib/POE/Component/Client/HTTP.pm A; lib/POE/Component/HTTP.pm D;
+  lib/POE/Component/RequestFactory.pm D; MANIFEST M; Makefile.PL M;
+  lib/POE/Component/Client/HTTP A; lib/POE/Filter/HTTPHead.pm M;
+  lib/POE/Component/Client/HTTP/Request.pm A
+
+    Finish applying suggestions by Rob Bloodgood. Resolves rt.cpan.org
+    ticket 14593. 
+
+  2005-09-17 17:56:16 (r221) by rcaputo
+  lib/POE/Component/Request.pm A; lib/POE/Filter A;
+  lib/POE/Filter/HTTPChunk.pm A; HTTPChunk.pm D; Request.pm D;
+  lib/POE/Component/HTTP.pm A; lib A; lib/POE/Component/RequestFactory.pm
+  A; lib/POE A; lib/POE/Component/Client A; HTTP.pm D;
+  lib/POE/Filter/HTTPHead.pm A; RequestFactory.pm D; lib/POE/Component A;
+  HTTPHead.pm D
+
+    Partial working directory rearrange, per rt.cpan.org ticket 14593. 
+
+  2005-09-17 17:47:58 (r220) by rcaputo; HTTPChunk.pm M
+
+    A mostly anonymous guest reported that Apache 1.3 doesn't follow
+    RFC2616 3.6.1 as closely as POE::Filter::HTTPChunk seems to. He
+    submitted (and I am applying) a patch to compensate for the
+    discrepancy. Resolves rt.cpan.org ticket 14620. 
+
+  2005-09-17 17:37:43 (r219) by rcaputo; HTTP.pm M
+
+    Applied Yuri Karaban's patch to handle web servers that end
+    connections with TCP RST. This seems to happen a lot. Resolves
+    rt.cpan.org ticket 14623. 
+
+  2005-09-17 17:09:11 (r218) by rcaputo; Request.pm M
+
+    Applied Yuri Karaban's patch to correctly interpret FollowRedirects.
+    This resolves rt.cpan.org ticket 14630. 
+
 =========================
 2005-09-08 17:55:43 v0_71
 =========================
