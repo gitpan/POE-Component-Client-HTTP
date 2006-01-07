@@ -1,6 +1,29 @@
-==============================
-9999-99-99 99:99:99 (untagged)
-==============================
+=========================
+2006-01-07 23:19:30 v0_73
+=========================
+
+  2006-01-07 23:17:30 (r236) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    New version for new release. 
+
+  2006-01-07 23:16:44 (r235) by rcaputo
+  lib/POE/Component/Client/HTTP/RequestFactory.pm M
+
+    Avoid warnings if proxying without a host header. 
+
+  2006-01-07 23:14:28 (r234) by rcaputo; t/01_request.t M
+
+    Skip SSL tests if POE::Component::SSLify isn't loaded. Thanks to
+    Andrew Chen for spotting the error. 
+
+  2005-09-19 02:22:02 (r233) by rcaputo; .releaserc A
+
+    Beginning to use Module::Release for releases. 
+
+=========================
+2005-09-18 23:46:42 v0_72
+=========================
 
   2005-09-18 22:03:20 (r227) by rcaputo
   lib/POE/Component/Client/HTTP.pm M
@@ -685,21 +708,6 @@
     r3233@fangorn: martijn | 2004-11-04 20:17:31 +0100
 
     initial import
-
-=========================
-2004-10-02 15:37:11 v0_65
-=========================
-
-  2004-10-02 15:37:11 (r114) by rcaputo; HTTP.pm M
-
-    Bump version to 0.65 for release. 
-
-  2004-10-01 04:04:39 (r113) by rcaputo; HTTP.pm M
-
-    David Davis discovered that HTTP response headers may be discarded if
-    they are incomplete at the end of a read buffer. This commits a fix
-    for his findings: Don't discard the remaining read buffer if we're
-    still processing headers. 
 
 ==============
 End of Excerpt

@@ -1,4 +1,4 @@
-# $Id: HTTP.pm 227 2005-09-18 22:03:20Z rcaputo $
+# $Id: HTTP.pm 236 2006-01-07 23:17:30Z rcaputo $
 
 package POE::Component::Client::HTTP;
 
@@ -11,7 +11,7 @@ sub DEBUG      () { 0 }
 sub DEBUG_DATA () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.72';
+$VERSION = '0.73';
 
 use Carp qw(croak);
 use POSIX;
