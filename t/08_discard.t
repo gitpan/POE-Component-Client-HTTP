@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $Id: 08_discard.t 213 2005-09-04 18:55:34Z rcaputo $
+# $Id: 08_discard.t 242 2006-03-23 23:46:18Z rcaputo $
 # -*- perl -*-
 # vim: filetype=perl
 
@@ -18,6 +18,12 @@ POE::Component::Client::HTTP->spawn(
  Alias => 'ua',
  Timeout => 1
 );
+
+# We are testing against a localhost server.
+# Don't proxy, because localhost takes on new meaning.
+BEGIN {
+	delete $ENV{HTTP_PROXY};
+}
 
 POE::Session->create(
    inline_states => {
@@ -52,7 +58,7 @@ POE::Session->create(
       my $rsp = $rspp->[0];
 
       $kernel->delay('no_response'); # Clear timer
-      ok($rsp->code == 408, "received error 408");
+      ok($rsp->code == 408, "received error " . $rsp->code . " (wanted 408)");
       $kernel->post(Discard => 'shutdown');
     },
     no_response => sub {

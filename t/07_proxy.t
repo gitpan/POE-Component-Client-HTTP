@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $Id: 07_proxy.t 215 2005-09-08 17:48:59Z rcaputo $
+# $Id: 07_proxy.t 242 2006-03-23 23:46:18Z rcaputo $
 # -*- perl -*-
 # vim: filetype=perl
 
@@ -23,6 +23,11 @@ use HTTP::Request;
 use HTTP::Request::Common qw(GET PUT);
 
 use HTTP::Response;
+
+# We need some control over proxying here.
+BEGIN {
+	delete $ENV{HTTP_PROXY};
+}
 
 POE::Session->create(
    inline_states => {
@@ -79,7 +84,6 @@ POE::Session->create(
 
       # Test when no proxy set at all
       $kernel->post(NoProxy => request => test4_resp => GET $heap->{host});
-
     },
     test4_resp => sub {
       my ($kernel, $heap, $resp_pack) = @_[KERNEL, HEAP, ARG1];

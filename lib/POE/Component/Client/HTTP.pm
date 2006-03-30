@@ -1,4 +1,4 @@
-# $Id: HTTP.pm 236 2006-01-07 23:17:30Z rcaputo $
+# $Id: HTTP.pm 250 2006-03-30 05:33:09Z rcaputo $
 
 package POE::Component::Client::HTTP;
 
@@ -11,7 +11,7 @@ sub DEBUG      () { 0 }
 sub DEBUG_DATA () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.73';
+$VERSION = '0.74';
 
 use Carp qw(croak);
 use POSIX;
@@ -42,6 +42,11 @@ use POE qw(
 
 my %te_filters = (
   chunked => 'POE::Filter::HTTPChunk',
+);
+
+my %supported_schemes = (
+  http  => 1,
+  https => 1,
 );
 
 # }}} INIT
@@ -151,6 +156,21 @@ sub poco_weeble_request {
     $response_event, $http_request, $tag, $progress_event,
     $proxy_override
   ) = @_[KERNEL, HEAP, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4];
+
+  unless ($supported_schemes{$http_request->uri->scheme}) {
+    my $rsp = HTTP::Response->new(
+       400 => 'Bad Request', [],
+       "<html>\n"
+       . "<HEAD><TITLE>Error: Bad Request</TITLE></HEAD>\n"
+       . "<BODY>\n"
+       . "<H1>Error: Bad Request</H1>\n"
+       . "Unsupported URI scheme\n"
+       . "</BODY>\n"
+       . "</HTML>\n"
+      );
+    $kernel->post($sender, $response_event, [$http_request, $tag], [$rsp]);
+    return;
+  }
 
   if (defined $proxy_override) {
     POE::Component::Client::HTTP::RequestFactory->parse_proxy($proxy_override);
@@ -349,7 +369,7 @@ sub poco_weeble_io_error {
   my $request_id = delete $heap->{wheel_to_request}->{$wheel_id};
   #K or die "!!!: unexpectedly undefined request ID" unless defined $request_id;
 
-  if ($request_id ) {
+  if ($request_id) {
 
     DEBUG and warn "I/O: removing request $request_id";
     my $request = delete $heap->{request}->{$request_id};
@@ -402,6 +422,7 @@ sub poco_weeble_io_error {
         return;
       }
     }
+
     # We haven't built a proper response.  Send back an error.
     $request->error (400, "incomplete response $request_id");
   }
@@ -421,11 +442,14 @@ sub poco_weeble_io_read {
   DEBUG and warn "I/O: wheel $wheel_id got input...";
   DEBUG_DATA and warn (ref($input) ? $input->as_string : _hexdump($input));
 
+  # TODO - So, which is it?  Return, or die?
   return unless defined $request_id;
   die unless defined $request_id;
   my $request = $heap->{request}->{$request_id};
   return unless defined $request;
-  DEBUG and warn "REQUEST is $request";
+  DEBUG and warn(
+    "REQUEST $request_id is $request <" . $request->[REQ_REQUEST]->uri . ">"
+  );
 
   # Reset the timeout if we get data.
   $kernel->delay_adjust($request->timer, $heap->{factory}->timeout);
@@ -467,30 +491,33 @@ sub poco_weeble_io_read {
         and $input->content_length() == 0
       )
     ) {
+      if (_try_redirect($request_id, $input, $request)) {
+        my $old_request = delete $heap->{request}->{$request_id};
+        if (defined $old_request) {
+          DEBUG and warn "I/O: removed request $request_id";
+          $old_request->remove_timeout();
+          $old_request->[REQ_CONNECTION] = undef;
+        }
+        return;
+      }
       $request->[REQ_STATE] |= RS_DONE;
+      $request->remove_timeout();
+      _finish_request($heap, $request, 1);
+      return;
     }
     else {
       $request->[REQ_STATE] = RS_IN_CONTENT;
-      if (my $newrequest = $request->check_redirect) {
-        #FIXME: probably want to find out when the content from this
-        #       request is in, and only then do the new request, so we
-        #       can reuse the connection.
-        DEBUG and warn "Redirected $request_id ", $input->code;
-        my @proxy;
-        if ($request->[REQ_USING_PROXY]) {
-          push @proxy, (
-            'http://' .  $request->host .  ':' .  $request->port .  '/'
-          );
+      #FIXME: probably want to find out when the content from this
+      #       request is in, and only then do the new request, so we
+      #       can reuse the connection.
+      if (_try_redirect($request_id, $input, $request)) {
+        my $old_request = delete $heap->{request}->{$request_id};
+        if (defined $old_request) {
+          DEBUG and warn "I/O: removed request $request_id";
+          $old_request->remove_timeout();
+          $old_request->[REQ_CONNECTION] = undef;
         }
-        $kernel->yield (
-          request =>
-          $request,
-          $newrequest,
-          "_redir_".$request->ID,
-          $request->[REQ_PROG_POSTBACK],
-          @proxy
-        );
-        return
+        return;
       }
 
       # RFC 2616 14.41:  If multiple encodings have been applied to an
@@ -593,6 +620,39 @@ sub _hexdump {
 }
 
 # }}} _hexdump
+
+# Check for and handle redirect.  Returns true if redirect should
+# occur, or false if there's no redirect.
+
+sub _try_redirect {
+  my ($request_id, $input, $request) = @_;
+
+  if (my $newrequest = $request->check_redirect) {
+    DEBUG and warn(
+      "Redirected $request_id ", $input->code, " to <",
+      $newrequest->uri, ">"
+    );
+    my @proxy;
+    if ($request->[REQ_USING_PROXY]) {
+      push @proxy, (
+        'http://' .  $request->host .  ':' .  $request->port .  '/'
+      );
+    }
+
+    $poe_kernel->yield(
+      request =>
+      $request,
+      $newrequest,
+      "_redir_".$request->ID,
+      $request->[REQ_PROG_POSTBACK],
+      @proxy
+    );
+
+    return 1;
+  }
+
+  return;
+}
 
 # Complete a request. This was moved out of poco_weeble_io_error(). This is
 # not a POE function.
@@ -977,10 +1037,9 @@ distribution.
 
 =head1 BUGS
 
-The following spawn() parameters are accepted but not yet implemented:
-Timeout.
-
 There is no support for CGI_PROXY or CgiProxy.
+
+Secure HTTP (https) proxying is not supported at this time.
 
 =head1 AUTHOR & COPYRIGHTS
 
@@ -990,7 +1049,7 @@ POE::Component::Client::HTTP is
 
 =item
 
-Copyright 1999-2005 Rocco Caputo
+Copyright 1999-2006 Rocco Caputo
 
 =item
 

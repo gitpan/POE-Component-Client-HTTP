@@ -1,9 +1,10 @@
-# $Id: MANIFEST 222 2005-09-17 18:04:07Z rcaputo $
+# $Id: MANIFEST 249 2006-03-24 14:10:11Z rcaputo $
 CHANGES
 CHANGES.OLD
 MANIFEST
 Makefile.PL
 README
+examples/pcchget.perl
 lib/POE/Component/Client/HTTP.pm
 lib/POE/Component/Client/HTTP/Request.pm
 lib/POE/Component/Client/HTTP/RequestFactory.pm
@@ -17,8 +18,10 @@ t/05_request.t
 t/06_factory.t
 t/07_proxy.t
 t/08_discard.t
+t/09_bad_scheme.t
 t/50_davis_zerolength.t
 t/51_santos_status.t
 t/52_reiss_bad_length.t
 t/53_response_parser.t
+t/54_hzheng_head_redir.t
 META.yml                                 Module meta-data (added by MakeMaker)

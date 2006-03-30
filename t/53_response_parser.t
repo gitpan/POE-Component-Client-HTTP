@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: 53_response_parser.t 208 2005-08-08 16:09:57Z rcaputo $
+# $Id: 53_response_parser.t 242 2006-03-23 23:46:18Z rcaputo $
 # vim: filetype=perl
 
 # Generic response parser testing, especially for cases where
@@ -109,6 +109,12 @@ my @tests = (
     },
   ],
 );
+
+# We are testing against a localhost server.
+# Don't proxy, because localhost takes on new meaning.
+BEGIN {
+	delete $ENV{HTTP_PROXY};
+}
 
 # Spawn one server per test response.
 {

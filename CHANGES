@@ -1,4 +1,96 @@
 =========================
+2006-03-30 05:33:46 v0_74
+=========================
+
+  2006-03-30 05:33:09 (r250) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Ryan Tate posted in <http://perlmonks.org/?node_id=539816> about a
+    problem with timeouts. It turns out that when redirects created new
+    internal requests, the old ones weren't being cleaned up. As a
+    result, they had to time out before the component would stop. Thanks
+    to Tony Cook for pointing me at this message.
+    
+    Also beefed up the debugging a little, and bumped up the version for
+    a new release. 
+
+  2006-03-24 14:10:11 (r249) by rcaputo
+  examples A; lib/POE/Component/Client/HTTP/RequestFactory.pm M; MANIFEST
+  M; lib/POE/Component/Client/HTTP/Request.pm M; examples/pcchget.perl A
+
+    Added a test case by Toby Ovod-Everett from rt.cpan.org ticket
+    #18339. Fixed some tab damage, and corrected a typo. 
+
+  2006-03-24 13:40:18 (r248) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M; t/54_hzheng_head_redir.t M;
+  lib/POE/Component/Client/HTTP/Request.pm M
+
+    Resolved rt.cpan.org ticket #14679 by Hao Zheng. Ignoring
+    content-length headers for HEAD requests, especially since google.com
+    sends them. 
+
+  2006-03-24 05:34:32 (r247) by rcaputo
+  MANIFEST M; t/55_hzheng_empty_content.t D
+
+    This test case isn't needed. Now I gotta remove it. D'oh. 
+
+  2006-03-24 05:34:01 (r246) by rcaputo
+  MANIFEST M; t/55_hzheng_empty_content.t A
+
+    Commit a test case for rt.cpan.org ticket #15025. Except that the
+    ticket is moot---a previous fix also resolved this issue. D'oh. 
+
+  2006-03-24 05:24:48 (r245) by rcaputo; t/09_bad_scheme.t A
+
+    Forgot to commit this. It tests that bad schemes don't kill the
+    component outright. 
+
+  2006-03-24 05:18:16 (r244) by rcaputo
+  MANIFEST M; t/54_hzheng_head_redir.t A
+
+    Added a test case for Hao Zheng's bug report, rt.cpan.org ticket
+    #14679. 
+
+  2006-03-23 23:47:14 (r243) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Document the lack of https proxying as a bug. 
+
+  2006-03-23 23:46:18 (r242) by rcaputo
+  t/01_request.t M; t/08_discard.t M; t/53_response_parser.t M;
+  t/07_proxy.t M
+
+    Some tests require specific proxy environments. Especially the tests
+    that include a localhost web server, because "localhost" may mean
+    something else to a proxy server. 
+
+  2006-03-23 23:45:08 (r241) by rcaputo
+  lib/POE/Component/Client/HTTP/RequestFactory.pm M
+
+    We currently don't support https proxying. Bypass proxying for https
+    requests. Resolves part of rt.cpan.org ticket #16675. 
+
+  2006-03-23 23:44:21 (r240) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Follow redirects for bodiless responses. Resolves part of rt.cpan.org
+    ticket #16675. 
+
+  2006-03-23 14:56:16 (r239) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M; MANIFEST M
+
+    Applied Yuri Karaban's test case and patch for a fatal error that
+    occurred when giving the component URLs with schemes it could not
+    handle. This resolves rt.cpan.org ticket #17599. 
+
+  2006-03-17 05:46:48 (r238) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    David Davis' friend patched this so it would work with MSN.
+    Essentially, force the request to be finished after headers on a HEAD
+    response, certain response codes, or 0-length replies. 
+
+=========================
 2006-01-07 23:19:30 v0_73
 =========================
 

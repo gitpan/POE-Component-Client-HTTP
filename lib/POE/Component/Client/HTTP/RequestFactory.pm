@@ -1,4 +1,4 @@
-# $Id: RequestFactory.pm 235 2006-01-07 23:16:44Z rcaputo $
+# $Id: RequestFactory.pm 249 2006-03-24 14:10:11Z rcaputo $
 
 package POE::Component::Client::HTTP::RequestFactory;
 use strict;
@@ -15,7 +15,7 @@ sub FCT_PROTOCOL        () {  3 }
 sub FCT_COOKIEJAR       () {  4 }
 sub FCT_FROM            () {  5 }
 sub FCT_NOPROXY         () {  6 }
-sub FCT_PROXY           () {  7 }
+sub FCT_HTTP_PROXY      () {  7 }
 sub FCT_FOLLOWREDIRECTS () {  8 }
 sub FCT_TIMEOUT         () {  9 }
 
@@ -143,7 +143,7 @@ sub new {
     $cookie_jar,       # FCT_COOKIEJAR
     $from,             # FCT_FROM
     $no_proxy,         # FCT_NOPROXY
-    $proxy,            # FCT_PROXY
+    $proxy,            # FCT_HTTP_PROXY
     $follow_redirects, # FCT_FOLLOWREDIRECTS
     $timeout,          # FCT_TIMEOUT
   ];
@@ -281,8 +281,13 @@ sub create_request {
   # MEXNIX 2002-06-01: If we have a proxy set, and the request URI is
   # not in our no_proxy, then use the proxy.  Otherwise use the
   # request URI.
-
-  my $proxy = $proxy_override || $self->[FCT_PROXY];
+  #
+  # RCAPUTO 2006-03-23: We only support http proxying right now.
+  # Avoid proxying if this isn't an http request.
+  my $proxy = $proxy_override;
+  if ($http_request->uri->scheme() eq "http") {
+    $proxy ||= $self->[FCT_HTTP_PROXY];
+  }
 
   if (defined $proxy) {
   # This request qualifies for proxying.  Replace the host and port
@@ -291,9 +296,9 @@ sub create_request {
     my $host = $http_request->uri->host;
 
     undef $proxy if (
-			!defined($host) or
+      !defined($host) or
       _in_no_proxy ($host, $self->[FCT_NOPROXY])
-		);
+    );
   }
 
   my $request = POE::Component::Client::HTTP::Request->new (
@@ -306,7 +311,7 @@ sub create_request {
   );
 
   if (defined $last_request) {
-    $request->does_redirect ($last_request);
+    $request->does_redirect($last_request);
   }
   return $request;
 }
