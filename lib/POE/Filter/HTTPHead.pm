@@ -1,7 +1,9 @@
-# $Id: HTTPHead.pm 222 2005-09-17 18:04:07Z rcaputo $
+# $Id: HTTPHead.pm 252 2006-05-10 05:19:12Z woggle $
 
 package POE::Filter::HTTPHead_Line;
 use strict;
+
+use base 'POE::Filter';
 
 use HTTP::Response;
 

@@ -1,4 +1,4 @@
-# $Id: HTTP.pm 250 2006-03-30 05:33:09Z rcaputo $
+# $Id: HTTP.pm 258 2006-05-21 21:08:33Z rcaputo $
 
 package POE::Component::Client::HTTP;
 
@@ -11,14 +11,10 @@ sub DEBUG      () { 0 }
 sub DEBUG_DATA () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.74';
+$VERSION = '0.75';
 
 use Carp qw(croak);
-use POSIX;
-use Symbol qw(gensym);
 use HTTP::Response;
-use HTTP::Status qw(status_message);
-use URI;
 
 use POE::Component::Client::HTTP::RequestFactory;
 use POE::Component::Client::HTTP::Request qw(:states :fields);
@@ -34,10 +30,9 @@ BEGIN {
 }
 
 use POE qw(
-  Wheel::SocketFactory Wheel::ReadWrite
   Driver::SysRW Filter::Stream
   Filter::HTTPHead Filter::HTTPChunk
-  Component::Client::DNS Component::Client::Keepalive
+  Component::Client::Keepalive
 );
 
 my %te_filters = (
@@ -88,6 +83,7 @@ sub spawn {
       # Public interface.
       request                => \&poco_weeble_request,
       pending_requests_count => \&poco_weeble_pending_requests_count,
+      'shutdown'             => \&poco_weeble_shutdown,
 
       # Client::Keepalive interface.
       got_connect_done  => \&poco_weeble_connect_done,
@@ -102,9 +98,10 @@ sub spawn {
       remove_request    => \&poco_weeble_remove_request,
     },
     heap => {
-      alias   => $alias,
-      factory => $request_factory,
-      cm      => $cm,
+      alias       => $alias,
+      factory     => $request_factory,
+      cm          => $cm,
+      is_shutdown => 0,
     },
   );
 
@@ -131,10 +128,14 @@ sub poco_weeble_start {
 # {{{ poco_weeble_stop
 
 sub poco_weeble_stop {
-  my $heap = shift;
+  my $heap = $_[HEAP];
   my $request = delete $heap->{request};
-  $request->remove_timeout() if $request;
-  DEBUG and warn "$heap->{alias} stopped.";
+
+  foreach my $request_rec (values %$request) {
+    $request_rec->remove_timeout();
+  }
+
+  DEBUG and warn "Client::HTTP (alias=$heap->{alias}) stopped.";
 }
 
 # }}} poco_weeble_stop
@@ -168,6 +169,24 @@ sub poco_weeble_request {
        . "</BODY>\n"
        . "</HTML>\n"
       );
+    $rsp->request($http_request);
+    $kernel->post($sender, $response_event, [$http_request, $tag], [$rsp]);
+    return;
+  }
+
+  if ($heap->{is_shutdown}) {
+    my $rsp = HTTP::Response->new(
+       408 => 'Request timed out (component shut down)', [],
+       "<html>\n"
+       . "<HEAD><TITLE>Error: Request timed out (component shut down)"
+       . "</TITLE></HEAD>\n"
+       . "<BODY>\n"
+       . "<H1>Error: Request Timeout</H1>\n"
+       . "Request timed out (component shut down)\n"
+       . "</BODY>\n"
+       . "</HTML>\n"
+      );
+    $rsp->request($http_request);
     $kernel->post($sender, $response_event, [$http_request, $tag], [$rsp]);
     return;
   }
@@ -241,7 +260,6 @@ sub poco_weeble_connect_done {
     $heap->{wheel_to_request}->{ $new_wheel->ID() } = $request_id;
 
     $request->[REQ_CONNECTION] = $connection;
-
     $request->create_timer ($heap->{factory}->timeout);
     $request->send_to_wheel;
   }
@@ -417,6 +435,7 @@ sub poco_weeble_io_error {
           200, 'OK', [ 'Content-Type' => 'text/html' ], $text
         );
         $request->[REQ_RESPONSE]->protocol('HTTP/0.9');
+        $request->[REQ_RESPONSE]->request($request->[REQ_REQUEST]);
         $request->[REQ_STATE] = RS_DONE;
         $request->return_response;
         return;
@@ -445,6 +464,7 @@ sub poco_weeble_io_read {
   # TODO - So, which is it?  Return, or die?
   return unless defined $request_id;
   die unless defined $request_id;
+
   my $request = $heap->{request}->{$request_id};
   return unless defined $request;
   DEBUG and warn(
@@ -493,6 +513,7 @@ sub poco_weeble_io_read {
     ) {
       if (_try_redirect($request_id, $input, $request)) {
         my $old_request = delete $heap->{request}->{$request_id};
+        delete $heap->{wheel_to_request}->{$wheel_id};
         if (defined $old_request) {
           DEBUG and warn "I/O: removed request $request_id";
           $old_request->remove_timeout();
@@ -506,15 +527,18 @@ sub poco_weeble_io_read {
       return;
     }
     else {
-      $request->[REQ_STATE] = RS_IN_CONTENT;
+      $request->[REQ_STATE] |= RS_IN_CONTENT;
+      $request->[REQ_STATE] &= ~RS_IN_HEAD;
       #FIXME: probably want to find out when the content from this
       #       request is in, and only then do the new request, so we
       #       can reuse the connection.
       if (_try_redirect($request_id, $input, $request)) {
         my $old_request = delete $heap->{request}->{$request_id};
+        delete $heap->{wheel_to_request}->{$wheel_id};
         if (defined $old_request) {
           DEBUG and warn "I/O: removed request $request_id";
           $old_request->remove_timeout();
+          $old_request->[REQ_CONNECTION]->close();
           $old_request->[REQ_CONNECTION] = undef;
         }
         return;
@@ -676,10 +700,12 @@ sub _finish_request {
   # KeepAlive: added the RS_POSTED flag
   $request->[REQ_STATE] |= RS_POSTED;
 
-  my $wheel_id = $request->wheel->ID;
+  my $wheel_id = defined $request->wheel ? $request->wheel->ID : "(undef)";
   DEBUG and warn "Wheel from request is ", $wheel_id;
   # clean up the request
   my $address = "$request->[REQ_HOST]:$request->[REQ_PORT]";
+
+  DEBUG and warn "address is $address";
 
   if ($wait) {
     #wait a bit with removing the request, so there's
@@ -688,12 +714,19 @@ sub _finish_request {
     my $alarm_id = $poe_kernel->delay_set('remove_request', 0.5, $request_id);
 
     # remove the old timeout first
+    DEBUG and warn "delay_set; now remove_timeout()";
     $request->remove_timeout();
+    DEBUG and warn "removed timeout; now timer()"; 
     $request->timer($alarm_id);
   }
   else {
+    # Virtually identical to _remove_request.
+    # TODO - Make a common sub to handle both cases?
     DEBUG and warn "I/O: removing request $request_id";
     my $request = delete $heap->{request}->{$request_id};
+    if (my $wheel = $request->wheel) {
+      delete $heap->{wheel_to_request}->{$wheel->ID};
+    }
     $request->remove_timeout() if $request;
   }
 }
@@ -708,9 +741,46 @@ sub poco_weeble_remove_request {
   if (defined $request) {
     DEBUG and warn "I/O: removed request $request_id";
     $request->remove_timeout();
+    if (my $wheel = $request->wheel) {
+      delete $heap->{wheel_to_request}->{$wheel->ID};
+    }
   }
 }
 #}}} _remove_request
+
+# Shut down the entire component.
+sub poco_weeble_shutdown {
+  my ($kernel, $heap) = @_[KERNEL, HEAP];
+
+  $heap->{is_shut_down} = 1;
+
+  my @request_ids = keys %{$heap->{request}};
+  foreach my $request_id (@request_ids) {
+    my $request = delete $heap->{request}{$request_id};
+    if (defined $request) {
+      DEBUG and warn "SHT: Shutdown is canceling request $request_id";
+      $request->remove_timeout();
+      if (my $wheel = $request->wheel) {
+        my $wheel_id = $wheel->ID;
+        DEBUG and warn "SHT: Request $request_id canceling wheel $wheel_id";
+        delete $heap->{wheel_to_request}{$wheel_id};
+      }
+      unless ($request->[REQ_STATE] & RS_POSTED) {
+        $request->error(408, "Request timed out (component shut down)");
+      }
+    }
+  }
+
+  # Shut down the connection manager subcomponent.
+  if (defined $heap->{cm}) {
+    DEBUG and warn "SHT: Client::HTTP shutting down Client::Keepalive";
+    $heap->{cm}->shutdown();
+    delete $heap->{cm};
+  }
+
+  # Final cleanup of this component.
+  $kernel->alias_remove($heap->{alias});
+}
 
 1;
 
@@ -961,6 +1031,11 @@ must be invoked with $kernel->call().
 
   my $count = $kernel->call('ua' => 'pending_requests_count');
 
+=head2 shutdown
+
+Responds to all pending requests with 408 (request timeout), and then
+shuts down the component and all subcomponents.
+
 =head1 SENT EVENTS
 
 =head2 response handler
@@ -1040,6 +1115,13 @@ distribution.
 There is no support for CGI_PROXY or CgiProxy.
 
 Secure HTTP (https) proxying is not supported at this time.
+
+There is no object oriented interface.  See
+L<POE::Component::Client::Keepalive> and
+L<POE::Component::Client::DNS> for examples of a decent OO interface.
+An OO interface here would allow us to return handles for each
+request, which in turn would give users the ability to manipulate
+(namely shutdown) individual requests.
 
 =head1 AUTHOR & COPYRIGHTS
 

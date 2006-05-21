@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $Id: 09_bad_scheme.t 245 2006-03-24 05:24:48Z rcaputo $
+# $Id: 09_bad_scheme.t 253 2006-05-10 05:20:55Z woggle $
 
 # Test case for POE::Component::Client::HTTP dying outright when given
 # bad schemes.
@@ -7,7 +7,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 2;
+use Test::More tests => 4;
 use POE qw(Component::Client::HTTP);
 use HTTP::Request::Common qw(GET);
 
@@ -20,9 +20,11 @@ POE::Session->create(
 			$_[KERNEL]->post(ua => request => bad_response => GET 'file://test/file.txt');
 		},
 		good_response => sub {
+                        ok(defined $_[ARG1]->[0]->request, 'good response has a corresponding request object');
 			$_[HEAP]->{good_response} = $_[ARG1]->[0]->code == 200;
 		},
 		bad_response => sub {
+                        ok(defined $_[ARG1]->[0]->request, 'bad response has a corresponding request object');
 			$_[HEAP]->{bad_response} = $_[ARG1]->[0]->code == 400;
 		},
 		_stop => sub {

@@ -1,4 +1,63 @@
 =========================
+2006-05-21 21:10:18 v0_75
+=========================
+
+  2006-05-21 21:08:33 (r258) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Document the shutdown message, and bump the version for a new
+    release. 
+
+  2006-05-21 21:05:32 (r257) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M; MANIFEST M;
+  lib/POE/Component/Client/HTTP/Request.pm M
+
+    Remove unnecessary includes (POSIX among others). Resolves
+    rt.cpan.org ticket #18922 [guest].
+    
+    Added a shutdown() method. Resolves rt.cpan.org ticket #12685. Thanks
+    to Fabricio Martínez for the request.
+    
+    Documented the need for individual-request shutdown. 
+
+  2006-05-16 20:48:55 (r256) by woggle
+  lib/POE/Component/Client/HTTP.pm M
+
+    Fix potential memory leak by removing in more cases wheel_to_request
+    entries when the corresponding request goes away. 
+
+  2006-05-11 20:48:14 (r255) by woggle
+  lib/POE/Component/Client/HTTP.pm M; MANIFEST M; t/56_redirect_excess.t
+  A
+
+    Fix problem where we might generate two reply events when we got
+    extra junk after a redirect and add test case for it. 
+
+  2006-05-10 20:48:45 (r254) by woggle
+  lib/POE/Component/Client/HTTP.pm M; MANIFEST M;
+  t/55_reiss_double_resp.t A; Makefile.PL M; t/52_reiss_bad_length.t M;
+  lib/POE/Component/Client/HTTP/Request.pm M
+
+    Close the connection when we abort reading the response in the middle
+    (includes redirects and requests over the maximum length); fixes
+    broken behavior where we might reuse the socket and take the rest of
+    the response as our new response. This requires new functionality in
+    PoCoCliKeepalive, so update Makefile.PL to reflect that. 
+
+  2006-05-10 05:20:55 (r253) by woggle
+  lib/POE/Component/Client/HTTP.pm M; t/09_bad_scheme.t M;
+  t/52_reiss_bad_length.t M; lib/POE/Component/Client/HTTP/Request.pm M
+
+    Modify some tests to make sure that $response->request() is defined
+    in more obscure cases (various internal error returns, etc.) and fix
+    some cases where it is not so the new tests pass. 
+
+  2006-05-10 05:19:12 (r252) by woggle; lib/POE/Filter/HTTPHead.pm M
+
+    Make this inherit from POE::Filter to be compatible with subversion
+    POE. 
+
+=========================
 2006-03-30 05:33:46 v0_74
 =========================
 

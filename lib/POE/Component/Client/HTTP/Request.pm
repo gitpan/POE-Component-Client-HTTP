@@ -1,4 +1,4 @@
-# $Id: Request.pm 249 2006-03-24 14:10:11Z rcaputo $
+# $Id: Request.pm 257 2006-05-21 21:05:32Z rcaputo $
 
 package POE::Component::Client::HTTP::Request;
 use strict;
@@ -291,6 +291,7 @@ sub add_content {
     );
     $self->[REQ_STATE] |= RS_DONE;
     $self->[REQ_STATE] &= ~RS_IN_CONTENT;
+    $self->[REQ_CONNECTION]->close();
     return 1;
   }
 
@@ -489,6 +490,8 @@ sub wheel {
     #$self->[REQ_WHEEL] = undef;
     #$self->[REQ_WHEEL] = $new_wheel;
   #}
+
+  return unless $self->[REQ_CONNECTION];
   return $self->[REQ_CONNECTION]->wheel;
 }
 
@@ -510,7 +513,9 @@ sub error {
   );
 
   $r->content ($m);
+  $r->request ($self->[REQ_REQUEST]);
   $self->[REQ_POSTBACK]->($r);
+  $self->[REQ_STATE] |= RS_POSTED;
 }
 
 sub connect_error {
