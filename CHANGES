@@ -1,4 +1,31 @@
 =========================
+2006-07-13 06:45:15 v0_77
+=========================
+
+  2006-07-13 06:43:38 (r265) by rcaputo; Makefile.PL M
+
+    Update the POE dependency, per Adam Kennedy's feedback. 
+
+  2006-07-13 06:42:47 (r264) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Document the ConnectionManager per Joel Bernsein's patch (plus
+    Jonathan Steinert's POD correction). Bump up the version for a
+    release. 
+
+  2006-07-12 19:39:56 (r263) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Doc patch for Joel Bernstein. It wasn't terribly clear that he could
+    cancel a request based on the stringified version of the
+    HTTP::Request object reference. Now I hope it is. 
+
+  2006-07-04 16:12:19 (r262) by rcaputo; t/54_hzheng_head_redir.t M
+
+    Resolve an issue where the target site redirects a variable number of
+    times depending on your location. 
+
+=========================
 2006-07-02 17:55:17 v0_76
 =========================
 

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: Makefile.PL 254 2006-05-10 20:48:45Z woggle $
+# $Id: Makefile.PL 265 2006-07-13 06:43:38Z rcaputo $
 
 use strict;
 use lib qw(./mylib);
@@ -9,7 +9,7 @@ use ExtUtils::MakeMaker;
 open(CHANGES, ">>CHANGES") and close CHANGES;
 
 my %prereq = (
-  'POE'             => 0.31,
+  'POE'             => 0.3202,
   'HTTP::Request'   => 1.30,
   'HTTP::Response'  => 1.37,
   'URI'             => 1.24,
