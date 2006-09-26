@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $Id: 08_discard.t 242 2006-03-23 23:46:18Z rcaputo $
+# $Id: 08_discard.t 273 2006-09-25 17:16:03Z rcaputo $
 # -*- perl -*-
 # vim: filetype=perl
 
@@ -22,7 +22,8 @@ POE::Component::Client::HTTP->spawn(
 # We are testing against a localhost server.
 # Don't proxy, because localhost takes on new meaning.
 BEGIN {
-	delete $ENV{HTTP_PROXY};
+  delete $ENV{HTTP_PROXY};
+  delete $ENV{http_proxy};
 }
 
 POE::Session->create(

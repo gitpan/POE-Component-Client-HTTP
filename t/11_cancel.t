@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id$
+# $Id: 11_cancel.t 267 2006-08-31 04:30:29Z rcaputo $
 # vim: filetype=perl
 
 use strict;

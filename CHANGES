@@ -1,4 +1,71 @@
 =========================
+2006-09-26 17:49:40 v0_78
+=========================
+
+  2006-09-26 17:49:22 (r277) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Release 0.78. 
+
+  2006-09-26 04:00:21 (r276) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Apply a fix by Harish J P at Yahoo. He found a race condition where
+    cleanup is sometimes performed twice on a request. The component
+    would try to call methods on undefined data members the second time
+    around, which is fatal. Resolves rt.cpan.org 21110. 
+
+  2006-09-26 03:56:52 (r275) by rcaputo; t/58_joel_cancel_multi.t M
+
+    Display more information if one of the tests fails. 
+
+  2006-09-25 17:32:57 (r274) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Remove trailing whitespace. 
+
+  2006-09-25 17:16:03 (r273) by rcaputo; t/08_discard.t M
+
+    Apply a patch by Tony Cook that avoids a test hang when running under
+    the CPAN shell. It sets an http_proxy environment variable, but the
+    test only deleted the all-uppercase version. 
+
+  2006-09-25 17:13:25 (r272) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M; t/57_joel_immed_cancel.t M
+
+    Fix a typo in the is_shut_down flag that Tony Cook discovered.
+    Resolves rt.cpan.org 20452. 
+
+  2006-09-25 10:22:30 (r271) by joel
+  lib/POE/Component/Client/HTTP.pm M; t/58_joel_cancel_multi.t M
+
+    fixed request-cancellation code to pass tests where request is
+    cancelled before the connection manager successfully connects
+
+  2006-09-23 23:46:31 (r270) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M; t/58_joel_cancel_multi.t A;
+  lib/POE/Component/Client/HTTP/Request.pm M
+
+    Add Joel Bernstein's test. 
+
+  2006-09-05 16:40:13 (r269) by rcaputo
+  t/57_joel_immed_cancel.t A; t/57_joel_rt21172.t D
+
+    Make the filename descriptive. 
+
+  2006-09-05 16:39:48 (r268) by rcaputo
+  MANIFEST M; t/57_joel_rt21172.t A
+
+    Add a test case for rt.cpan.org ticket 21172, reported by Joel
+    Bernstein. 
+
+  2006-08-31 04:30:29 (r267) by rcaputo
+  t/10_shutdown.t A; t/11_cancel.t M
+
+    Add a test that I forgot to include in subversion. Flag some files as
+    keyword-expanding. 
+
+=========================
 2006-07-13 06:45:15 v0_77
 =========================
 
@@ -211,301 +278,6 @@
   2005-09-19 02:22:02 (r233) by rcaputo; .releaserc A
 
     Beginning to use Module::Release for releases. 
-
-=========================
-2005-09-18 23:46:42 v0_72
-=========================
-
-  2005-09-18 22:03:20 (r227) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Increase version for release. 
-
-  2005-09-18 18:35:41 (r226) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Applied Yuri Karaban's patch to unconditionally invalidate a socket
-    when there's a timeout. This is done to avoid stale responses on
-    reused sockets. 
-
-  2005-09-17 18:36:44 (r225) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Apply Yuri Karaban's patch to prevent double-responses on redirects.
-    This one was submitted through IRC, so there's no RT audit trail. 
-
-  2005-09-17 18:22:10 (r224) by rcaputo
-  lib/POE/Filter/HTTPChunk.pm M; lib/POE/Component/Client/HTTP.pm M
-
-    Remove tabs. Some day I'm gonna get sick of this and retabify
-    everything. Then you'll be sorry you ever crossed me, you damn
-    whitespace demons! 
-
-  2005-09-17 18:14:00 (r223) by rcaputo
-  t/01_request.t M; t/02_keepalive.t M
-
-    Increase the timeouts to 60 seconds. This should not affect most
-    people, as we expect the tests to pass relatively quickly. A
-    semi-anonymous user reported problems with the tests timing out too
-    quickly on his dialup in Thailand. This resolves his rt.cpan.org
-    ticket, number 14526. 
-
-  2005-09-17 18:04:07 (r222) by rcaputo
-  lib/POE/Component/Request.pm D;
-  lib/POE/Component/Client/HTTP/RequestFactory.pm A;
-  lib/POE/Component/Client/HTTP.pm A; lib/POE/Component/HTTP.pm D;
-  lib/POE/Component/RequestFactory.pm D; MANIFEST M; Makefile.PL M;
-  lib/POE/Component/Client/HTTP A; lib/POE/Filter/HTTPHead.pm M;
-  lib/POE/Component/Client/HTTP/Request.pm A
-
-    Finish applying suggestions by Rob Bloodgood. Resolves rt.cpan.org
-    ticket 14593. 
-
-  2005-09-17 17:56:16 (r221) by rcaputo
-  lib/POE/Component/Request.pm A; lib/POE/Filter A;
-  lib/POE/Filter/HTTPChunk.pm A; HTTPChunk.pm D; Request.pm D;
-  lib/POE/Component/HTTP.pm A; lib A; lib/POE/Component/RequestFactory.pm
-  A; lib/POE A; lib/POE/Component/Client A; HTTP.pm D;
-  lib/POE/Filter/HTTPHead.pm A; RequestFactory.pm D; lib/POE/Component A;
-  HTTPHead.pm D
-
-    Partial working directory rearrange, per rt.cpan.org ticket 14593. 
-
-  2005-09-17 17:47:58 (r220) by rcaputo; HTTPChunk.pm M
-
-    A mostly anonymous guest reported that Apache 1.3 doesn't follow
-    RFC2616 3.6.1 as closely as POE::Filter::HTTPChunk seems to. He
-    submitted (and I am applying) a patch to compensate for the
-    discrepancy. Resolves rt.cpan.org ticket 14620. 
-
-  2005-09-17 17:37:43 (r219) by rcaputo; HTTP.pm M
-
-    Applied Yuri Karaban's patch to handle web servers that end
-    connections with TCP RST. This seems to happen a lot. Resolves
-    rt.cpan.org ticket 14623. 
-
-  2005-09-17 17:09:11 (r218) by rcaputo; Request.pm M
-
-    Applied Yuri Karaban's patch to correctly interpret FollowRedirects.
-    This resolves rt.cpan.org ticket 14630. 
-
-=========================
-2005-09-08 17:55:43 v0_71
-=========================
-
-  2005-09-08 17:53:57 (r216) by rcaputo; HTTP.pm M
-
-    Bump up the version for release. 
-
-  2005-09-08 17:48:59 (r215) by rcaputo; HTTP.pm M; t/07_proxy.t M
-
-    Apply Yuri Karaban's tests for preserving proxy settings through
-    redirects. Previously the proxy would be lost. 
-
-  2005-09-08 17:48:08 (r214) by rcaputo; RequestFactory.pm M
-
-    Add a Content-Length header if a request has content but no
-    Content-Length. I'm not sure this is the right thing to do in all
-    cases, but it does address a problem brought up on the mailing list. 
-
-  2005-09-04 18:55:34 (r213) by rcaputo
-  t/08_discard.t A; MANIFEST M; HTTP.pm M
-
-    Applied Yuri Karaban's patch for a case where Client::HTTP doesn't
-    send back a 408 (timeout) error response. Also his test case (thank
-    you, Yuri!). 
-
-  2005-09-01 13:59:29 (r212) by rcaputo; HTTP.pm M
-
-    Yuri Karaban fixed redirects to use the proxy of the original
-    request. 
-
-  2005-08-30 13:56:50 (r211) by rcaputo; RequestFactory.pm M
-
-    Yuri Karaban corrected an undefined value warning. This resolves
-    rt.cpan.org ticket 14365. 
-
-  2005-08-08 16:50:50 (r210) by rcaputo; MANIFEST M
-
-    Charles Reiss: You forgot to add t/07_proxy.t to MANIFEST.
-    
-    Rocco Caputo: Oh, heck. 
-
-  2005-08-08 16:20:16 (r209) by rcaputo; t/07_proxy.t A
-
-    Yuri Karaban fixed up proxy support a little while ago. Now he's
-    contributed tests for the proxy support so it should never lapse
-    again. Most excellent! 
-
-  2005-08-08 16:09:57 (r208) by rcaputo
-  t/03_head_filter.t M; t/53_response_parser.t M; HTTP.pm M; HTTPHead.pm
-  M
-
-    Charles Reiss patched the HTTP head parser to support HTTP/0.9
-    content-only responses. He added a test to t/53_response_parser.t,
-    and suggested a required change in t/03_head_filter.t. It used a
-    content-only message as a bad response, and suddenly it was good.
-    Something had to be done. 
-
-  2005-08-04 04:45:38 (r207) by rcaputo; HTTP.pm M
-
-    This commit fixes an error where the Filter::Stackable is empty when
-    Transfer-Encoding's last (i.e. first) coding marker is not supported.
-    It also documents the order that Transfer-Encoding's codings are
-    parsed in.
-    
-    It also documents a bug in HTTP/0.9 parsing. The bug relates to the
-    failing test in t/53_response_parser.t circa changeset:205. 
-
-  2005-08-04 04:41:58 (r206) by rcaputo; t/52_reiss_bad_length.t M
-
-    Insignificant changes related to a test case patch that was pulled
-    out and made into t/53_response_parser.t 
-
-  2005-08-04 04:41:15 (r205) by rcaputo
-  MANIFEST M; t/53_response_parser.t A
-
-    Created a new regression test framework for HTTP parser issues that
-    do return some type of response. This is a superset of the
-    functionality of t/52_reiss_bad_length.t, and perhaps the tests from
-    that file should be ported forward into this one. 
-
-  2005-08-02 19:14:09 (r204) by rcaputo; HTTP.pm M; RequestFactory.pm M
-
-    Applied Yuri Karaban's patch to support a different proxy for
-    potentially every request. This resolves rt.cpan.org tickets #13990
-    and #1700. 
-
-  2005-08-02 16:02:33 (r203) by rcaputo
-  Request.pm M; HTTP.pm M; RequestFactory.pm M
-
-    Yuri Karaban has updated proxy support to work with the new
-    Client::Keepalive connection code. Now we need some proxy tests. 
-
-  2005-08-02 15:18:11 (r202) by rcaputo; Makefile.PL M
-
-    We require the absolute latest PoCo::Client::Keepalive. 
-
-  2005-08-02 15:17:49 (r201) by rcaputo; HTTP.pm M
-
-    Update the Transfer-Encoding logic to preserve unknown encodings and
-    any that come later than the first one. It still uses pop(), which
-    assumes that encodings are read right-to-left. We're not sure if
-    that's correct, however. 
-
-  2005-08-02 14:24:42 (r200) by rcaputo
-  HTTPChunk.pm M; t/04_chunk_filter.t M
-
-    Yuri Karaban discovered that chunk lengths with trailing whitespace
-    weren't being recognized. The result was responses with empty
-    content. I've committed his fix (slightly fixed itself) and a test
-    case. This closes rt.cpan.org ticket 13973. 
-
-===========================
-2005-07-30 20:44:35 v0_7002
-===========================
-
-  2005-07-30 20:44:26 (r198) by rcaputo; HTTP.pm M
-
-    Bump version for release. 
-
-  2005-07-29 15:37:54 (r197) by rcaputo
-  t/52_reiss_bad_length.t M; HTTPHead.pm M
-
-    Charles Reiss sent in a test case for a crash related to invalid
-    status lines on HTTP responses. This commit adds his test case and a
-    fix for the problem. 
-
-  2005-07-28 03:27:36 (r196) by rcaputo
-  Request.pm M; t/52_reiss_bad_length.t M; HTTP.pm M; HTTPHead.pm M
-
-    Charles Reiss sent in a patch for the content-length issues he's been
-    having. The ones illustrated in t/52_reiss_bad_length.t. I'm just
-    applying them here, along with some tab squashing in other files. 
-
-  2005-07-27 22:31:00 (r195) by rcaputo
-  t/52_reiss_bad_length.t M; HTTP.pm M
-
-    Charles Reiss pointed out that a response containing just
-    "HTTP::Response" triggers an isa() check if HTTP::Response is loaded.
-    This commit includes his new test case and a small fix that first
-    checks whether input is some sort of Perl reference. 
-
-  2005-07-27 04:12:22 (r194) by rcaputo
-  MANIFEST M; t/52_reiss_bad_length.t A
-
-    Charles Reiss provided a test case for bad content-length headers.
-    They do not trigger responses of any kind! This adds his test case,
-    but it doesn't fix his issue. 
-
-  2005-07-27 02:56:15 (r193) by rcaputo; t/01_request.t M; HTTP.pm M
-
-    Charles Reiss pointed out that invalid URLs, such as "http:bad" would
-    cause the component to die rather than throw an error with code 400.
-    His patch, applied here, corrects this oversight. 
-
-  2005-07-24 22:00:50 (r192) by rcaputo; HTTP.pm M
-
-    Ensure that a timeout is removed wherever its request is deleted. 
-
-  2005-07-24 21:02:52 (r191) by rcaputo; t/02_keepalive.t M
-
-    Turn off debugging. I had left it on in the previous commit. 
-
-  2005-07-24 21:01:55 (r190) by rcaputo; t/02_keepalive.t M
-
-    I seem to have broken the keepalive test in a previous commit. This
-    fixes up the requests so the chain of responses matches expectations. 
-
-  2005-07-24 18:55:42 (r189) by rcaputo; Request.pm M; HTTP.pm M
-
-    Add in a hard die() if an active timer is overwritten. This is a big
-    problem, as the old timer will still fire if it hasn't been removed
-    previously.
-    
-    Set the request's REQ_TIMER to undef in remove_timeout() so multiple
-    calls to it won't attempt to alarm_remove() the timer again.
-    
-    Replace a $request->timer(undef) call with
-    $request->remove_timeout(). Setting the timer to undef does not call
-    alarm_remove(), but remove_timeout() does this necessary magic. 
-
-  2005-07-08 04:06:16 (r188) by rcaputo; t/02_keepalive.t M
-
-    Removed the last of the foreign web sites from the keep-alive tests. 
-
-  2005-07-08 03:31:01 (r187) by rcaputo; t/02_keepalive.t M
-
-    Replace Rob Bloodgood's test files with data served from
-    poe.perl.org. This eliminates some of the foreign web dependencies of
-    the keepalive tests. 
-
-  2005-07-08 02:51:59 (r186) by rcaputo
-  t/50_davis_zerolength.t M; t/51_santos_status.t A; MANIFEST M
-
-    Nilson Santos F. Jr. reported that bittorrent tracker responses
-    weren't being parsed properly. Many of them respond with a status
-    line and content---and no other headers. This commit adds a
-    regression test to verify that status+content responses are parsed
-    correctly. It closes rt.cpan.org ticket 12363. 
-
-  2005-07-07 14:35:07 (r185) by rcaputo
-  t/50_davis_zerolength.t A; MANIFEST M; HTTP.pm M
-
-    Dave Davis discovered that zero-length content causes HTTP.pm to
-    reach a state where a response isn't sent for the request. His bug
-    report, rt.cpan.org #13557, was very detailed and included a working
-    test case that has become t/50_davis_zerolength.t. 
-
-  2005-07-07 14:33:04 (r184) by rcaputo; t/02_keepalive.t M
-
-    Clean up some of the URLs left over in this test. Other URLs are
-    still being used, so they must be cleaned up later. 
-
-  2005-07-07 14:30:58 (r183) by rcaputo; Makefile.PL M
-
-    Remove the repository URL from svn-log.perl's command line. The
-    utility is smart enough to figure it out on its own now. 
 
 ==============
 End of Excerpt

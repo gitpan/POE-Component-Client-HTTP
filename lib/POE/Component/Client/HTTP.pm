@@ -1,4 +1,4 @@
-# $Id: HTTP.pm 264 2006-07-13 06:42:47Z rcaputo $
+# $Id: HTTP.pm 277 2006-09-26 17:49:22Z rcaputo $
 
 package POE::Component::Client::HTTP;
 
@@ -11,7 +11,7 @@ sub DEBUG      () { 0 }
 sub DEBUG_DATA () { 0 }
 
 use vars qw($VERSION);
-$VERSION = '0.77';
+$VERSION = '0.78';
 
 use Carp qw(croak);
 use HTTP::Response;
@@ -99,10 +99,10 @@ sub spawn {
       remove_request    => \&poco_weeble_remove_request,
     },
     heap => {
-      alias       => $alias,
-      factory     => $request_factory,
-      cm          => $cm,
-      is_shutdown => 0,
+      alias        => $alias,
+      factory      => $request_factory,
+      cm           => $cm,
+      is_shut_down => 0,
     },
   );
 
@@ -175,7 +175,7 @@ sub poco_weeble_request {
     return;
   }
 
-  if ($heap->{is_shutdown}) {
+  if ($heap->{is_shut_down}) {
     my $rsp = HTTP::Response->new(
        408 => 'Request timed out (component shut down)', [],
        "<html>\n"
@@ -210,9 +210,10 @@ sub poco_weeble_request {
     );
   }
 
+  my $cm_req_id;
   eval {
       # get a connection from Client::Keepalive
-      $heap->{cm}->allocate(
+      $request->[REQ_CONN_ID] = $heap->{cm}->allocate(
         scheme  => $request->scheme,
         addr    => $request->host,
         port    => $request->port,
@@ -262,7 +263,7 @@ sub poco_weeble_connect_done {
     $heap->{wheel_to_request}->{ $new_wheel->ID() } = $request_id;
 
     $request->[REQ_CONNECTION] = $connection;
-    $request->create_timer ($heap->{factory}->timeout);
+    $request->create_timer($heap->{factory}->timeout);
     $request->send_to_wheel;
   }
   else {
@@ -722,19 +723,21 @@ sub _finish_request {
     # remove the old timeout first
     DEBUG and warn "delay_set; now remove_timeout()";
     $request->remove_timeout();
-    DEBUG and warn "removed timeout; now timer()"; 
+    DEBUG and warn "removed timeout; now timer()";
     $request->timer($alarm_id);
   }
   else {
     # Virtually identical to _remove_request.
     # TODO - Make a common sub to handle both cases?
-    DEBUG and warn "I/O: removing request $request_id";
     my $request = delete $heap->{request}->{$request_id};
-    if (my $wheel = $request->wheel) {
-      delete $heap->{wheel_to_request}->{$wheel->ID};
-      delete $heap->{request_to_id}{$request->[REQ_REQUEST]};
+    if (defined $request) {
+      DEBUG and warn "I/O: removing request $request_id";
+      $request->remove_timeout();
+      if (my $wheel = $request->wheel) {
+        delete $heap->{wheel_to_request}->{$wheel->ID};
+        delete $heap->{request_to_id}{$request->[REQ_REQUEST]};
+      }
     }
-    $request->remove_timeout() if $request;
   }
 }
 
@@ -787,6 +790,11 @@ sub _internal_cancel {
   if ($request->[REQ_CONNECTION]) {
     $request->[REQ_CONNECTION]->close();
     $request->[REQ_CONNECTION] = undef;
+  }
+  else {
+    # Didn't connect yet; inform connection manager to cancel
+    # connection request.
+    $heap->{cm}->deallocate($request_id);
   }
 
   unless ($request->[REQ_STATE] & RS_POSTED) {

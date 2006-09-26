@@ -1,4 +1,4 @@
-# $Id: MANIFEST 260 2006-07-02 17:54:51Z rcaputo $
+# $Id: MANIFEST 268 2006-09-05 16:39:48Z rcaputo $
 CHANGES
 CHANGES.OLD
 MANIFEST
@@ -28,4 +28,5 @@ t/53_response_parser.t
 t/54_hzheng_head_redir.t
 t/55_reiss_double_resp.t
 t/56_redirect_excess.t
+t/57_joel_immed_cancel.t
 META.yml                                 Module meta-data (added by MakeMaker)
