@@ -1,6 +1,7 @@
-# $Id: HTTPHead.pm 252 2006-05-10 05:19:12Z woggle $
+# $Id: HTTPHead.pm 285 2006-10-14 06:04:39Z rcaputo $
 
 package POE::Filter::HTTPHead_Line;
+use warnings;
 use strict;
 
 use base 'POE::Filter';
@@ -72,7 +73,7 @@ sub get_one {
         return [];
       }
       DEBUG and warn "got more lines";
-      while ($self->[FRAMING_BUFFER]->[0] =~ /^[\t ]/) {
+      while ($self->[FRAMING_BUFFER]->[0] && $self->[FRAMING_BUFFER]->[0] =~ /^[\t ]/) {
         my $next_line = shift (@{$self->[FRAMING_BUFFER]});
         $next_line =~ s/^[\t ]+//;
         $line .= $next_line;
@@ -142,6 +143,13 @@ $VERSION = '0.01';
 use base qw(POE::Filter::Stackable);
 use POE::Filter::Line;
 
+=head2 new
+
+Creates a new filter to parse HTTP headers.  Takes no parameters, and
+returns a shiny new POE::Filter::HTTPHead object.
+
+=cut
+
 sub new {
   my $type = shift;
 
@@ -158,6 +166,13 @@ sub new {
 =head1 METHODS
 
 See L<POE::Filter> for documentation of the public API.
+
+=head2 get_pending
+
+Returns unparsed data pending in this filter's input buffer.  It's
+used by POE::Wheel objects to seamlessly switch between filters.
+
+Details may be found in the POE::Filter documentation.
 
 =cut
 

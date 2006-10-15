@@ -1,4 +1,4 @@
-# $Id: Request.pm 270 2006-09-23 23:46:31Z rcaputo $
+# $Id: Request.pm 287 2006-10-15 03:09:32Z rcaputo $
 
 package POE::Component::Client::HTTP::Request;
 use strict;
@@ -12,34 +12,33 @@ use HTTP::Status;
 # Unique request ID, independent of wheel and timer IDs.
 my $request_seq = 0;
 
-sub DEBUG () { 0 }
+use constant DEBUG => 0;
 
-sub REQ_ID            () {  0 }
-sub REQ_POSTBACK      () {  1 }
-sub REQ_CONNECTION    () {  2 }
-sub REQ_REQUEST       () {  3 }
-sub REQ_STATE         () {  4 }
-sub REQ_RESPONSE      () {  5 }
-sub REQ_BUFFER        () {  6 }
+use constant REQ_ID            =>  0;
+use constant REQ_POSTBACK      =>  1;
+use constant REQ_CONNECTION    =>  2;
+use constant REQ_REQUEST       =>  3;
+use constant REQ_STATE         =>  4;
+use constant REQ_RESPONSE      =>  5;
+use constant REQ_BUFFER        =>  6;
+use constant REQ_OCTETS_GOT    =>  8;
+use constant REQ_TIMER         =>  9;
+use constant REQ_PROG_POSTBACK => 10;
+use constant REQ_USING_PROXY   => 11;
+use constant REQ_HOST          => 12;
+use constant REQ_PORT          => 13;
+use constant REQ_HISTORY       => 14;
+use constant REQ_START_TIME    => 15;
+use constant REQ_FACTORY       => 16;
+use constant REQ_CONN_ID       => 17;
 
-sub REQ_OCTETS_GOT    () {  8 }
-sub REQ_TIMER         () {  9 }
-sub REQ_PROG_POSTBACK () { 10 }
-sub REQ_USING_PROXY   () { 11 }
-sub REQ_HOST          () { 12 }
-sub REQ_PORT          () { 13 }
-sub REQ_HISTORY       () { 14 }
-sub REQ_START_TIME    () { 15 }
-sub REQ_FACTORY       () { 16 }
-sub REQ_CONN_ID       () { 17 }
-
-sub RS_CONNECT      () { 0x01 }
-sub RS_SENDING      () { 0x02 }
-sub RS_IN_HEAD      () { 0x04 }
-sub RS_REDIRECTED   () { 0x08 }
-sub RS_IN_CONTENT   () { 0x20 }
-sub RS_DONE         () { 0x40 }
-sub RS_POSTED       () { 0x80 }
+use constant RS_CONNECT        => 0x01;
+use constant RS_SENDING        => 0x02;
+use constant RS_IN_HEAD        => 0x04;
+use constant RS_REDIRECTED     => 0x08;
+use constant RS_IN_CONTENT     => 0x20;
+use constant RS_DONE           => 0x40;
+use constant RS_POSTED         => 0x80;
 
 
 sub import {
@@ -91,12 +90,10 @@ sub new {
   croak "Request must be a HTTP::Request object"
     unless (UNIVERSAL::isa ($params{'Request'}, "HTTP::Request"));
 
-  #croak "need a Tag parameter" unless (defined $params{'Tag'});
-
   croak "need a Factory parameter" unless (defined $params{'Factory'});
 
-  my ($http_request, $postback, $tag, $progress, $factory) =
-    @params{qw(Request Postback Tag Progress Factory)};
+  my ($http_request, $postback, $progress, $factory) =
+    @params{qw(Request Postback Progress Factory)};
 
   my $request_id = ++$request_seq;
   DEBUG and warn "REQ: creating a request ($request_id)";
@@ -550,3 +547,185 @@ sub DESTROY {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+POE::Component::Client::HTTP::Request - an HTTP request class
+
+=head1 SYNOPSIS
+
+  # Used internally by POE::Component::Client::HTTP
+
+=head1 DESCRIPTION
+
+POE::Component::Client::HTTP::Request encapsulates the state of
+requests POE::Component::Client::HTTP requests throughout their life
+cycles.  There turns out to be a lot of state to manage.
+
+=head1 CONSTRUCTOR
+
+=head2 new NAMED_PARAMETERS
+
+Create a POE::Component::Client::HTTP object to manage a request.  The
+constructor takes several named parameters:
+
+=over 2
+
+=item Request => HTTP_REQUEST
+
+A POE::Component::Client::HTTP::Request object encapsulates a plain
+HTTP::Request.  Required.
+
+=item Factory => POE_COMPONENT_CLIENT_HTTP_REQUESTFACTORY
+
+The request may create additional requests during its lifetime, for
+example when following redirects.  The Factory parameter specifies the
+POE::Component::Client::HTTP::RequestFactory that may be used to
+create them.  Required.
+
+=item Postback => RESPONSE_POSTBACK
+
+POE::Component::Client::HTTP creates a postback that will be used to
+send responses to the requesting session.  Required.
+
+=item Progress => PROGRESS_POSTBACK
+
+Sets the progress notification if the user has requested progress
+events.  Optional.
+
+=item Proxy
+
+Sets the proxy used for this request, if requested by the user.
+Optional.
+
+=back
+
+=head1 METHODS
+
+=head2 ID
+
+Return the request's unique ID.
+
+=head2 return_response
+
+Sends a response back to the user's session.  Called by
+POE::Component::Client::HTTP when a complete response has arrived.
+
+=head2 add_eof
+
+Called by POE::Component::Client::HTTP to indicate EOF has arrived.
+
+=head2 add_content PARSED_DATA
+
+Called by POE::Component::Client::HTTP to add content data to an
+incrementally built response.  If PARSED_DATA is an object, it is
+treated like an HTTP::Headers object and its headers are assimilated
+into the response being built by the request.  Otherwise the
+PARSED_DATA is appended to the response's content.
+
+=head2 timer TIMER
+
+Accessor to manipulate the request's timeout timer.  Sets the
+request's timer if TIMER is specified, otherwise merely fetches the
+one currently associated with the request.
+
+=head2 create_timer TIMEOUT
+
+Creates and sets a timer for this request.  TIMEOUT is the number of
+seconds this request may live.
+
+=head2 remove_timeout
+
+Turn off the timer associated with this request, and discard it.
+
+=head2 postback POSTBACK
+
+Accessor to manipulate the postback associated with this request.
+Sets the postback if POSTBACK is defined, otherwise merely fetches it.
+
+=head2 does_redirect SOMETHING
+
+FIXME - Not sure what this accessor does.
+
+=head2 check_redirect
+
+Check whether the last response is a redirect, the request is
+permitted to follow redirects, and the maximum number of redirects has
+not been met.  Initiate a redirect if all conditions are favorable.
+
+=head2 send_to_wheel
+
+Transmit the request to the socket associated with this request.
+
+=head2 wheel
+
+An accessor to return the wheel associated with this request.
+
+=head2 error ERROR_CODE, ERROR_MESSAGE
+
+Generate an error response, and post it back to the user's session.
+
+=head2 connect_error CONNECT_FAILURE_MESSAGE
+
+Generate a connection error response, and post it back to the user's
+session.
+
+=head2 host
+
+Return the host this request is attempting to work with.
+
+=head2 port
+
+Return the port this request is attempting to work with.
+
+=head2 scheme
+
+Return the scheme for this request.
+
+=head1 SEE ALSO
+
+L<POE::Component::Client::HTTP>
+L<POE>
+
+=head1 BUGS
+
+None are currently known.
+
+=head1 AUTHOR & COPYRIGHTS
+
+POE::Component::Client::HTTP::Request is
+
+=over 2
+
+=item
+
+Copyright 2004-2005 Martijn van Beerl
+
+=item
+
+Copyright 2006 Rocco Caputo
+
+=back
+
+All rights are reserved.  POE::Component::Client::HTTP::Request is
+free software; you may redistribute it and/or modify it under the same
+terms as Perl itself.
+
+=head1 CONTRIBUTORS
+
+Your name could be here.
+
+=head1 CONTACT
+
+Rocco may be contacted by e-mail via L<mailto:rcaputo@cpan.org>, and
+Martijn may be contacted by email via L<mailto:martijn@cpan.org>.
+
+The preferred way to report bugs or requests is through RT though.
+See L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=POE-Component-Client-HTTP>
+or mail L<mailto:bug-POE-Component-Client-HTTP@rt.cpan.org>
+
+For questions, try the L<POE> mailing list (poe@perl.org)
+
+=cut

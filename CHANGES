@@ -1,4 +1,64 @@
 =========================
+2006-10-15 03:09:46 v0_79
+=========================
+
+  2006-10-15 03:09:32 (r287) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M;
+  lib/POE/Component/Client/HTTP/Request.pm M
+
+    Ready for 0.79. 
+
+  2006-10-15 02:56:46 (r286) by rcaputo
+  lib/POE/Component/Client/HTTP/RequestFactory.pm M;
+  lib/POE/Component/Client/HTTP/Request.pm M
+
+    Add more sketchy documentation to satisfy Jeff Bisbee's POD tests.
+    Some of it is sketchier than others because I'm documenting internal
+    classes that were contributed by others. 
+
+  2006-10-14 06:04:39 (r285) by rcaputo
+  lib/POE/Filter/HTTPChunk.pm M; lib/POE/Component/Client/HTTP.pm M;
+  lib/POE/Filter/HTTPHead.pm M
+
+    Flesh out some of the documentation FIXMEs from Jeff Bisbee's
+    previous commits. The POD tests don't all pass yet, but they're
+    inching closer to releasability. 
+
+  2006-10-14 04:40:40 (r284) by rcaputo; MANIFEST M
+
+    Add Jeff Bisbee's POD tests to the MANIFEST. 
+
+  2006-10-14 00:17:07 (r283) by jbisbee; META.yml A
+
+    Added META.yml file 
+
+  2006-10-14 00:13:53 (r282) by jbisbee
+  lib/POE/Filter/HTTPChunk.pm M;
+  lib/POE/Component/Client/HTTP/RequestFactory.pm M;
+  lib/POE/Component/Client/HTTP.pm M; t/13_pod_coverage.t A; t/12_pod.t
+  A; lib/POE/Filter/HTTPHead.pm M
+
+    Added pod and pod coverage tests Fixed warns in
+    POE::Filter::HTTPChunk in tests Use 'use constant' instead of subs
+    (to fix pod coverage warnings) Add stub pod for Rocco to fill in
+    (FIXME)
+
+  2006-10-06 22:34:03 (r281) by rcaputo
+  lib/POE/Filter/HTTPChunk.pm M; lib/POE/Filter/HTTPHead.pm M
+
+    POE::Filter::HTTPChunk wasn't a subclass of POE::Filter. Thanks to
+    "Chris" for reporting that it wouldn't work with Filter::Stackable. 
+
+  2006-09-28 04:18:11 (r280) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Credit Joel Bernstein and Portugal Telecom. 
+
+  2006-09-28 04:17:53 (r279) by rcaputo; Makefile.PL M
+
+    Require the fixed POE::Component::Client::KeepAlive. 
+
+=========================
 2006-09-26 17:49:40 v0_78
 =========================
 
