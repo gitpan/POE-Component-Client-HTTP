@@ -1,4 +1,71 @@
 =========================
+2007-01-01 04:23:40 v0_80
+=========================
+
+  2007-01-01 04:07:05 (r298) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Preparing a new release. 
+
+  2006-11-06 19:36:35 (r297) by jbisbee
+  lib/POE/Component/Client/HTTP.pm M
+
+    Fix head1 to by AUTHOR, LICENSE, & COPYRIGHT for CPANTS
+
+  2006-11-06 19:23:41 (r296) by rcaputo; Makefile.PL M
+
+    Set a LICENSE. Cheap kwalitee points!
+
+  2006-10-26 21:25:56 (r295) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Rob Bloodgood patched the gzip compression code to avoid compression
+    when the user cares about the received content size. Compression
+    makes the returned data size exceed the maximum request size in some
+    cases, including one test case. 
+
+  2006-10-25 06:55:14 (r294) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M; t/14_gzipped_content.t A; MANIFEST
+  M; Makefile.PL M; lib/POE/Component/Client/HTTP/Request.pm M
+
+    Apply Rob Bloodgood's patch to transparently decode non-streaming
+    content before it's returned. This gives us support for gzip
+    compressed content. Resolves long-standing rt.cpan.org ticket 8454. 
+
+  2006-10-18 16:02:05 (r293) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Add more notes about compression options, but the feature's still
+    commented out 'cause of brokenness. 
+
+  2006-10-18 08:03:35 (r292) by rcaputo
+  t/01_request.t M; lib/POE/Component/Client/HTTP.pm M;
+  lib/POE/Filter/HTTPHead.pm M; lib/POE/Component/Client/HTTP/Request.pm
+  M
+
+    Initial compression support. But it's broken, and I'm tired and can't
+    fix it tonight. It's committed (albeit commented out) in case someone
+    else feels like taking a stab at it before I get back to it. 
+
+  2006-10-17 17:07:49 (r291) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Pitufo asked in rt.cpan.org 20975 that the MaxSize limit not generate
+    a 400 error on an incomplete response. After much deliberation, I
+    decided that a 406 error (Not Acceptable) is more appropriate than
+    "Bad Request". That's the extent of this change. His original issue
+    (errors on truncated responses) remains, but I pointed out that HTTP
+    Range headers can do what he wants without throwing errors. 
+
+  2006-10-16 16:16:06 (r290) by jbisbee; META.yml M
+
+    add resources tag to META.yml file for cpants - has_license 
+
+  2006-10-15 03:14:06 (r289) by rcaputo; MANIFEST M
+
+    Oops. Add META.yml to MANIFEST. 
+
+=========================
 2006-10-15 03:09:46 v0_79
 =========================
 

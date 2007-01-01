@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: Makefile.PL 279 2006-09-28 04:17:53Z rcaputo $
+# $Id: Makefile.PL 296 2006-11-06 19:23:41Z rcaputo $
 
 use strict;
 use lib qw(./mylib);
@@ -9,10 +9,11 @@ use ExtUtils::MakeMaker;
 open(CHANGES, ">>CHANGES") and close CHANGES;
 
 my %prereq = (
-  'POE'             => 0.3202,
-  'HTTP::Request'   => 1.30,
-  'HTTP::Response'  => 1.37,
-  'URI'             => 1.24,
+  'POE'                => 0.3202,
+  'HTTP::Request'      => 1.30,
+  'HTTP::Response'     => 1.37,
+  'URI'                => 1.24,
+  'Net::HTTP::Methods' => 0.02,
   'POE::Component::Client::Keepalive' => 0.09,
 );
 
@@ -21,6 +22,7 @@ WriteMakefile(
   NAME         => 'POE::Component::Client::HTTP',
   AUTHOR       => 'Rocco Caputo <rcaputo@cpan.org>',
   ABSTRACT     => 'Non-blocking/concurrent HTTP queries with POE',
+  LICENSE      => 'perl',
   VERSION_FROM => 'lib/POE/Component/Client/HTTP.pm',
   PREREQ_PM    => \%prereq,
   dist         => {

@@ -1,4 +1,4 @@
-# $Id: HTTP.pm 287 2006-10-15 03:09:32Z rcaputo $
+# $Id: HTTP.pm 298 2007-01-01 04:07:05Z rcaputo $
 
 package POE::Component::Client::HTTP;
 
@@ -11,10 +11,11 @@ use constant DEBUG      => 0;
 use constant DEBUG_DATA => 0;
 
 use vars qw($VERSION);
-$VERSION = '0.79';
+$VERSION = '0.80';
 
 use Carp qw(croak);
 use HTTP::Response;
+use Net::HTTP::Methods;
 
 use POE::Component::Client::HTTP::RequestFactory;
 use POE::Component::Client::HTTP::Request qw(:states :fields);
@@ -35,9 +36,58 @@ use POE qw(
   Component::Client::Keepalive
 );
 
-my %te_filters = (
-  chunked => 'POE::Filter::HTTPChunk',
+# The Internet Assigned Numbers Authority (IANA) acts as a registry
+# for transfer-coding value tokens. Initially, the registry contains
+# the following tokens: "chunked" (section 3.6.1), "identity" (section
+# 3.6.2), "gzip" (section 3.5), "compress" (section 3.5), and
+# "deflate" (section 3.5).
+
+# FIXME - Haven't been able to test the compression options.
+# Comments for each filter are what HTTP::Message use.  Methods
+# without packages are from Compress::Zlib.
+
+# FIXME - Is it okay to be mixing content and transfer encodings in
+# this one table?
+
+my %te_possible_filters = (
+  'chunked'  => 'POE::Filter::HTTPChunk',
+  'identity' => 'POE::Filter::Stream',
+#  'gzip'     => 'POE::Filter::Zlib::Stream',  # Zlib: memGunzip
+#  'x-gzip'   => 'POE::Filter::Zlib::Stream',  # Zlib: memGunzip
+#  'x-bzip2'  => 'POE::Filter::Bzip2',         # Compress::BZip2::decompress
+#  'deflate'  => 'POE::Filter::Zlib::Stream',  # Zlib: uncompress / inflate
+#  'compress' => 'POE::Filter::LZW',           # unsupported
+  # FIXME - base64 = MIME::Base64::decode
+  # FIXME - quoted-printable = Mime::QuotedPrint::decode
 );
+
+my %te_filters;
+
+while (my ($encoding, $filter) = each %te_possible_filters) {
+  eval "use $filter";
+  next if $@;
+  $te_filters{$encoding} = $filter;
+}
+
+# The following defaults to 'chunked,identity' which is technically
+# correct but arguably useless.  It also stomps on gzip'd transport
+# because in the World Wild Web, Accept-Encoding is used to indicate
+# gzip readiness, but the server responds with 'Content-Encoding:
+# gzip', completely outside of TE encoding.
+#
+# Done this way so they appear in order of preference.
+# FIXME - Is the order important here?
+
+#my $accept_encoding = join(
+#  ",",
+#  grep { exists $te_filters{$_} }
+#  qw(x-bzip2 gzip x-gzip deflate compress chunked identity)
+#);
+
+# Set default accept encoding here, but DON'T SET later, if the
+# request is streaming.
+
+my $accept_encoding = Net::HTTP::Methods::zlib_ok() ? 'gzip' : '';
 
 my %supported_schemes = (
   http  => 1,
@@ -194,6 +244,17 @@ sub _poco_weeble_request {
 
   if (defined $proxy_override) {
     POE::Component::Client::HTTP::RequestFactory->parse_proxy($proxy_override);
+  }
+
+  # Add an Accept-Encoding header if streaming is not enabled and the
+  # header doesn't already exist.
+  if (
+    !$heap->{factory}->is_streaming and
+    !$heap->{factory}->max_response_size and # or for limited chunk sizes
+    !defined($http_request->header('Accept-Encoding')) and
+    length($accept_encoding)
+  ) {
+    $http_request->header('Accept-Encoding', $accept_encoding);
   }
 
   my $request = $heap->{factory}->create_request(
@@ -448,7 +509,16 @@ sub _poco_weeble_io_error {
     }
 
     # We haven't built a proper response.  Send back an error.
-    $request->error (400, "incomplete response $request_id");
+    # Changed to 406 after considering rt.cpan.org 20975.
+    #
+    # 10.4.7 406 Not Acceptable
+    #
+    # The resource identified by the request is only capable of
+    # generating response entities which have content characteristics
+    # not acceptable according to the accept headers sent in the
+    # request.
+
+    $request->error (406, "Response larger than MaxSize - $request_id");
   }
 }
 
@@ -557,6 +627,8 @@ sub _poco_weeble_io_read {
 
       my ($filter, @filters);
 
+      # Transfer encoding.
+
       my $te = $input->header('Transfer-Encoding');
       if (defined $te) {
         my @te = split(/\s*,\s*/, lc($te));
@@ -575,6 +647,26 @@ sub _poco_weeble_io_read {
         }
       }
 
+      # Content encoding.
+
+      my $ce = $input->header('Content-Encoding');
+      if (defined $ce) {
+        my @ce = split(/\s*,\s*/, lc($ce));
+
+        while (@ce and exists $te_filters{$ce[-1]}) {
+          my $encoding = pop @ce;
+          my $fclass = $te_filters{$encoding};
+          push @filters, $fclass->new();
+        }
+
+        if (@ce) {
+          $input->header('Content-Encoding', join(', ', @ce));
+        }
+        else {
+          $input->header('Content-Encoding', undef);
+        }
+      }
+
       if (@filters > 1) {
         $filter = POE::Filter::Stackable->new( Filters => \@filters );
       }
@@ -582,6 +674,7 @@ sub _poco_weeble_io_read {
         $filter = $filters[0];
       }
       else {
+        # Punt if we have no specified filters.
         $filter = POE::Filter::Stream->new;
       }
 
@@ -1204,7 +1297,7 @@ There is no object oriented interface.  See
 L<POE::Component::Client::Keepalive> and
 L<POE::Component::Client::DNS> for examples of a decent OO interface.
 
-=head1 AUTHOR & COPYRIGHTS
+=head1 AUTHOR, COPYRIGHT, & LICENSE 
 
 POE::Component::Client::HTTP is
 

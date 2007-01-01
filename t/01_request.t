@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 01_request.t 242 2006-03-23 23:46:18Z rcaputo $
+# $Id: 01_request.t 292 2006-10-18 08:03:35Z rcaputo $
 # vim: filetype=perl
 
 use strict;
@@ -192,10 +192,10 @@ sub client_got_response {
     elsif ($http_response->code == 400) {
       ok("" eq $http_request->uri->host, '400 for malformed request 10');
     }
-		else {
-			warn $http_request->uri();
-			warn $http_response->as_string();
-		}
+    else {
+      warn $http_request->uri();
+      warn $http_response->as_string();
+    }
   }
 }
 
@@ -209,9 +209,14 @@ sub client_got_big_response {
   DEBUG and do {
     warn "client got big request...\n";
 
+    my $request_string = $http_request->as_string();
+    $request_string =~ s/^/| /mg;
+
     my $response_string = $http_response->as_string();
     $response_string =~ s/^/| /mg;
 
+    warn ",", '-' x 78, "\n";
+    warn $request_string;
     warn ",", '-' x 78, "\n";
     warn $response_string;
     warn "`", '-' x 78, "\n";

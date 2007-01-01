@@ -1,4 +1,4 @@
-# $Id: Request.pm 287 2006-10-15 03:09:32Z rcaputo $
+# $Id: Request.pm 294 2006-10-25 06:55:14Z rcaputo $
 
 package POE::Component::Client::HTTP::Request;
 use strict;
@@ -167,6 +167,16 @@ sub return_response {
   # if we are. that there's no ARG1 lets the client know we're done
   # with the content in the latter case
   if ($self->[REQ_STATE] & RS_DONE) {
+    DEBUG and warn(
+      "checking $response for content-encoding ", $self->[REQ_ID]
+    );
+    if ($response->header('content-encoding')) {
+      my $content;
+      # LWP likes to die on error.
+      eval { $content = $response->decoded_content };
+      if ($content) { $response->content($content); }
+    }
+
     DEBUG and warn "done; returning $response for ", $self->[REQ_ID];
     $self->[REQ_POSTBACK]->($self->[REQ_RESPONSE]);
     $self->[REQ_STATE] |= RS_POSTED;
@@ -195,7 +205,7 @@ sub add_eof {
 
   unless (defined $self->[REQ_RESPONSE]) {
     # XXX I don't know if this is actually used
-    $self->error(400, "incomplete response " . $self->[REQ_ID]);
+    $self->error(400, "incomplete response a " . $self->[REQ_ID]);
     return;
   }
 
@@ -218,7 +228,12 @@ sub add_eof {
       "got " . $self->[REQ_OCTETS_GOT] . " of " .
       $self->[REQ_RESPONSE]->content_length
     );
-    $self->error(400, "incomplete response " . $self->[REQ_ID]);
+    $self->error(
+      400,
+      "incomplete response b " . $self->[REQ_ID] . ".  Wanted " .
+      $self->[REQ_RESPONSE]->content_length() . " octets.  Got " .
+      $self->[REQ_OCTETS_GOT] . "."
+    );
   }
   else {
     $self->[REQ_STATE] |= RS_DONE;
@@ -484,11 +499,14 @@ sub send_to_wheel {
 sub wheel {
   my ($self) = @_;
 
+  # FIXME - We don't support older versions of POE.  Remove this chunk
+  # of code when we're not fixing something else.
+  #
   #if (defined $new_wheel) {
-    # Switch wheels.  This is cumbersome, but it works around a bug in
-    # older versions of POE.
-    #$self->[REQ_WHEEL] = undef;
-    #$self->[REQ_WHEEL] = $new_wheel;
+  #   Switch wheels.  This is cumbersome, but it works around a bug in
+  #   older versions of POE.
+  #  $self->[REQ_WHEEL] = undef;
+  #  $self->[REQ_WHEEL] = $new_wheel;
   #}
 
   return unless $self->[REQ_CONNECTION];

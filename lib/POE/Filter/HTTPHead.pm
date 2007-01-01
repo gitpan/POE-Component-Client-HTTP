@@ -1,4 +1,4 @@
-# $Id: HTTPHead.pm 285 2006-10-14 06:04:39Z rcaputo $
+# $Id: HTTPHead.pm 292 2006-10-18 08:03:35Z rcaputo $
 
 package POE::Filter::HTTPHead_Line;
 use warnings;
@@ -55,7 +55,7 @@ sub get_one {
       }
       else {
         # assume HTTP/0.9
-        my $resp = HTTP::Response->new ('200', 'OK', 
+        my $resp = HTTP::Response->new ('200', 'OK',
                     ['Content-Type' => 'text/html'], $line );
         $resp->protocol('HTTP/0.9');
         return [ $resp ];
