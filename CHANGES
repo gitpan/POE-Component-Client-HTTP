@@ -1,4 +1,39 @@
 =========================
+2007-02-09 02:00:07 v0_81
+=========================
+
+  2007-02-09 01:59:50 (r305) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    New release.
+
+  2007-02-04 05:55:44 (r304) by rcaputo; t/01_request.t M
+
+    People with OpenDNS get a 302 on a nonexistent domain. What's up with
+    THAT?! 
+
+  2007-02-04 05:54:52 (r303) by andyg; t/01_request.t M
+
+    Change callback params, so they're less likely to conflict with other
+    things
+
+  2007-02-04 05:43:34 (r302) by rcaputo; t/01_request.t M
+
+    Make the new chunked stream upload test unique. That is, make it
+    discernable from response 2. 
+
+  2007-02-04 05:34:32 (r301) by andyg; t/01_request.t M
+
+    Fix check_counts for new test
+
+  2007-02-04 05:22:30 (r300) by andyg
+  t/01_request.t M; lib/POE/Component/Client/HTTP.pm M;
+  lib/POE/Component/Client/HTTP/Request.pm M
+
+    Add support for supplying a callback in $request->content() to allow
+    for large file uploads without wasting memory. 
+
+=========================
 2007-01-01 04:23:40 v0_80
 =========================
 
@@ -382,29 +417,6 @@
     David Davis' friend patched this so it would work with MSN.
     Essentially, force the request to be finished after headers on a HEAD
     response, certain response codes, or 0-length replies. 
-
-=========================
-2006-01-07 23:19:30 v0_73
-=========================
-
-  2006-01-07 23:17:30 (r236) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    New version for new release. 
-
-  2006-01-07 23:16:44 (r235) by rcaputo
-  lib/POE/Component/Client/HTTP/RequestFactory.pm M
-
-    Avoid warnings if proxying without a host header. 
-
-  2006-01-07 23:14:28 (r234) by rcaputo; t/01_request.t M
-
-    Skip SSL tests if POE::Component::SSLify isn't loaded. Thanks to
-    Andrew Chen for spotting the error. 
-
-  2005-09-19 02:22:02 (r233) by rcaputo; .releaserc A
-
-    Beginning to use Module::Release for releases. 
 
 ==============
 End of Excerpt

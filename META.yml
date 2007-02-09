@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                POE-Component-Client-HTTP
-version:             0.80
+version:             0.81
 abstract:            Non-blocking/concurrent HTTP queries with POE
 license:             perl
 generated_by:        ExtUtils::MakeMaker version 6.31

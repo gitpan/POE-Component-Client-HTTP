@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 01_request.t 292 2006-10-18 08:03:35Z rcaputo $
+# $Id: 01_request.t 304 2007-02-04 05:55:44Z rcaputo $
 # vim: filetype=perl
 
 use strict;
@@ -18,11 +18,11 @@ sub MAX_STREAM_CHUNK_SIZE () { 1024 }  # Needed for agreement with test CGI.
 my ($tests, $has_sslify);
 BEGIN {
   if (grep /SSLify/, keys %INC) {
-    $tests = 14;
+    $tests = 15;
     $has_sslify = 1;
   }
   else {
-    $tests = 13;
+    $tests = 14;
   }
 }
 
@@ -57,6 +57,26 @@ sub client_start {
         ] # , Connection => 'close',
       ),
     ),
+  );
+
+  # Test callback in content()
+  my @chunks = (
+    'callback_one=ZZZ&',
+    'callback_two=YYY&',
+    'callback_three=XXX',
+  );
+
+  my $request = HTTP::Request->new(
+    POST => 'http://poe.perl.org/misc/test.cgi',
+    [
+      Content_Type   => 'application/x-www-form-urlencoded',
+      Content_Length => 52,
+    ],
+    sub { return shift @chunks },
+  );
+
+  $kernel->post(
+    weeble => request => got_response => $request
   );
 
   $kernel->post(
@@ -126,10 +146,10 @@ sub client_start {
   );
 
   if ($has_sslify) {
-    $kernel->yield( check_counts => 8 );
+    $kernel->yield( check_counts => 9 );
   }
   else {
-    $kernel->yield( check_counts => 7 );
+    $kernel->yield( check_counts => 8 );
   }
 }
 
@@ -182,8 +202,13 @@ sub client_got_response {
       ok(1, 'request 3') if $response_string =~ /cgi_field_fiv/;
       ok(1, 'request 5') if $request_path eq '';
       ok(1, 'request 4') if $request_path =~ m/projects\/poe/;
+      ok(1, 'callback-based upload') if $response_string =~ /callback/;
     }
-    elsif ($http_response->code == 500 or $http_response->code == 502) {
+    elsif (
+      $http_response->code == 500 or
+      $http_response->code == 502 or
+      $http_response->code == 302
+    ) {
       pass("request 6");
       # The next test assumes a particular responding server.
       # It's bogus is proxying is enabled through the environment.

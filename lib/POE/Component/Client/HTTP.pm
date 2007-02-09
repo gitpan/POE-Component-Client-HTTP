@@ -1,4 +1,4 @@
-# $Id: HTTP.pm 298 2007-01-01 04:07:05Z rcaputo $
+# $Id: HTTP.pm 305 2007-02-09 01:59:50Z rcaputo $
 
 package POE::Component::Client::HTTP;
 
@@ -11,7 +11,7 @@ use constant DEBUG      => 0;
 use constant DEBUG_DATA => 0;
 
 use vars qw($VERSION);
-$VERSION = '0.80';
+$VERSION = '0.81';
 
 use Carp qw(croak);
 use HTTP::Response;
@@ -429,6 +429,26 @@ sub _poco_weeble_io_flushed {
   );
 
   my $request = $heap->{request}->{$request_id};
+  
+  # Read content to send from a callback
+  if ( ref $request->[REQ_REQUEST]->content() eq 'CODE' ) {
+    my $callback = $request->[REQ_REQUEST]->content();
+
+    my $buf = eval { $callback->() };
+
+    if ( $buf ) {
+      $request->[REQ_CONNECTION]->wheel->put($buf);
+
+      # reset the timeout
+      # Have to also reset REQ_START_TIME or timer ends early
+      $request->remove_timeout;
+      $request->[REQ_START_TIME] = time();
+      $request->create_timer($heap->{factory}->timeout);
+
+      return;
+    }
+  }
+  
   $request->[REQ_STATE] ^= RS_SENDING;
   $request->[REQ_STATE] = RS_IN_HEAD;
   # XXX - Removed a second time.  The first time was in version 0.53,
@@ -1264,6 +1284,36 @@ download completion.
 The third return argument (the raw octets received) has been deprecated.
 Instead of it, use the Streaming parameter to get chunks of content
 in the response handler.
+
+=head1 REQUEST CALLBACKS
+
+The HTTP::Request object passed to the request event can contain a
+CODE reference as C<content>.  This allows for sending large files
+without wasting memory.  Your callback should return a chunk of data
+each time it is called, and an empty string when done.  Don't forget
+to set the Content-Length header correctly.  Example:
+
+  my $request = HTTP::Request->new( PUT => 'http://...' );
+  
+  my $file = '/path/to/large_file';
+  
+  open my $fh, '<', $file;
+  
+  my $upload_cb = sub {
+    if ( sysread $fh, my $buf, 4096 ) {
+      return $buf;
+    }
+    else {
+      close $fh;
+      return '';
+    }
+  };
+  
+  $request->content_length( -s $file );
+  
+  $request->content( $upload_cb );
+  
+  $kernel->post( ua => request, 'response', $request );
 
 =head1 ENVIRONMENT
 
