@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 01_request.t 304 2007-02-04 05:55:44Z rcaputo $
+# $Id: 01_request.t 308 2007-02-09 07:14:18Z rcaputo $
 # vim: filetype=perl
 
 use strict;
@@ -207,7 +207,8 @@ sub client_got_response {
     elsif (
       $http_response->code == 500 or
       $http_response->code == 502 or
-      $http_response->code == 302
+      $http_response->code == 302 or
+      $http_response->code == 503
     ) {
       pass("request 6");
       # The next test assumes a particular responding server.

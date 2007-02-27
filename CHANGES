@@ -1,4 +1,41 @@
 =========================
+2007-02-27 07:15:11 v0_82
+=========================
+
+  2007-02-27 07:15:01 (r310) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Time for a new release!
+
+  2007-02-10 07:34:04 (r309) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Sam Lowry and Alexander Alexeychuk pointed out that sometimes pages
+    redirect to http:///something ... and the component fails because the
+    host segment on the URL doesn't exist. This is their recommended fix:
+    To check for the undefined host and throw a "bad request" response if
+    it's provided.
+    
+    A better solution might be to default redirects to the same host if
+    no host is provided, even if the URL is explicitly http:///something.
+    That's not included, however. 
+
+  2007-02-09 07:14:18 (r308) by rcaputo; t/01_request.t M; t/07_proxy.t M
+
+    George Nistorică informed us that Squid throws a 503 response to a
+    nonexistent host, which is odd because the proxy shouldn't be
+    contacted if the host doesn't exist. Nevertheless, we'll go with
+    that. Patch applied, etc.
+    
+    He also discovered that more proxy environment variables need to be
+    cleared. I applied his change to the proxy tests. 
+
+  2007-02-09 07:02:59 (r307) by rcaputo; t/01_request.t M
+
+    George Nistorică pointed out that some proxies return code 503, which
+    we're not checking for. 
+
+=========================
 2007-02-09 02:00:07 v0_81
 =========================
 

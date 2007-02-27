@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $Id: 07_proxy.t 242 2006-03-23 23:46:18Z rcaputo $
+# $Id: 07_proxy.t 308 2007-02-09 07:14:18Z rcaputo $
 # -*- perl -*-
 # vim: filetype=perl
 
@@ -26,7 +26,10 @@ use HTTP::Response;
 
 # We need some control over proxying here.
 BEGIN {
-	delete $ENV{HTTP_PROXY};
+  delete $ENV{HTTP_PROXY};
+  for (qw /HTTP_PROXY http_proxy NO_PROXY no_proxy/) {
+  delete $ENV{$_};
+  }
 }
 
 POE::Session->create(
@@ -159,7 +162,7 @@ POE::Session->create(
       }
 
       $kernel->post(NoProxy => request => test9_resp => (GET 'http://redirect.me/'),
-		    undef, undef, $heap->{rproxy});
+        undef, undef, $heap->{rproxy});
     },
     test9_resp => sub {
       my ($kernel, $heap, $resp_pack) = @_[KERNEL, HEAP, ARG1];
@@ -281,8 +284,8 @@ sub handle_rproxy_request {
       (302,
        'Moved',
        ['Connection' => 'Close',
-	'Content-Type' => 'text/plain',
-	'Location' => $host
+        'Content-Type' => 'text/plain',
+        'Location' => $host
        ]);
   } else {
     $r = HTTP::Response->new

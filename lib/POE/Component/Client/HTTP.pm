@@ -1,4 +1,4 @@
-# $Id: HTTP.pm 305 2007-02-09 01:59:50Z rcaputo $
+# $Id: HTTP.pm 310 2007-02-27 07:15:01Z rcaputo $
 
 package POE::Component::Client::HTTP;
 
@@ -11,7 +11,7 @@ use constant DEBUG      => 0;
 use constant DEBUG_DATA => 0;
 
 use vars qw($VERSION);
-$VERSION = '0.81';
+$VERSION = '0.82';
 
 use Carp qw(croak);
 use HTTP::Response;
@@ -209,7 +209,13 @@ sub _poco_weeble_request {
     $proxy_override
   ) = @_[KERNEL, HEAP, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4];
 
-  unless ($supported_schemes{$http_request->uri->scheme}) {
+  unless (
+    defined($http_request->uri->scheme) and
+    length($http_request->uri->scheme) and
+    $supported_schemes{$http_request->uri->scheme} and
+    defined($http_request->uri->host) and
+    length($http_request->uri->host)
+  ) {
     my $rsp = HTTP::Response->new(
        400 => 'Bad Request', [],
        "<html>\n"
