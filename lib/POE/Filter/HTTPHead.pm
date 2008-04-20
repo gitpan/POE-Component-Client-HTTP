@@ -1,4 +1,4 @@
-# $Id: HTTPHead.pm 292 2006-10-18 08:03:35Z rcaputo $
+# $Id: HTTPHead.pm 319 2008-03-25 07:51:12Z rcaputo $
 
 package POE::Filter::HTTPHead_Line;
 use warnings;
@@ -87,7 +87,7 @@ sub get_one {
         $
         }x
       ) {
-        $self->[WORK_RESPONSE]->header($1, $2)
+        $self->[WORK_RESPONSE]->push_header($1, $2)
       }
     }
   }

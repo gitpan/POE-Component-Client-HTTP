@@ -1,4 +1,4 @@
-# $Id: Request.pm 300 2007-02-04 05:22:30Z andyg $
+# $Id: Request.pm 318 2008-03-25 07:42:11Z rcaputo $
 
 package POE::Component::Client::HTTP::Request;
 use strict;
@@ -8,6 +8,16 @@ use POE;
 
 use Carp;
 use HTTP::Status;
+
+BEGIN {
+  local $SIG{'__DIE__'} = 'DEFAULT';
+  # Allow more finely grained timeouts if Time::HiRes is available.
+  # This code is also in POE::Component::Client::HTTP
+  eval {
+    require Time::HiRes;
+    Time::HiRes->import("time");
+  };
+}
 
 # Unique request ID, independent of wheel and timer IDs.
 my $request_seq = 0;
@@ -427,6 +437,9 @@ sub check_redirect {
 
   return undef unless ($self->[REQ_RESPONSE]->is_redirect);
 
+  # Make sure to frob any cookies set.  Redirect cookies are cookies, too!
+  $self->[REQ_FACTORY]->frob_cookies($self->[REQ_RESPONSE]);
+
   my $new_uri = $self->[REQ_RESPONSE]->header ('Location');
   DEBUG and warn "REQ: Preparing redirect to $new_uri";
   my $base = $self->[REQ_RESPONSE]->base();
@@ -436,9 +449,7 @@ sub check_redirect {
   my $prev = $self;
   my $history = 0;
   while ($prev = $prev->[REQ_HISTORY]) {
-    $history++;
-    $history = $max + 1 if ($prev->[REQ_REQUEST]->uri eq $new_uri);
-    last if ($history > $max);
+    last if ++$history > $max;
   }
 
   if ($history >= $max) {
@@ -447,6 +458,11 @@ sub check_redirect {
   }
   else { # All fine, yield new request and mark this disabled.
     my $newrequest = $self->[REQ_REQUEST]->clone();
+
+    # Sanitize new request per rt #30400.
+    # TODO - What other headers are security risks?
+    $newrequest->remove_header('Cookie');
+
     DEBUG and warn "RED: new request $newrequest";
     $newrequest->uri($new_uri);
     _set_host_header ($newrequest);
@@ -722,7 +738,7 @@ POE::Component::Client::HTTP::Request is
 
 =item
 
-Copyright 2004-2005 Martijn van Beerl
+Copyright 2004-2005 Martijn van Beers
 
 =item
 

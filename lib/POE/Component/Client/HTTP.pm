@@ -1,4 +1,4 @@
-# $Id: HTTP.pm 310 2007-02-27 07:15:01Z rcaputo $
+# $Id: HTTP.pm 323 2008-04-20 00:29:46Z rcaputo $
 
 package POE::Component::Client::HTTP;
 
@@ -11,7 +11,7 @@ use constant DEBUG      => 0;
 use constant DEBUG_DATA => 0;
 
 use vars qw($VERSION);
-$VERSION = '0.82';
+$VERSION = '0.83';
 
 use Carp qw(croak);
 use HTTP::Response;
@@ -113,6 +113,7 @@ sub spawn {
   my $alias = delete $params{Alias};
   $alias = 'weeble' unless defined $alias and length $alias;
 
+  my $bind_addr = delete $params{BindAddr};
   my $cm = delete $params{ConnectionManager};
 
   my $request_factory = POE::Component::Client::HTTP::RequestFactory->new(
@@ -153,6 +154,7 @@ sub spawn {
       factory      => $request_factory,
       cm           => $cm,
       is_shut_down => 0,
+      bind_addr    => $bind_addr,
     },
   );
 
@@ -171,6 +173,7 @@ sub _poco_weeble_start {
   # have to do this here because it wants a current_session
   $heap->{cm} = POE::Component::Client::Keepalive->new(
     timeout => $heap->{factory}->timeout,
+    $heap->{bind_addr} ? (bind_address => $heap->{bind_addr}) : (),
   ) unless ($heap->{cm});
 }
 
@@ -225,9 +228,13 @@ sub _poco_weeble_request {
        . "Unsupported URI scheme\n"
        . "</BODY>\n"
        . "</HTML>\n"
-      );
+    );
     $rsp->request($http_request);
-    $kernel->post($sender, $response_event, [$http_request, $tag], [$rsp]);
+    if (ref $response_event) {
+      $response_event->postback->($rsp);
+    } else {
+      $kernel->post($sender, $response_event, [$http_request, $tag], [$rsp]);
+    }
     return;
   }
 
@@ -244,7 +251,11 @@ sub _poco_weeble_request {
        . "</HTML>\n"
       );
     $rsp->request($http_request);
-    $kernel->post($sender, $response_event, [$http_request, $tag], [$rsp]);
+    if (ref $response_event) {
+      $response_event->postback->($rsp);
+    } else {
+      $kernel->post($sender, $response_event, [$http_request, $tag], [$rsp]);
+    }
     return;
   }
 
@@ -531,6 +542,11 @@ sub _poco_weeble_io_error {
         $request->[REQ_STATE] = RS_DONE;
         $request->return_response;
         return;
+      } else {
+        unless ($request->[REQ_STATE] & RS_POSTED) {
+          $request->error(400, "incomplete response $request_id");
+          return;
+        }
       }
     }
 
@@ -970,6 +986,7 @@ POE::Component::Client::HTTP - a HTTP user-agent component
     FollowRedirects => 2                # defaults to 0 (off)
     Proxy     => "http://localhost:80", # defaults to HTTP_PROXY env. variable
     NoProxy   => [ "localhost", "127.0.0.1" ], # defs to NO_PROXY env. variable
+    BindAddr  => "12.34.56.78",         # defaults to INADDR_ANY
   );
 
   $kernel->post(
@@ -1110,6 +1127,16 @@ NO_PROXY environment variable.
 
   NoProxy => [ "localhost", "127.0.0.1" ],
   NoProxy => "localhost,127.0.0.1",
+
+=item BindAddr => $local_ip
+
+Specify C<BindAddr> to bind all client sockets to a particular local
+address.  The value of BindAddr will be passed through
+POE::Component::Client::Keepalive to POE::Wheel::SocketFactory (as
+C<bind_address>).  See that module's documentation for implementation
+details.
+
+  BindAddr => "12.34.56.78"
 
 =item Protocol => $http_protocol_string
 

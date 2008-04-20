@@ -1,4 +1,4 @@
-# $Id: HTTPChunk.pm 285 2006-10-14 06:04:39Z rcaputo $
+# $Id: HTTPChunk.pm 320 2008-04-19 22:46:23Z rcaputo $
 
 package POE::Filter::HTTPChunk;
 use warnings;
@@ -26,10 +26,10 @@ sub new {
   my ($class) = @_;
 
   my $self = bless [
-    [],          # FRAMING_BUFFER
+    [],         # FRAMING_BUFFER
     STATE_SIZE, # CURRENT_STATE
     0,          # CHUNK_SIZE
-    '',          # CHUNK_BUFFER
+    '',         # CHUNK_BUFFER
     undef,      # TRAILER_HEADERS
   ], $class;
 

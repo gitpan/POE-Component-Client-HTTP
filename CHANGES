@@ -1,459 +1,81 @@
-=========================
-2007-02-27 07:15:11 v0_82
-=========================
+=================================
+2008-04-20T00:30:17.408340Z v0_83
+=================================
 
-  2007-02-27 07:15:01 (r310) by rcaputo
+  2008-04-20 00:29:46 (r323) by rcaputo
   lib/POE/Component/Client/HTTP.pm M
 
-    Time for a new release!
+    Release time! 
 
-  2007-02-10 07:34:04 (r309) by rcaputo
+  2008-04-20 00:26:49 (r322) by rcaputo
   lib/POE/Component/Client/HTTP.pm M
 
-    Sam Lowry and Alexander Alexeychuk pointed out that sometimes pages
-    redirect to http:///something ... and the component fails because the
-    host segment on the URL doesn't exist. This is their recommended fix:
-    To check for the undefined host and throw a "bad request" response if
-    it's provided.
-    
-    A better solution might be to default redirects to the same host if
-    no host is provided, even if the URL is explicitly http:///something.
-    That's not included, however. 
+    Apply Kim Scheibel's patch to support a BindAddress parameter. Useful
+    for running on multi-homed machines. Resolves rt.cpan.org ticket
+    34837. 
 
-  2007-02-09 07:14:18 (r308) by rcaputo; t/01_request.t M; t/07_proxy.t M
-
-    George Nistorică informed us that Squid throws a 503 response to a
-    nonexistent host, which is odd because the proxy shouldn't be
-    contacted if the host doesn't exist. Nevertheless, we'll go with
-    that. Patch applied, etc.
-    
-    He also discovered that more proxy environment variables need to be
-    cleared. I applied his change to the proxy tests. 
-
-  2007-02-09 07:02:59 (r307) by rcaputo; t/01_request.t M
-
-    George Nistorică pointed out that some proxies return code 503, which
-    we're not checking for. 
-
-=========================
-2007-02-09 02:00:07 v0_81
-=========================
-
-  2007-02-09 01:59:50 (r305) by rcaputo
+  2008-04-19 22:56:52 (r321) by rcaputo
   lib/POE/Component/Client/HTTP.pm M
 
-    New release.
+    Apply Yuri Karaban's patch to avoid losing responses when a redirect
+    fails. Resolves rt.cpan.org ticket 25577. 
 
-  2007-02-04 05:55:44 (r304) by rcaputo; t/01_request.t M
+  2008-04-19 22:46:23 (r320) by rcaputo
+  lib/POE/Filter/HTTPChunk.pm M; lib/POE/Component/Client/HTTP.pm M
 
-    People with OpenDNS get a 302 on a nonexistent domain. What's up with
-    THAT?! 
+    Apply Yuri Karaban's patch to respond correctly if the server closes
+    connection before sending headers. Resolves rt.cpan.org ticket 25920. 
 
-  2007-02-04 05:54:52 (r303) by andyg; t/01_request.t M
+  2008-03-25 07:51:12 (r319) by rcaputo; lib/POE/Filter/HTTPHead.pm M
 
-    Change callback params, so they're less likely to conflict with other
-    things
+    Apply Jeffrey Posnick's patch to support duplicate headers. Before
+    his patch, subsequent headers of the same type would overwrite
+    previous ones. For example, a second Cookie header would clobber the
+    first. Resolves rt.cpan.org 27262. 
 
-  2007-02-04 05:43:34 (r302) by rcaputo; t/01_request.t M
-
-    Make the new chunked stream upload test unique. That is, make it
-    discernable from response 2. 
-
-  2007-02-04 05:34:32 (r301) by andyg; t/01_request.t M
-
-    Fix check_counts for new test
-
-  2007-02-04 05:22:30 (r300) by andyg
-  t/01_request.t M; lib/POE/Component/Client/HTTP.pm M;
+  2008-03-25 07:42:11 (r318) by rcaputo
   lib/POE/Component/Client/HTTP/Request.pm M
 
-    Add support for supplying a callback in $request->content() to allow
-    for large file uploads without wasting memory. 
+    Apply Dan Sterling's patch to use Time::HiRes when it's available. He
+    was running into premature timeouts when using subsecond timeouts.
+    Resolves rt.cpan.org 30466. 
 
-=========================
-2007-01-01 04:23:40 v0_80
-=========================
+  2008-03-24 18:05:00 (r317) by rcaputo; Makefile.PL M
 
-  2007-01-01 04:07:05 (r298) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
+    Rely on the latest POE::Component::Client::Keepalive, which includes
+    a fix for a common noisy POE::Kernel trap. 
 
-    Preparing a new release. 
-
-  2006-11-06 19:36:35 (r297) by jbisbee
-  lib/POE/Component/Client/HTTP.pm M
-
-    Fix head1 to by AUTHOR, LICENSE, & COPYRIGHT for CPANTS
-
-  2006-11-06 19:23:41 (r296) by rcaputo; Makefile.PL M
-
-    Set a LICENSE. Cheap kwalitee points!
-
-  2006-10-26 21:25:56 (r295) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Rob Bloodgood patched the gzip compression code to avoid compression
-    when the user cares about the received content size. Compression
-    makes the returned data size exceed the maximum request size in some
-    cases, including one test case. 
-
-  2006-10-25 06:55:14 (r294) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M; t/14_gzipped_content.t A; MANIFEST
-  M; Makefile.PL M; lib/POE/Component/Client/HTTP/Request.pm M
-
-    Apply Rob Bloodgood's patch to transparently decode non-streaming
-    content before it's returned. This gives us support for gzip
-    compressed content. Resolves long-standing rt.cpan.org ticket 8454. 
-
-  2006-10-18 16:02:05 (r293) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Add more notes about compression options, but the feature's still
-    commented out 'cause of brokenness. 
-
-  2006-10-18 08:03:35 (r292) by rcaputo
-  t/01_request.t M; lib/POE/Component/Client/HTTP.pm M;
-  lib/POE/Filter/HTTPHead.pm M; lib/POE/Component/Client/HTTP/Request.pm
-  M
-
-    Initial compression support. But it's broken, and I'm tired and can't
-    fix it tonight. It's committed (albeit commented out) in case someone
-    else feels like taking a stab at it before I get back to it. 
-
-  2006-10-17 17:07:49 (r291) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Pitufo asked in rt.cpan.org 20975 that the MaxSize limit not generate
-    a 400 error on an incomplete response. After much deliberation, I
-    decided that a 406 error (Not Acceptable) is more appropriate than
-    "Bad Request". That's the extent of this change. His original issue
-    (errors on truncated responses) remains, but I pointed out that HTTP
-    Range headers can do what he wants without throwing errors. 
-
-  2006-10-16 16:16:06 (r290) by jbisbee; META.yml M
-
-    add resources tag to META.yml file for cpants - has_license 
-
-  2006-10-15 03:14:06 (r289) by rcaputo; MANIFEST M
-
-    Oops. Add META.yml to MANIFEST. 
-
-=========================
-2006-10-15 03:09:46 v0_79
-=========================
-
-  2006-10-15 03:09:32 (r287) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M;
+  2008-03-24 18:03:29 (r316) by rcaputo
   lib/POE/Component/Client/HTTP/Request.pm M
 
-    Ready for 0.79. 
+    Apply Andrew Sterling Hanenkamp's patch to not pass cookies across
+    redirects. Previously cookie headers would bleed with a redirect,
+    which is extremely bad. Resolves rt.cpan.org ticket 30400. 
 
-  2006-10-15 02:56:46 (r286) by rcaputo
-  lib/POE/Component/Client/HTTP/RequestFactory.pm M;
+  2008-03-24 17:53:15 (r315) by rcaputo
   lib/POE/Component/Client/HTTP/Request.pm M
 
-    Add more sketchy documentation to satisfy Jeff Bisbee's POD tests.
-    Some of it is sketchier than others because I'm documenting internal
-    classes that were contributed by others. 
+    Apply Andrew Sterling Hanenkamp's suggestion not to bail out of
+    redirect if we reach the same URL twice. It was doing the wrong thing
+    with certain site authentication schemes. Resolves rt.cpan.org ticket
+    30399. 
 
-  2006-10-14 06:04:39 (r285) by rcaputo
-  lib/POE/Filter/HTTPChunk.pm M; lib/POE/Component/Client/HTTP.pm M;
-  lib/POE/Filter/HTTPHead.pm M
-
-    Flesh out some of the documentation FIXMEs from Jeff Bisbee's
-    previous commits. The POD tests don't all pass yet, but they're
-    inching closer to releasability. 
-
-  2006-10-14 04:40:40 (r284) by rcaputo; MANIFEST M
-
-    Add Jeff Bisbee's POD tests to the MANIFEST. 
-
-  2006-10-14 00:17:07 (r283) by jbisbee; META.yml A
-
-    Added META.yml file 
-
-  2006-10-14 00:13:53 (r282) by jbisbee
-  lib/POE/Filter/HTTPChunk.pm M;
-  lib/POE/Component/Client/HTTP/RequestFactory.pm M;
-  lib/POE/Component/Client/HTTP.pm M; t/13_pod_coverage.t A; t/12_pod.t
-  A; lib/POE/Filter/HTTPHead.pm M
-
-    Added pod and pod coverage tests Fixed warns in
-    POE::Filter::HTTPChunk in tests Use 'use constant' instead of subs
-    (to fix pod coverage warnings) Add stub pod for Rocco to fill in
-    (FIXME)
-
-  2006-10-06 22:34:03 (r281) by rcaputo
-  lib/POE/Filter/HTTPChunk.pm M; lib/POE/Filter/HTTPHead.pm M
-
-    POE::Filter::HTTPChunk wasn't a subclass of POE::Filter. Thanks to
-    "Chris" for reporting that it wouldn't work with Filter::Stackable. 
-
-  2006-09-28 04:18:11 (r280) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Credit Joel Bernstein and Portugal Telecom. 
-
-  2006-09-28 04:17:53 (r279) by rcaputo; Makefile.PL M
-
-    Require the fixed POE::Component::Client::KeepAlive. 
-
-=========================
-2006-09-26 17:49:40 v0_78
-=========================
-
-  2006-09-26 17:49:22 (r277) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Release 0.78. 
-
-  2006-09-26 04:00:21 (r276) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Apply a fix by Harish J P at Yahoo. He found a race condition where
-    cleanup is sometimes performed twice on a request. The component
-    would try to call methods on undefined data members the second time
-    around, which is fatal. Resolves rt.cpan.org 21110. 
-
-  2006-09-26 03:56:52 (r275) by rcaputo; t/58_joel_cancel_multi.t M
-
-    Display more information if one of the tests fails. 
-
-  2006-09-25 17:32:57 (r274) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Remove trailing whitespace. 
-
-  2006-09-25 17:16:03 (r273) by rcaputo; t/08_discard.t M
-
-    Apply a patch by Tony Cook that avoids a test hang when running under
-    the CPAN shell. It sets an http_proxy environment variable, but the
-    test only deleted the all-uppercase version. 
-
-  2006-09-25 17:13:25 (r272) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M; t/57_joel_immed_cancel.t M
-
-    Fix a typo in the is_shut_down flag that Tony Cook discovered.
-    Resolves rt.cpan.org 20452. 
-
-  2006-09-25 10:22:30 (r271) by joel
-  lib/POE/Component/Client/HTTP.pm M; t/58_joel_cancel_multi.t M
-
-    fixed request-cancellation code to pass tests where request is
-    cancelled before the connection manager successfully connects
-
-  2006-09-23 23:46:31 (r270) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M; t/58_joel_cancel_multi.t A;
+  2008-03-24 17:44:53 (r314) by rcaputo
   lib/POE/Component/Client/HTTP/Request.pm M
 
-    Add Joel Bernstein's test. 
+    Apply Andrew Sterling Hannenkamp's patch to frob redirect cookies
+    (they count!). Resolves rt.cpan.org ticket 30401. 
 
-  2006-09-05 16:40:13 (r269) by rcaputo
-  t/57_joel_immed_cancel.t A; t/57_joel_rt21172.t D
+  2007-08-17 13:54:25 (r313) by andyg; t/59_andy_one_keepalive.t A
 
-    Make the filename descriptive. 
+    A failing test for reusing a single keep-alive connection (run with
+    DEBUG)
 
-  2006-09-05 16:39:48 (r268) by rcaputo
-  MANIFEST M; t/57_joel_rt21172.t A
-
-    Add a test case for rt.cpan.org ticket 21172, reported by Joel
-    Bernstein. 
-
-  2006-08-31 04:30:29 (r267) by rcaputo
-  t/10_shutdown.t A; t/11_cancel.t M
-
-    Add a test that I forgot to include in subversion. Flag some files as
-    keyword-expanding. 
-
-=========================
-2006-07-13 06:45:15 v0_77
-=========================
-
-  2006-07-13 06:43:38 (r265) by rcaputo; Makefile.PL M
-
-    Update the POE dependency, per Adam Kennedy's feedback. 
-
-  2006-07-13 06:42:47 (r264) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Document the ConnectionManager per Joel Bernsein's patch (plus
-    Jonathan Steinert's POD correction). Bump up the version for a
-    release. 
-
-  2006-07-12 19:39:56 (r263) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Doc patch for Joel Bernstein. It wasn't terribly clear that he could
-    cancel a request based on the stringified version of the
-    HTTP::Request object reference. Now I hope it is. 
-
-  2006-07-04 16:12:19 (r262) by rcaputo; t/54_hzheng_head_redir.t M
-
-    Resolve an issue where the target site redirects a variable number of
-    times depending on your location. 
-
-=========================
-2006-07-02 17:55:17 v0_76
-=========================
-
-  2006-07-02 17:54:51 (r260) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M; MANIFEST M; t/11_cancel.t A
-
-    Added a cancel command, which may be used to cancel a specific HTTP
-    request. Useful for stopping HTTP streams without shutting down the
-    entire component. Resolves rt.cpan.org ticket 5292.
-    
-    Bumped the version to 0.76 for a new release. 
-
-=========================
-2006-05-21 21:10:18 v0_75
-=========================
-
-  2006-05-21 21:08:33 (r258) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Document the shutdown message, and bump the version for a new
-    release. 
-
-  2006-05-21 21:05:32 (r257) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M; MANIFEST M;
+  2007-05-20 12:50:02 (r312) by martijn
   lib/POE/Component/Client/HTTP/Request.pm M
 
-    Remove unnecessary includes (POSIX among others). Resolves
-    rt.cpan.org ticket #18922 [guest].
-    
-    Added a shutdown() method. Resolves rt.cpan.org ticket #12685. Thanks
-    to Fabricio Mart�nez for the request.
-    
-    Documented the need for individual-request shutdown. 
-
-  2006-05-16 20:48:55 (r256) by woggle
-  lib/POE/Component/Client/HTTP.pm M
-
-    Fix potential memory leak by removing in more cases wheel_to_request
-    entries when the corresponding request goes away. 
-
-  2006-05-11 20:48:14 (r255) by woggle
-  lib/POE/Component/Client/HTTP.pm M; MANIFEST M; t/56_redirect_excess.t
-  A
-
-    Fix problem where we might generate two reply events when we got
-    extra junk after a redirect and add test case for it. 
-
-  2006-05-10 20:48:45 (r254) by woggle
-  lib/POE/Component/Client/HTTP.pm M; MANIFEST M;
-  t/55_reiss_double_resp.t A; Makefile.PL M; t/52_reiss_bad_length.t M;
-  lib/POE/Component/Client/HTTP/Request.pm M
-
-    Close the connection when we abort reading the response in the middle
-    (includes redirects and requests over the maximum length); fixes
-    broken behavior where we might reuse the socket and take the rest of
-    the response as our new response. This requires new functionality in
-    PoCoCliKeepalive, so update Makefile.PL to reflect that. 
-
-  2006-05-10 05:20:55 (r253) by woggle
-  lib/POE/Component/Client/HTTP.pm M; t/09_bad_scheme.t M;
-  t/52_reiss_bad_length.t M; lib/POE/Component/Client/HTTP/Request.pm M
-
-    Modify some tests to make sure that $response->request() is defined
-    in more obscure cases (various internal error returns, etc.) and fix
-    some cases where it is not so the new tests pass. 
-
-  2006-05-10 05:19:12 (r252) by woggle; lib/POE/Filter/HTTPHead.pm M
-
-    Make this inherit from POE::Filter to be compatible with subversion
-    POE. 
-
-=========================
-2006-03-30 05:33:46 v0_74
-=========================
-
-  2006-03-30 05:33:09 (r250) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Ryan Tate posted in <http://perlmonks.org/?node_id=539816> about a
-    problem with timeouts. It turns out that when redirects created new
-    internal requests, the old ones weren't being cleaned up. As a
-    result, they had to time out before the component would stop. Thanks
-    to Tony Cook for pointing me at this message.
-    
-    Also beefed up the debugging a little, and bumped up the version for
-    a new release. 
-
-  2006-03-24 14:10:11 (r249) by rcaputo
-  examples A; lib/POE/Component/Client/HTTP/RequestFactory.pm M; MANIFEST
-  M; lib/POE/Component/Client/HTTP/Request.pm M; examples/pcchget.perl A
-
-    Added a test case by Toby Ovod-Everett from rt.cpan.org ticket
-    #18339. Fixed some tab damage, and corrected a typo. 
-
-  2006-03-24 13:40:18 (r248) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M; t/54_hzheng_head_redir.t M;
-  lib/POE/Component/Client/HTTP/Request.pm M
-
-    Resolved rt.cpan.org ticket #14679 by Hao Zheng. Ignoring
-    content-length headers for HEAD requests, especially since google.com
-    sends them. 
-
-  2006-03-24 05:34:32 (r247) by rcaputo
-  MANIFEST M; t/55_hzheng_empty_content.t D
-
-    This test case isn't needed. Now I gotta remove it. D'oh. 
-
-  2006-03-24 05:34:01 (r246) by rcaputo
-  MANIFEST M; t/55_hzheng_empty_content.t A
-
-    Commit a test case for rt.cpan.org ticket #15025. Except that the
-    ticket is moot---a previous fix also resolved this issue. D'oh. 
-
-  2006-03-24 05:24:48 (r245) by rcaputo; t/09_bad_scheme.t A
-
-    Forgot to commit this. It tests that bad schemes don't kill the
-    component outright. 
-
-  2006-03-24 05:18:16 (r244) by rcaputo
-  MANIFEST M; t/54_hzheng_head_redir.t A
-
-    Added a test case for Hao Zheng's bug report, rt.cpan.org ticket
-    #14679. 
-
-  2006-03-23 23:47:14 (r243) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Document the lack of https proxying as a bug. 
-
-  2006-03-23 23:46:18 (r242) by rcaputo
-  t/01_request.t M; t/08_discard.t M; t/53_response_parser.t M;
-  t/07_proxy.t M
-
-    Some tests require specific proxy environments. Especially the tests
-    that include a localhost web server, because "localhost" may mean
-    something else to a proxy server. 
-
-  2006-03-23 23:45:08 (r241) by rcaputo
-  lib/POE/Component/Client/HTTP/RequestFactory.pm M
-
-    We currently don't support https proxying. Bypass proxying for https
-    requests. Resolves part of rt.cpan.org ticket #16675. 
-
-  2006-03-23 23:44:21 (r240) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Follow redirects for bodiless responses. Resolves part of rt.cpan.org
-    ticket #16675. 
-
-  2006-03-23 14:56:16 (r239) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M; MANIFEST M
-
-    Applied Yuri Karaban's test case and patch for a fatal error that
-    occurred when giving the component URLs with schemes it could not
-    handle. This resolves rt.cpan.org ticket #17599. 
-
-  2006-03-17 05:46:48 (r238) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    David Davis' friend patched this so it would work with MSN.
-    Essentially, force the request to be finished after headers on a HEAD
-    response, certain response codes, or 0-length replies. 
+    r955@kazad-dum: martijn | 2007-05-20 12:06:14 +0200 spell my name
+    right :) 
 
 ==============
 End of Excerpt
