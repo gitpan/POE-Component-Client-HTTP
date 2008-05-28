@@ -1,4 +1,4 @@
-# $Id: MANIFEST 294 2006-10-25 06:55:14Z rcaputo $
+# $Id: MANIFEST 325 2008-04-20 00:34:15Z rcaputo $
 CHANGES
 CHANGES.OLD
 MANIFEST
@@ -34,3 +34,4 @@ t/55_reiss_double_resp.t
 t/56_redirect_excess.t
 t/57_joel_immed_cancel.t
 t/58_joel_cancel_multi.t
+t/59_andy_one_keepalive.t

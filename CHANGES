@@ -1,3 +1,27 @@
+======================================
+9999-99-99 99:99:99.999999Z (untagged)
+======================================
+
+  2008-05-28 17:33:06 (r327) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M; t/14_gzipped_content.t M;
+  lib/POE/Component/Client/HTTP/Request.pm M
+
+    Resolve Content-Encoding issue surfaced by recent changes to
+    HTTP::Response. Applies the fix recommeded by Yuri Karaban in
+    rt.cpan.org ticket 35538. 
+
+  2008-05-04 06:57:15 (r326) by rcaputo
+  lib/POE/Component/Client/HTTP/Request.pm M
+
+    Resolve character encoding issues arising from a change in
+    HTTP::Message's decoded_content() behavior. Tentatively resolves
+    rt.cpan.org ticket 35538, reported by Yuri Karaban, with additional
+    commentary and a test case by "OverlordQ". 
+
+  2008-04-20 00:34:15 (r325) by rcaputo; MANIFEST M
+
+    Add t/59_andy_one_keepalive.t 
+
 =================================
 2008-04-20T00:30:17.408340Z v0_83
 =================================

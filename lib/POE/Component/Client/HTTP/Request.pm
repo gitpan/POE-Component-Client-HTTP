@@ -1,4 +1,4 @@
-# $Id: Request.pm 318 2008-03-25 07:42:11Z rcaputo $
+# $Id: Request.pm 327 2008-05-28 17:33:06Z rcaputo $
 
 package POE::Component::Client::HTTP::Request;
 use strict;
@@ -177,16 +177,6 @@ sub return_response {
   # if we are. that there's no ARG1 lets the client know we're done
   # with the content in the latter case
   if ($self->[REQ_STATE] & RS_DONE) {
-    DEBUG and warn(
-      "checking $response for content-encoding ", $self->[REQ_ID]
-    );
-    if ($response->header('content-encoding')) {
-      my $content;
-      # LWP likes to die on error.
-      eval { $content = $response->decoded_content };
-      if ($content) { $response->content($content); }
-    }
-
     DEBUG and warn "done; returning $response for ", $self->[REQ_ID];
     $self->[REQ_POSTBACK]->($self->[REQ_RESPONSE]);
     $self->[REQ_STATE] |= RS_POSTED;
@@ -498,10 +488,10 @@ sub send_to_wheel {
     $http_request->protocol() . "\x0D\x0A" .
     $http_request->headers_as_string("\x0D\x0A") . "\x0D\x0A"
   );
-  
+ 
   if ( !ref $http_request->content() ) {
     $request_string .= $http_request->content(); # . "\x0D\x0A"
-  }    
+  }
 
   DEBUG and do {
     my $formatted_request_string = $request_string;
