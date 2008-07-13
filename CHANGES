@@ -1,6 +1,38 @@
-======================================
-9999-99-99 99:99:99.999999Z (untagged)
-======================================
+=================================
+2008-07-13T08:07:37.418057Z v0_85
+=================================
+
+  2008-07-13 08:07:22 (r334) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Time for another release.
+
+  2008-07-13 06:26:14 (r333) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M; t/57_joel_immed_cancel.t M;
+  t/58_joel_cancel_multi.t M
+
+    Don't die when canceling requests or shutting down components. 
+
+  2008-07-09 19:44:56 (r332) by martijn; t/04_chunk_filter.t M
+
+    forget about reading from DATA. This way we can control how much data
+    we feed to the filter, so we get better coverage. 
+
+  2008-07-09 19:44:41 (r331) by martijn; t/04_chunk_filter.t M
+
+    de-poe-ify 04_chunk_filter.t too. 
+
+  2008-07-09 19:44:21 (r330) by martijn; t/03_head_filter.t M
+
+    get coverage up to same level as with the old tests. 
+
+  2008-07-09 19:44:07 (r329) by martijn; t/03_head_filter.t M
+
+    stop using POE while testing Filter::HTTPHead. 
+
+=================================
+2008-05-28T17:35:59.670622Z v0_84
+=================================
 
   2008-05-28 17:33:06 (r327) by rcaputo
   lib/POE/Component/Client/HTTP.pm M; t/14_gzipped_content.t M;

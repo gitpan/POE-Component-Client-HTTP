@@ -1,5 +1,5 @@
 #!perl
-# $Id: 57_joel_immed_cancel.t 272 2006-09-25 17:13:25Z rcaputo $
+# $Id: 57_joel_immed_cancel.t 333 2008-07-13 06:26:14Z rcaputo $
 
 use strict;
 use warnings;
@@ -31,4 +31,5 @@ sub client_start {
 sub response_handler {
   my $response = $_[ARG1][0];
   is( $response->code, 408, "timeout on a canceled request" );
+  $_[KERNEL]->post( ua => "shutdown" );
 }
