@@ -1,4 +1,55 @@
 =================================
+2008-11-24T22:39:07.052333Z v0_86
+=================================
+
+  2008-11-24 22:37:57 (r342) by rcaputo; t/01_stream.t M
+
+    Remove an errant warn in one of the test cases.
+
+  2008-11-24 22:32:18 (r341) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M; t/53_response_parser.t M;
+  Makefile.PL M
+
+    Bump the version, depend on the latest Client::Keepalive, and fix a
+    bit of tab damage. 
+
+  2008-11-21 17:56:00 (r340) by rcaputo; t/01_ssl.t M
+
+    Fix a test error... sourceforge returns a 302 now, not the 200 that
+    we expected.
+
+  2008-11-21 08:26:19 (r339) by rcaputo; t/03_head_filter.t M
+
+    Don't use == to test for undef. 
+
+  2008-11-21 08:10:14 (r338) by rcaputo; t/01_request.t M
+
+    Fix an unexpected response triggered by the coderef content feature.
+    Two separate packets were sent without coalescing. I have a feeling
+    my "fix" isn't going to be good enough in all cases though... some
+    systems may coalesce those put()s. 
+
+  2008-10-15 05:44:51 (r337) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Apply doc patches, resolving rt.cpan.org #38176. 
+
+  2008-09-03 17:54:09 (r336) by martijn
+  t/01_request.t M; t/01_stream.t A; t/10_shutdown.t M;
+  t/50_davis_zerolength.t M; t/59_andy_one_keepalive.t D; t/01_ssl.t A;
+  MANIFEST M; t/54_hzheng_head_redir.t M; t/09_bad_scheme.t D;
+  Makefile.PL M; t/57_joel_immed_cancel.t D; t/58_joel_cancel_multi.t M;
+  lib/POE/Component/Client/HTTP/Request.pm M; t/02_keepalive.t M;
+  t/11_cancel.t M
+
+    Merge branch 'localtests'
+    
+    fix merge problems by deleting t/57_joel_immed_cancel.t since my new
+    version of t/58_joel_cancel_multi.t does everything it does and more
+    and by updating t/58_joel_cancel_multi.t to my version because the
+    changes in trunk were assuming the non-local tests. 
+
+=================================
 2008-07-13T08:07:37.418057Z v0_85
 =================================
 

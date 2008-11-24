@@ -1,4 +1,4 @@
-# $Id: Request.pm 327 2008-05-28 17:33:06Z rcaputo $
+# $Id: Request.pm 336 2008-09-03 17:54:09Z martijn $
 
 package POE::Component::Client::HTTP::Request;
 use strict;
@@ -228,6 +228,7 @@ sub add_eof {
       "got " . $self->[REQ_OCTETS_GOT] . " of " .
       $self->[REQ_RESPONSE]->content_length
     );
+    #TODO: shouldn't this be 406 as per RT #20975?
     $self->error(
       400,
       "incomplete response b " . $self->[REQ_ID] . ".  Wanted " .

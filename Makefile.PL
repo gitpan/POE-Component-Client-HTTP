@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: Makefile.PL 317 2008-03-24 18:05:00Z rcaputo $
+# $Id: Makefile.PL 341 2008-11-24 22:32:18Z rcaputo $
 
 use strict;
 use lib qw(./mylib);
@@ -14,7 +14,8 @@ my %prereq = (
   'HTTP::Response'     => 1.37,
   'URI'                => 1.24,
   'Net::HTTP::Methods' => 0.02,
-  'POE::Component::Client::Keepalive' => 0.1001,
+  'POE::Component::Client::Keepalive' => 0.22,
+  'Test::POE::Server::TCP' => 0,
 );
 
 # Write that makefile.

@@ -1,380 +1,176 @@
-#!/usr/bin/perl -w
-# $Id: 01_request.t 308 2007-02-09 07:14:18Z rcaputo $
-# vim: filetype=perl
-
 use strict;
+use Test::More;
+use POE qw(
+  Filter::Stream
+  Filter::HTTPD
+  Component::Client::HTTP
+  Component::Client::Keepalive
+);
+
+use Test::POE::Server::TCP;
+
+my @requests;
+my $long = <<EOF;
+200 OK HTTP/1.1
+Connection: close
+Content-Length: 300
+Bogus-Header: crap
+
+EOF
+
+chomp $long;
+$long .= "\n" . "x" x 300;
+
+my $data = <<EOF;
+200 OK HTTP/1.1
+Connection: close
+Content-Length: 118
+Content-Type: text/html
+
+<html>
+<head><title>Test Page</title></head>
+<body><p>This page exists to test POE web components.</p></body>
+</html>
+EOF
 
 use HTTP::Request::Common qw(GET POST);
 
-use lib '/home/troc/perl/poe';
-sub POE::Kernel::ASSERT_DEFAULT () { 1 }
-use POE qw(Component::Client::HTTP Component::Client::Keepalive);
-
-sub DEBUG () { 0 }
-
-sub MAX_BIG_REQUEST_SIZE  () { 4096 }
-sub MAX_STREAM_CHUNK_SIZE () { 1024 }  # Needed for agreement with test CGI.
-
-my ($tests, $has_sslify);
-BEGIN {
-  if (grep /SSLify/, keys %INC) {
-    $tests = 15;
-    $has_sslify = 1;
-  }
-  else {
-    $tests = 14;
-  }
-}
-
-use Test::More tests => $tests;
-$| = 1;
-
-my $cm1 = POE::Component::Client::Keepalive->new;
-#my $cm2 = POE::Component::Client::Keepalive->new;
-
-my $resp_count = 0;
-
-
-sub client_start {
-  my ($kernel, $heap) = @_[KERNEL, HEAP];
-
-  DEBUG and warn "client starting...\n";
-
-  $kernel->post(
-    weeble => request => got_response =>
-    GET('http://poe.perl.org/misc/test.html', Connection => 'close'),
-  );
-
-  $kernel->post(
-    weeble => request => got_response => (
-      POST(
-        'http://poe.perl.org/misc/test.cgi',
-        [
-          cgi_field_one => '111',
-          cgi_field_two => '222',
-          cgi_field_six => '666',
-          cgi_field_ten => 'AAA',
-        ] # , Connection => 'close',
-      ),
-    ),
-  );
-
-  # Test callback in content()
-  my @chunks = (
-    'callback_one=ZZZ&',
-    'callback_two=YYY&',
-    'callback_three=XXX',
-  );
-
-  my $request = HTTP::Request->new(
-    POST => 'http://poe.perl.org/misc/test.cgi',
-    [
-      Content_Type   => 'application/x-www-form-urlencoded',
-      Content_Length => 52,
-    ],
-    sub { return shift @chunks },
-  );
-
-  $kernel->post(
-    weeble => request => got_response => $request
-  );
-
-  $kernel->post(
-    weeble => request => got_response =>
-    GET(
-      'http://poe.perl.org/misc/test.cgi?cgi_field_fiv=555',
-      Connection => 'close',
-    ),
-  );
-
-  if ($has_sslify) {
-    my $secure_request = GET(
-      'https://sourceforge.net/projects/poe/',
-      Connection => 'close',
-    );
-    $kernel->post(
-      weeble => request => got_response =>
-      $secure_request,
-    );
-  }
-
-  $kernel->post(
-    weeble => request => got_response =>
-    GET(
-      'http://poe.perl.org',
-      Connection => 'close',
-    ),
-  );
-
-  $kernel->post(
-    weeble => request => got_response =>
-    GET(
-      'http://foo.poe.perl.org/',
-      Connection => 'close',
-    ),
-  );
-
-  $kernel->post(
-    weeble => request => got_big_response =>
-    GET(
-      'http://poe.perl.org/misc/stream-test.cgi',
-      Connection => 'close',
-    ),
-  );
-
-  $kernel->post(
-    streamer => request => got_stream_response =>
-    GET(
-      'http://poe.perl.org/misc/stream-test.cgi',
-      Connection => 'close',
-    ),
-  );
-
-  $kernel->post(
-    redirector => request => got_redir_response =>
-    GET(
-      'http://poe.perl.org/misc/redir-test.cgi',
-      Connection => 'close',
-    ),
-  );
-
-  # this uses a call instead of yield
-  # so that the error response it propagates
-  # is sent before check_counts is called
-  $kernel->call(
-    weeble => request => got_response => GET('http:withouthost')
-  );
-
-  if ($has_sslify) {
-    $kernel->yield( check_counts => 9 );
-  }
-  else {
-    $kernel->yield( check_counts => 8 );
-  }
-}
-
-
-sub client_check_counts {
-  my ($kernel, $expected_count) = @_[KERNEL, ARG0, ARG1];
-
-  # a better test would be to also keep track of the responses we are
-  # receiving and checking that pending_requests_count decrements properly.
-  my $count = $kernel->call( weeble => 'pending_requests_count' ) + $resp_count;
-  is ($count, $expected_count, "have enough requests pending");
-}
-
-sub client_stop {
-  DEBUG and warn "client stopped...\n";
-  $cm1->shutdown;
-  #  $cm2->shutdown;
-  $cm1 = undef;
-  #  $cm2 = undef;
-}
-
-sub client_got_response {
-  my ($heap, $kernel, $request_packet, $response_packet) = @_[
-    HEAP, KERNEL, ARG0, ARG1
-  ];
-  my $http_request  = $request_packet->[0];
-  my $http_response = $response_packet->[0];
-
-  ++$resp_count;
-
-  DEBUG and do {
-    warn "client got request...\n";
-
-    warn $http_request->as_string;
-    my $response_string = $http_response->as_string();
-    $response_string =~ s/^/| /mg;
-
-    warn ",", '-' x 78, "\n";
-    warn $response_string;
-    warn "`", '-' x 78, "\n";
-  };
-
-  my $request_path = $http_request->uri->path . ''; # stringify
-
-  if (defined $http_response->code) {
-    my $response_string = $http_response->as_string();
-    if ($http_response->code == 200) {
-      ok(1, 'request 1') if $request_path =~ m/\/test\.html$/;
-      ok(1, 'request 2') if $response_string =~ /cgi_field_six/;
-      ok(1, 'request 3') if $response_string =~ /cgi_field_fiv/;
-      ok(1, 'request 5') if $request_path eq '';
-      ok(1, 'request 4') if $request_path =~ m/projects\/poe/;
-      ok(1, 'callback-based upload') if $response_string =~ /callback/;
-    }
-    elsif (
-      $http_response->code == 500 or
-      $http_response->code == 502 or
-      $http_response->code == 302 or
-      $http_response->code == 503
-    ) {
-      pass("request 6");
-      # The next test assumes a particular responding server.
-      # It's bogus is proxying is enabled through the environment.
-      # like($response_string, qr/foo\.poe\.perl\.org/, 'request 6');
-    }
-    elsif ($http_response->code == 400) {
-      ok("" eq $http_request->uri->host, '400 for malformed request 10');
-    }
-    else {
-      warn $http_request->uri();
-      warn $http_response->as_string();
-    }
-  }
-}
-
-sub client_got_big_response {
-  my ($heap, $request_packet, $response_packet) = @_[HEAP, ARG0, ARG1];
-  my $http_request  = $request_packet->[0];
-  my $http_response = $response_packet->[0];
-
-  ++$resp_count;
-
-  DEBUG and do {
-    warn "client got big request...\n";
-
-    my $request_string = $http_request->as_string();
-    $request_string =~ s/^/| /mg;
-
-    my $response_string = $http_response->as_string();
-    $response_string =~ s/^/| /mg;
-
-    warn ",", '-' x 78, "\n";
-    warn $request_string;
-    warn ",", '-' x 78, "\n";
-    warn $response_string;
-    warn "`", '-' x 78, "\n";
-  };
-
-  is ($http_response->code, 200, "got OK response for request 7");
-  is (
-    length($http_response->content), MAX_BIG_REQUEST_SIZE,
-    "content of correct length for request 7"
-  );
-}
-
-sub client_got_redir_response {
-  my ($heap, $request_packet, $response_packet) = @_[HEAP, ARG0, ARG1];
-  my $http_request  = $request_packet->[0];
-  my $http_response = $response_packet->[0];
-
-  DEBUG and do {
-    warn "client got redirected response...\n";
-
-    my $response_string = $http_response->as_string();
-    $response_string =~ s/^/| /mg;
-
-    warn ",", '-' x 78, "\n";
-    warn $response_string;
-    warn "`", '-' x 78, "\n";
-  };
-
-  is ($http_response->code, 200, "Got OK response for request 9");
-  is (
-    $http_response->base, "http://poe.perl.org/misc/test.cgi",
-    "response for redirected uri"
-  );
-  is (
-    $http_response->previous->base, "http://poe.perl.org/misc/redir-test.cgi",
-    "original request uri matches previous response"
-  );
-}
-
-my $total_octets_got = 0;
-my $chunk_buffer = "";
-my $next_chunk_character = "A";
-my $test_8_failed = 0;
-
-
-sub client_got_stream_response {
-  my ($heap, $request_packet, $response_packet) = @_[HEAP, ARG0, ARG1];
-  my $http_request = $request_packet->[0];
-  my ($http_headers, $chunk) = @$response_packet;
-
-  DEBUG and do {
-    warn "client got stream request...\n";
-
-    my $response_string = $http_headers->as_string();
-    $response_string =~ s/^/| /mg;
-
-    warn ",", '-' x 78, "\n";
-    warn $response_string;
-    warn "`", '-' x 78, "\n";
-    warn ($chunk ? $chunk : "(undef)"), "\n";
-    warn "`", '-' x 78, "\n";
-  };
-
-  return if $test_8_failed;
-  #warn "haven't failed yet";
-
-  if (defined $chunk) {
-    $chunk_buffer .= $chunk;
-    $total_octets_got += length($chunk);
-    while (length($chunk_buffer) >= MAX_STREAM_CHUNK_SIZE) {
-      my $next_chunk = substr($chunk_buffer, 0, MAX_STREAM_CHUNK_SIZE);
-      substr($chunk_buffer, 0, MAX_STREAM_CHUNK_SIZE) = "";
-      $test_8_failed++ unless(
-        $next_chunk eq ($next_chunk_character x MAX_STREAM_CHUNK_SIZE)
-      );
-      $next_chunk_character++;
-    }
-  }
-  else {
-    #warn "total: $total_octets_got is ", 26 * MAX_STREAM_CHUNK_SIZE;
-    #warn "next: $next_chunk_character";
-    #warn "length: ", length($chunk_buffer);
-    ok (
-      (
-        ($total_octets_got == 26 * MAX_STREAM_CHUNK_SIZE)
-        and ($next_chunk_character eq "AA")
-        and (length($chunk_buffer) == 0)
-      ),
-      'request 8'
-    );
-  }
-}
-
-#------------------------------------------------------------------------------
-
-# Create a weeble component.
+#my $cm = POE::Component::Client::Keepalive->new;
 POE::Component::Client::HTTP->spawn(
-  MaxSize           => MAX_BIG_REQUEST_SIZE,
-  Timeout           => 60,
-  Protocol          => 'HTTP/1.1',
-  ConnectionManager => $cm1,
+  #MaxSize => MAX_BIG_REQUEST_SIZE,
+  MaxSize => 200,
+  Timeout => 1,
+  #Protocol => 'HTTP/1.1', #default
+  #ConnectionManager => $cm, #default
 );
 
-# Create one for streaming.
-POE::Component::Client::HTTP->spawn(
-  Streaming         => MAX_STREAM_CHUNK_SIZE,
-  Alias             => "streamer",
-  ConnectionManager => $cm1,
-);
-
-# Create one for redirection.
-POE::Component::Client::HTTP->spawn(
-  FollowRedirects   => 9,
-  Alias             => "redirector",
-  Protocol          => 'HTTP/1.1',
-  ConnectionManager => $cm1,
-);
-
-# Create a session that will make some requests.
 POE::Session->create(
-  inline_states => {
-    _start              => \&client_start,
-    _stop               => \&client_stop,
-    got_response        => \&client_got_response,
-    got_big_response    => \&client_got_big_response,
-    got_stream_response => \&client_got_stream_response,
-    got_redir_response  => \&client_got_redir_response,
-    check_counts        => \&client_check_counts,
-  }
+  package_states => [
+    main => [qw(
+      _start
+      testd_registered
+      testd_client_input
+      got_response
+      send_after_timeout
+    )],
+  ]
 );
 
-# Run it all until done.
-$poe_kernel->run();
+$poe_kernel->run;
+exit 0;
 
-exit;
+sub _start {
+  $_[HEAP]->{testd} = Test::POE::Server::TCP->spawn(
+    filter => POE::Filter::Stream->new,
+    address => 'localhost',
+  );
+  my $port = $_[HEAP]->{testd}->port;
+  my @badrequests = (
+    GET("http://not.localhost/badhost"),
+    GET("file:///from/a/local/filesystem"),
+  );
+
+  my @fields = ('field1=111&', 'field2=222');
+
+  @requests = (
+    GET("http://localhost:$port/test", Connection => 'close'),
+    GET("http://localhost:$port/timeout", Connection => 'close'),
+    POST("http://localhost:$port/post1", [field1 => '111', field2 => '222']),
+    GET("http://localhost:$port/long", Connection => 'close'),
+    HTTP::Request->new(
+      POST => "http://localhost:$port/post2",
+      [], sub { return shift @fields }
+    ),
+    @badrequests,
+  );
+  
+  plan tests => @requests * 2 - @badrequests + 1;
+}
+
+sub testd_registered {
+  my ($kernel) = $_[KERNEL];
+
+  foreach my $r (@requests) {
+    $kernel->post(
+      'weeble',
+      request => 'got_response',
+      $r,
+    );
+  }
+}
+
+sub send_after_timeout {
+  my ($heap, $id) = @_[HEAP, ARG0];
+
+  $heap->{testd}->send_to_client($id, $data);
+  $heap->{testd}->shutdown;
+}
+
+sub testd_client_input {
+  my ($kernel, $heap, $id, $input) = @_[KERNEL, HEAP, ARG0, ARG1];
+
+  if ($input =~ /^GET \/test/) {
+    pass("got test request");
+    $heap->{testd}->send_to_client($id, $data);
+  }
+  elsif ($input =~ /^GET \/timeout/) {
+    pass("got test request we will let timeout");
+    $kernel->delay_add('send_after_timeout', 1.1, $id);
+  }
+  elsif ($input =~ /^POST \/post.*field/s) {
+    pass("got post request with content");
+    $heap->{testd}->send_to_client($id, $data);
+  }
+  elsif ($input =~ /^POST \/post(\d)/) {
+    $heap->{waitforcontent} = $1;
+  }
+  elsif ($heap->{waitforcontent}-- and $input =~ /field/) {
+    pass("got content for post request with callback");
+    $heap->{testd}->send_to_client($id, $data);
+  }
+  elsif ($input =~ /^GET \/long/) {
+    pass("sending too much data as requested");
+    $heap->{testd}->send_to_client($id, $long);
+  }
+  else {
+    diag("INPUT: $input");
+    diag("unexpected test");
+  }
+
+  delete $heap->{waitforcontent} unless $heap->{waitforcontent};
+}
+
+sub got_response {
+  my ($kernel, $heap, $request_packet, $response_packet) = @_[KERNEL, HEAP, ARG0, ARG1];
+
+  my $request = $request_packet->[0];
+  my $response = $response_packet->[0];
+
+  my $request_path = $request->uri->path . ''; # stringify
+
+  if ($request_path =~ m/\/test$/ and $response->code == 200) {
+    pass('got 200 response for test request')
+  }
+  elsif ($request_path =~ m/timeout$/ and $response->code == 408) {
+    pass('got 408 response for timed out request')
+  }
+  elsif ($request_path =~ m/\/post\d$/ and $response->code == 200) {
+    pass('got 200 response for post request')
+  }
+  elsif ($request_path =~ m/\/long$/ and $response->code == 400) {
+    pass('got 400 response for long request')
+  }
+  elsif ($request_path =~ m/badhost$/ and $response->code == 500) {
+    pass('got 500 response for request on bad host')
+  }
+  elsif ($request_path =~ m/filesystem$/ and $response->code == 400) {
+    pass('got 400 response for request with unsupported scheme')
+  }
+  else {
+    fail("unexpected response");
+    diag("path($request_path) code(" . $response->code() . ")");
+    diag("response(((");
+    diag($response->as_string);
+    diag(")))");
+  }
+}
