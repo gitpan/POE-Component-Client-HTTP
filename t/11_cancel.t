@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 11_cancel.t 336 2008-09-03 17:54:09Z martijn $
+# $Id: 11_cancel.t 350 2008-12-09 06:10:50Z rcaputo $
 # vim: filetype=perl
 
 use strict;
@@ -116,7 +116,7 @@ sub client_got_response {
   my ($http_headers, $chunk) = @$response_packet;
 
   DEBUG and do {
-    warn "client got stream request...\n";
+    warn "client got stream response...\n";
 
     my $response_string = $http_headers->as_string();
     $response_string =~ s/^/| /mg;
@@ -136,7 +136,7 @@ sub client_got_response {
       substr($chunk_buffer, 0, MAX_STREAM_CHUNK_SIZE) = "";
       $next_chunk_character++;
     }
-    $_[KERNEL]->post( streamer => cancel => $_[ARG0][0] );
+    $_[KERNEL]->call( streamer => cancel => $_[ARG0][0] );
     return;
   }
 

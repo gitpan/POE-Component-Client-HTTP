@@ -1,4 +1,4 @@
-# $Id: HTTP.pm 341 2008-11-24 22:32:18Z rcaputo $
+# $Id: HTTP.pm 351 2008-12-09 06:17:03Z rcaputo $
 
 package POE::Component::Client::HTTP;
 
@@ -11,7 +11,7 @@ use constant DEBUG      => 0;
 use constant DEBUG_DATA => 0;
 
 use vars qw($VERSION);
-$VERSION = '0.86';
+$VERSION = '0.87';
 
 use Carp qw(croak);
 use HTTP::Response;
@@ -182,6 +182,7 @@ sub _poco_weeble_stop {
 
   foreach my $request_rec (values %$request) {
     $request_rec->remove_timeout();
+    delete $heap->{ext_request_to_int_id}->{$request_rec->[REQ_HTTP_REQUEST]};
   }
 
   DEBUG and warn "Client::HTTP (alias=$heap->{alias}) stopped.";
@@ -263,7 +264,7 @@ sub _poco_weeble_request {
     $proxy_override, $sender
   );
   $heap->{request}->{$request->ID} = $request;
-  $heap->{request_to_id}->{$http_request} = $request->ID;
+  $heap->{ext_request_to_int_id}->{$http_request} = $request->ID;
 
   my @timeout;
   if ($heap->{factory}->timeout()) {
@@ -272,7 +273,6 @@ sub _poco_weeble_request {
     );
   }
 
-  my $cm_req_id;
   eval {
     # get a connection from Client::Keepalive
     $request->[REQ_CONN_ID] = $heap->{cm}->allocate(
@@ -286,6 +286,8 @@ sub _poco_weeble_request {
   };
   if ($@) {
     delete $heap->{request}->{$request->ID};
+    delete $heap->{ext_request_to_int_id}->{$http_request};
+
     # we can reach here for things like host being invalid.
     $request->error(400, $@);
   }
@@ -361,6 +363,7 @@ sub _poco_weeble_connect_done {
     DEBUG and warn "I/O: removing request $request_id";
     my $request = delete $heap->{request}->{$request_id};
     $request->remove_timeout();
+    delete $heap->{ext_request_to_int_id}->{$request->[REQ_HTTP_REQUEST]};
 
     # Post an error response back to the requesting session.
     $request->connect_error("$operation error $errnum: $errstr");
@@ -390,6 +393,7 @@ sub _poco_weeble_timeout {
 
   DEBUG and warn "T/O: request $request_id has timer ", $request->timer;
   $request->remove_timeout();
+  delete $heap->{ext_request_to_int_id}->{$request->[REQ_HTTP_REQUEST]};
 
   # There's a wheel attached to the request.  Shut it down.
   if (defined(my $wheel = $request->wheel())) {
@@ -399,8 +403,8 @@ sub _poco_weeble_timeout {
     # Shut down the connection so it's not reused.
     $wheel->shutdown_input();
     delete $heap->{wheel_to_request}->{$wheel_id};
-    delete $heap->{request_to_id}->{$request->[REQ_REQUEST]};
   }
+
 
   DEBUG and do {
     die( "T/O: request $request_id is unexpectedly zero" )
@@ -446,8 +450,8 @@ sub _poco_weeble_io_flushed {
   my $request = $heap->{request}->{$request_id};
   
   # Read content to send from a callback
-  if ( ref $request->[REQ_REQUEST]->content() eq 'CODE' ) {
-    my $callback = $request->[REQ_REQUEST]->content();
+  if ( ref $request->[REQ_HTTP_REQUEST]->content() eq 'CODE' ) {
+    my $callback = $request->[REQ_HTTP_REQUEST]->content();
 
     my $buf = eval { $callback->() };
 
@@ -492,8 +496,8 @@ sub _poco_weeble_io_error {
 
     DEBUG and warn "I/O: removing request $request_id";
     my $request = delete $heap->{request}->{$request_id};
-    delete $heap->{request_to_id}{$request->[REQ_REQUEST]};
     $request->remove_timeout;
+    delete $heap->{ext_request_to_int_id}{$request->[REQ_HTTP_REQUEST]};
 
     # Otherwise the remote end simply closed.  If we've got a
     # pending response, then post it back to the client.
@@ -537,7 +541,7 @@ sub _poco_weeble_io_error {
           200, 'OK', [ 'Content-Type' => 'text/html' ], $text
         );
         $request->[REQ_RESPONSE]->protocol('HTTP/0.9');
-        $request->[REQ_RESPONSE]->request($request->[REQ_REQUEST]);
+        $request->[REQ_RESPONSE]->request($request->[REQ_HTTP_REQUEST]);
         $request->[REQ_STATE] = RS_DONE;
         $request->return_response;
         return;
@@ -584,7 +588,7 @@ sub _poco_weeble_io_read {
   my $request = $heap->{request}->{$request_id};
   return unless defined $request;
   DEBUG and warn(
-    "REQUEST $request_id is $request <" . $request->[REQ_REQUEST]->uri . ">"
+    "REQUEST $request_id is $request <" . $request->[REQ_HTTP_REQUEST]->uri . ">"
   );
 
   # Reset the timeout if we get data.
@@ -601,9 +605,9 @@ sub _poco_weeble_io_read {
   # part of the content.
   if ($request->[REQ_STATE] & RS_IN_HEAD) {
     if (defined $input) {
-      $input->request ($request->[REQ_REQUEST]);
+      $input->request ($request->[REQ_HTTP_REQUEST]);
       #warn(
-      #  "INPUT for ", $request->[REQ_REQUEST]->uri, " is \n",$input->as_string
+      #  "INPUT for ", $request->[REQ_HTTP_REQUEST]->uri, " is \n",$input->as_string
       #)
     }
     else {
@@ -620,7 +624,7 @@ sub _poco_weeble_io_read {
     #        Make sure we finish even when it isn't one of these,
     #        but there is no content.
     if (
-      $request->[REQ_REQUEST]->method eq 'HEAD'
+      $request->[REQ_HTTP_REQUEST]->method eq 'HEAD'
       or $input->code =~ /^(?:1|[23]04)/
       or (
         defined($input->content_length())
@@ -632,8 +636,8 @@ sub _poco_weeble_io_read {
         delete $heap->{wheel_to_request}->{$wheel_id};
         if (defined $old_request) {
           DEBUG and warn "I/O: removed request $request_id";
-          delete $heap->{request_to_id}{$old_request->[REQ_REQUEST]};
           $old_request->remove_timeout();
+          delete $heap->{ext_request_to_int_id}{$old_request->[REQ_HTTP_REQUEST]};
           $old_request->[REQ_CONNECTION] = undef;
         }
         return;
@@ -654,7 +658,7 @@ sub _poco_weeble_io_read {
         delete $heap->{wheel_to_request}->{$wheel_id};
         if (defined $old_request) {
           DEBUG and warn "I/O: removed request $request_id";
-          delete $heap->{request_to_id}{$old_request->[REQ_REQUEST]};
+          delete $heap->{ext_request_to_int_id}{$old_request->[REQ_HTTP_REQUEST]};
           $old_request->remove_timeout();
           $old_request->[REQ_CONNECTION]->close();
           $old_request->[REQ_CONNECTION] = undef;
@@ -867,9 +871,9 @@ sub _finish_request {
     if (defined $request) {
       DEBUG and warn "I/O: removing request $request_id";
       $request->remove_timeout();
+      delete $heap->{ext_request_to_int_id}{$request->[REQ_HTTP_REQUEST]};
       if (my $wheel = $request->wheel) {
         delete $heap->{wheel_to_request}->{$wheel->ID};
-        delete $heap->{request_to_id}{$request->[REQ_REQUEST]};
       }
     }
   }
@@ -885,9 +889,9 @@ sub _poco_weeble_remove_request {
   if (defined $request) {
     DEBUG and warn "I/O: removed request $request_id";
     $request->remove_timeout();
+    delete $heap->{ext_request_to_int_id}{$request->[REQ_HTTP_REQUEST]};
     if (my $wheel = $request->wheel) {
       delete $heap->{wheel_to_request}->{$wheel->ID};
-      delete $heap->{request_to_id}{$request->[REQ_REQUEST]};
     }
   }
 }
@@ -897,7 +901,7 @@ sub _poco_weeble_remove_request {
 
 sub _poco_weeble_cancel {
   my ($kernel, $heap, $request) = @_[KERNEL, HEAP, ARG0];
-  my $request_id = $heap->{request_to_id}{$request};
+  my $request_id = $heap->{ext_request_to_int_id}{$request};
   return unless defined $request_id;
   _internal_cancel(
     $heap, $request_id, 408, "Request timed out (request canceled)"
@@ -912,12 +916,12 @@ sub _internal_cancel {
 
   DEBUG and warn "CXL: canceling request $request_id";
   $request->remove_timeout();
+  delete $heap->{ext_request_to_int_id}{$request->[REQ_HTTP_REQUEST]};
 
   if (my $wheel = $request->wheel) {
     my $wheel_id = $wheel->ID;
     DEBUG and warn "CXL: Request $request_id canceling wheel $wheel_id";
     delete $heap->{wheel_to_request}{$wheel_id};
-    delete $heap->{request_to_id}{$request->[REQ_REQUEST]};
     $wheel = undef;
   }
 

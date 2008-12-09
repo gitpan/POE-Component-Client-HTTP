@@ -1,4 +1,63 @@
 =================================
+2008-12-09T06:22:46.753700Z v0_87
+=================================
+
+  2008-12-09 06:17:03 (r351) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M; Makefile.PL M
+
+    Time for a new release. Bump the version and fix dependencies.
+
+  2008-12-09 06:10:50 (r350) by rcaputo; t/11_cancel.t M
+
+    Switch a post() to call() to avoid dispatch timing errors that caused
+    some machines to fail this test. I think it's the test's fault for
+    being intolerant, and I'm not entirely sure the fix will work
+    everywhere. 
+
+  2008-12-09 05:44:46 (r349) by rcaputo; t/01_request.t M
+
+    Fix a spurious test failure. Not all systems implement (or even
+    enable) Nagle's algorithm the same way. This change makes
+    t/01_request.t not as susceptible to packet transmission timing.
+    Previously the test would fail of packets were combined (but succeed
+    if, like on my development system, they were sent separately). 
+
+  2008-12-09 05:29:27 (r348) by rcaputo
+  lib/POE/Component/Client/HTTP/RequestFactory.pm M
+
+    Don't set a content length if the content is a reference. The content
+    length would be the reference's stringified length rather than the
+    length of any actual content. In the case of CODE references, content
+    will be generated in chunks anyway. 
+
+  2008-12-08 07:54:03 (r347) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Clean up the leaky ext_request_to_int_id in more places. Apocalypse
+    suggested using the requesting HTTP::Request reference directly as
+    the internal ID rather than mapping it. That bears some
+    investigation. 
+
+  2008-12-08 07:36:19 (r346) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    New version. RequestFactory doesn not like underscores in version
+    numbers.
+
+  2008-12-08 07:27:14 (r345) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Internal development release. 
+
+  2008-12-08 07:23:22 (r344) by rcaputo
+  t/01_stream.t M; lib/POE/Component/Client/HTTP.pm M;
+  lib/POE/Component/Client/HTTP/Request.pm M
+
+    Move data cleanup for request_to_id outside wheel check blocks. The
+    ID being cleaned up isn't a wheel's ID. Also renamed the data member
+    for future clarity, as well as REQ_REQUEST (related). 
+
+=================================
 2008-11-24T22:39:07.052333Z v0_86
 =================================
 
