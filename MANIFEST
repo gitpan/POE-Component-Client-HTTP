@@ -1,4 +1,4 @@
-# $Id: MANIFEST 336 2008-09-03 17:54:09Z martijn $
+# $Id: MANIFEST 360 2009-02-19 07:09:22Z rcaputo $
 CHANGES
 CHANGES.OLD
 MANIFEST
@@ -31,4 +31,5 @@ t/53_response_parser.t
 t/54_hzheng_head_redir.t
 t/55_reiss_double_resp.t
 t/56_redirect_excess.t
+t/57_pravus_progress.t
 t/58_joel_cancel_multi.t

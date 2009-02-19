@@ -1,18 +1,17 @@
 #!/usr/bin/perl -w
-# $Id: 10_shutdown.t 336 2008-09-03 17:54:09Z martijn $
+# $Id: 10_shutdown.t 354 2009-02-18 06:19:51Z rcaputo $
 # vim: filetype=perl
 
 use strict;
+
+sub DEBUG () { 0 }
+sub POE::Kernel::ASSERT_DEFAULT () { DEBUG }
 
 use HTTP::Request::Common qw(GET);
 use Test::More;
 use Test::POE::Server::TCP;
 
-sub DEBUG () { 0 }
-sub POE::Kernel::ASSERT_DEFAULT () { DEBUG }
-
 use POE qw(Component::Client::HTTP);
-
 
 plan tests => 2;
 

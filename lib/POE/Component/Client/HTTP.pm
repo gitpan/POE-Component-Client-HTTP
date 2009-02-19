@@ -1,4 +1,4 @@
-# $Id: HTTP.pm 351 2008-12-09 06:17:03Z rcaputo $
+# $Id: HTTP.pm 361 2009-02-19 07:14:19Z rcaputo $
 
 package POE::Component::Client::HTTP;
 
@@ -11,7 +11,7 @@ use constant DEBUG      => 0;
 use constant DEBUG_DATA => 0;
 
 use vars qw($VERSION);
-$VERSION = '0.87';
+$VERSION = '0.88';
 
 use Carp qw(croak);
 use HTTP::Response;
@@ -448,7 +448,7 @@ sub _poco_weeble_io_flushed {
   );
 
   my $request = $heap->{request}->{$request_id};
-  
+
   # Read content to send from a callback
   if ( ref $request->[REQ_HTTP_REQUEST]->content() eq 'CODE' ) {
     my $callback = $request->[REQ_HTTP_REQUEST]->content();
@@ -467,7 +467,7 @@ sub _poco_weeble_io_flushed {
       return;
     }
   }
-  
+
   $request->[REQ_STATE] ^= RS_SENDING;
   $request->[REQ_STATE] = RS_IN_HEAD;
   # XXX - Removed a second time.  The first time was in version 0.53,
@@ -492,79 +492,86 @@ sub _poco_weeble_io_error {
   my $request_id = delete $heap->{wheel_to_request}->{$wheel_id};
   #K or die "!!!: unexpectedly undefined request ID" unless defined $request_id;
 
-  if ($request_id) {
+  # There was no corresponding request?  Nothing left to do here.
+  return unless $request_id;
 
-    DEBUG and warn "I/O: removing request $request_id";
-    my $request = delete $heap->{request}->{$request_id};
-    $request->remove_timeout;
-    delete $heap->{ext_request_to_int_id}{$request->[REQ_HTTP_REQUEST]};
+  DEBUG and warn "I/O: removing request $request_id";
+  my $request = delete $heap->{request}->{$request_id};
+  $request->remove_timeout;
+  delete $heap->{ext_request_to_int_id}{$request->[REQ_HTTP_REQUEST]};
 
-    # Otherwise the remote end simply closed.  If we've got a
-    # pending response, then post it back to the client.
-    DEBUG and warn "STATE is ", $request->[REQ_STATE];
+  # Otherwise the remote end simply closed.  If we've got a pending
+  # response, then post it back to the client.
+  DEBUG and warn "STATE is ", $request->[REQ_STATE];
 
-    # except when we're redirected
-    return if ($request->[REQ_STATE] & RS_REDIRECTED);
+  # Except when we're redirected.  In this case, the connection was but
+  # one step towards our destination.
+  return if ($request->[REQ_STATE] & RS_REDIRECTED);
 
-    # If there was a non-zero error, then something bad happened.  Post
-    # an error response back, if we haven't posted anything before.
-    if ($errnum) {
-      unless ($request->[REQ_STATE] & RS_POSTED) {
-        $request->error(400, "$operation error $errnum: $errstr");
-      }
-      return;
+  # If there was a non-zero error, then something bad happened.  Post
+  # an error response back, if we haven't posted anything before.
+  if ($errnum) {
+    unless ($request->[REQ_STATE] & RS_POSTED) {
+      $request->error(400, "$operation error $errnum: $errstr");
     }
-
-    if (
-      $request->[REQ_STATE] & (RS_IN_CONTENT | RS_DONE) and
-      not $request->[REQ_STATE] & RS_POSTED
-    ) {
-      _finish_request($heap, $request, 0);
-      return;
-    }
-    elsif ($request->[REQ_STATE] & RS_POSTED) {
-      DEBUG and warn "I/O: Disconnect, remote keepalive timeout or HTTP/1.0.";
-      return;
-    }
-    elsif (not defined $request->[REQ_RESPONSE]) {
-      # never got a response, check for pending data indicating
-      # a LF-free HTTP 0.9 response
-      my $lines = $request->wheel->get_input_filter()->get_pending();
-      my $text = join '' => @$lines;
-      DEBUG and warn "Got ", length($text), " bytes of data without LF.";
-      if ($text =~ /\S/) {
-        # generate response
-        DEBUG and warn(
-          "Generating HTTP response for HTTP/0.9 response without LF."
-        );
-        $request->[REQ_RESPONSE] = HTTP::Response->new(
-          200, 'OK', [ 'Content-Type' => 'text/html' ], $text
-        );
-        $request->[REQ_RESPONSE]->protocol('HTTP/0.9');
-        $request->[REQ_RESPONSE]->request($request->[REQ_HTTP_REQUEST]);
-        $request->[REQ_STATE] = RS_DONE;
-        $request->return_response;
-        return;
-      } else {
-        unless ($request->[REQ_STATE] & RS_POSTED) {
-          $request->error(400, "incomplete response $request_id");
-          return;
-        }
-      }
-    }
-
-    # We haven't built a proper response.  Send back an error.
-    # Changed to 406 after considering rt.cpan.org 20975.
-    #
-    # 10.4.7 406 Not Acceptable
-    #
-    # The resource identified by the request is only capable of
-    # generating response entities which have content characteristics
-    # not acceptable according to the accept headers sent in the
-    # request.
-
-    $request->error(406, "Response larger than MaxSize - $request_id");
+    return;
   }
+
+  # We seem to have finished with the request.  Send back a response.
+  if (
+    $request->[REQ_STATE] & (RS_IN_CONTENT | RS_DONE) and
+    not $request->[REQ_STATE] & RS_POSTED
+  ) {
+    _finish_request($heap, $request, 0);
+    return;
+  }
+
+  # We have already posted a response, so this is a remote keepalive
+  # timeout or other delayed socket shutdown.  Nothing left to do.
+  if ($request->[REQ_STATE] & RS_POSTED) {
+    DEBUG and warn "I/O: Disconnect, remote keepalive timeout or HTTP/1.0.";
+    return;
+  }
+
+  # We never received a response.
+  if (not defined $request->[REQ_RESPONSE]) {
+    # Check for pending data indicating a LF-free HTTP 0.9 response.
+    my $lines = $request->wheel->get_input_filter()->get_pending();
+    my $text = join '' => @$lines;
+    DEBUG and warn "Got ", length($text), " bytes of data without LF.";
+
+    # If we have data, build and return a response from it.
+    if ($text =~ /\S/) {
+      DEBUG and warn(
+        "Generating HTTP response for HTTP/0.9 response without LF."
+      );
+      $request->[REQ_RESPONSE] = HTTP::Response->new(
+        200, 'OK', [ 'Content-Type' => 'text/html' ], $text
+      );
+      $request->[REQ_RESPONSE]->protocol('HTTP/0.9');
+      $request->[REQ_RESPONSE]->request($request->[REQ_HTTP_REQUEST]);
+      $request->[REQ_STATE] = RS_DONE;
+      $request->return_response;
+      return;
+    }
+
+    # No data received.  This is an incomplete response.
+    $request->error(400, "Incomplete response - $request_id");
+    return;
+  }
+
+  # We haven't built a proper response, and nothing returned by the
+  # server can be turned into a proper response.  Send back an error.
+  # Changed to 406 after considering rt.cpan.org 20975.
+  #
+  # 10.4.7 406 Not Acceptable
+  #
+  # The resource identified by the request is only capable of
+  # generating response entities which have content characteristics
+  # not acceptable according to the accept headers sent in the
+  # request.
+
+  $request->error(406, "Server response is Not Acceptable - $request_id");
 }
 
 # }}} _poco_weeble_io_error
@@ -1039,9 +1046,9 @@ POE::Component::Client::HTTP is an HTTP user-agent for POE.  It lets
 other sessions run while HTTP transactions are being processed, and it
 lets several HTTP transactions be processed in parallel.
 
-If POE::Component::Client::DNS is also installed, Client::HTTP will
-use it to resolve hosts without blocking.  Otherwise it will use
-gethostbyname(), which may have performance problems.
+It supports keep-alive through POE::Component::Client::Keepalive,
+which in turn uses POE::Component::Client::DNS for asynchronous name
+resolution.
 
 HTTP client components are not proper objects.  Instead of being
 created, as most objects are, they are "spawned" as separate sessions.
@@ -1207,8 +1214,48 @@ for details here.
 
 =item Timeout => $query_timeout
 
-C<Timeout> specifies the amount of time a HTTP request will wait for
-an answer.  This defaults to 180 seconds (three minutes).
+C<Timeout> sets how long POE::Component::Client::HTTP has to process
+an application's request, in seconds.  C<Timeout> defaults to 180
+(three minutes) if not specified.
+
+It's important to note that the timeout begins when the component
+receives an application's request, not when it attempts to connect to
+the web server.
+
+Timeouts may result from sending the component too many requests at
+once.  Each request would need to be received and tracked in order.
+Consider this:
+
+  $_[KERNEL]->post(component => request => ...) for (1..15_000);
+
+15,000 requests are queued together in one enormous bolus.  The
+component would receive and initialize them in order.  The first
+socket activity wouldn't arrive until the 15,000th request was set up.
+If that took longer than C<Timeout>, then the requests that have
+waited too long would fail.
+
+C<ConnectionManager>'s own timeout and concurrency limits also affect
+how many requests may be processed at once.  For example, most of the
+15,000 requests would wait in the connection manager's pool until
+sockets become available.  Meanwhile, the C<Timeout> would be counting
+down.
+
+Applications may elect to control concurrency outside the component's
+C<Timeout>.  They may do so in a few ways.
+
+The easiest way is to limit the initial number of requests to
+something more manageable.  As responses arrive, the application
+should handle them and start new requests.  This limits concurrency to
+the initial request count.
+
+An application may also outsource job throttling to another module,
+such as POE::Component::JobQueue.
+
+In any case, C<Timeout> and C<ConnectionManager> may be tuned to
+maximize timeouts and concurrency limits.  This may help in some
+cases.  Developers should be aware that doing so will increase memory
+usage.  POE::Component::Client::HTTP and KeepAlive track requests in
+memory, while applications are free to keep pending requests on disk.
 
 =back
 
@@ -1330,11 +1377,11 @@ each time it is called, and an empty string when done.  Don't forget
 to set the Content-Length header correctly.  Example:
 
   my $request = HTTP::Request->new( PUT => 'http://...' );
-  
+
   my $file = '/path/to/large_file';
-  
+
   open my $fh, '<', $file;
-  
+
   my $upload_cb = sub {
     if ( sysread $fh, my $buf, 4096 ) {
       return $buf;
@@ -1344,11 +1391,11 @@ to set the Content-Length header correctly.  Example:
       return '';
     }
   };
-  
+
   $request->content_length( -s $file );
-  
+
   $request->content( $upload_cb );
-  
+
   $kernel->post( ua => request, 'response', $request );
 
 =head1 CONTENT ENCODING AND COMPRESSION
@@ -1367,7 +1414,7 @@ use HTTP::Response's decoded_content() method rather than content():
   );
 
   # ... time passes ...
-  
+
   my $content = $response->decoded_content();
 
 The change in POE::Component::Client::HTTP behavior was prompted by
@@ -1414,7 +1461,7 @@ There is no object oriented interface.  See
 L<POE::Component::Client::Keepalive> and
 L<POE::Component::Client::DNS> for examples of a decent OO interface.
 
-=head1 AUTHOR, COPYRIGHT, & LICENSE 
+=head1 AUTHOR, COPYRIGHT, & LICENSE
 
 POE::Component::Client::HTTP is
 
@@ -1460,3 +1507,4 @@ For questions, try the L<POE> mailing list (poe@perl.org)
 =cut
 
 # }}} POD
+# rocco // vim: ts=2 sw=2 expandtab

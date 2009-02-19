@@ -1,4 +1,4 @@
-# $Id: 02_keepalive.t 336 2008-09-03 17:54:09Z martijn $
+# $Id: 02_keepalive.t 354 2009-02-18 06:19:51Z rcaputo $
 # vim: filetype=perl sts=2 sw=2
 use strict;
 
@@ -97,11 +97,11 @@ sub testd_client_input {
   if ($input =~ /Close/) {
     $heap->{testd}->disconnect($id);
     $heap->{prevtype} = 'close';
-    my $tosend =~ s/CONNECTION/$cl/;
+    $tosend =~ s/CONNECTION/$cl/;
   } else {
     $kernel->delay('timeout', 2, $id);
     $heap->{prevtype} = 'reuse';
-    my $tosend =~ s/CONNECTION/$ka/;
+    $tosend =~ s/CONNECTION/$ka/;
   }
   $heap->{previd} = $id;
   $heap->{testd}->send_to_client($id, $tosend);

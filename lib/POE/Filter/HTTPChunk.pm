@@ -1,4 +1,4 @@
-# $Id: HTTPChunk.pm 320 2008-04-19 22:46:23Z rcaputo $
+# $Id: HTTPChunk.pm 354 2009-02-18 06:19:51Z rcaputo $
 
 package POE::Filter::HTTPChunk;
 use warnings;
@@ -167,7 +167,12 @@ sub get_one {
         unshift (@{$self->[FRAMING_BUFFER]}, $chunk) if (length $chunk);
         return $retval;
       }
-      unshift (@{$self->[FRAMING_BUFFER]}, $chunk);
+      if (@{$self->[FRAMING_BUFFER]}) {
+          $self->[FRAMING_BUFFER]->[0] = $chunk . $self->[FRAMING_BUFFER]->[0];
+      } else {
+          unshift (@{$self->[FRAMING_BUFFER]}, $chunk);
+          return $retval;
+      }
     }
   }
   return $retval;

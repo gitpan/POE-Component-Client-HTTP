@@ -1,4 +1,4 @@
-# $Id: RequestFactory.pm 348 2008-12-09 05:29:27Z rcaputo $
+# $Id: RequestFactory.pm 360 2009-02-19 07:09:22Z rcaputo $
 
 package POE::Component::Client::HTTP::RequestFactory;
 use strict;
@@ -265,11 +265,19 @@ sub create_request {
   # Create a progress postback if requested.
   my $progress_postback;
   if (defined $progress_event) {
-    $progress_postback = $sender->postback(
-      $progress_event,
-      $http_request,
-      $tag
-    );
+    if (ref $progress_event) {
+      # The given progress event appears to already
+      # be a postback, so use it.  This is needed to
+      # propagate the postback through redirects.
+      $progress_postback = $progress_event;
+    }
+    else {
+      $progress_postback = $sender->postback(
+        $progress_event,
+        $http_request,
+        $tag
+      );
+    }
   }
 
   # If we have a cookie jar, have it add the appropriate headers.
@@ -306,7 +314,7 @@ sub create_request {
     Request => $http_request,
     Proxy => $proxy,
     Postback => $postback,
-    Tag => $tag,
+    #Tag => $tag, # TODO - Is this needed for anything?
     Progress => $progress_postback,
     Factory => $self,
   );

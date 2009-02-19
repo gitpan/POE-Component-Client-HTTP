@@ -1,4 +1,70 @@
 =================================
+2009-02-19T07:14:44.152645Z v0_88
+=================================
+
+  2009-02-19 07:14:19 (r361) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Time for a new release.
+
+  2009-02-19 07:09:22 (r360) by rcaputo
+  lib/POE/Component/Client/HTTP/RequestFactory.pm M;
+  t/57_pravus_progress.t A; MANIFEST M
+
+    Add PRAVUS' test case and patch to return progress events even after
+    a redirect. Resolves his rt.cpan.org ticket, #36627. 
+
+  2009-02-19 05:20:37 (r359) by rcaputo
+  lib/POE/Component/Client/HTTP/Request.pm M
+
+    Comment the RS_* states.
+
+  2009-02-19 04:00:21 (r358) by rcaputo; t/01_request.t M
+
+    Resolve rt.cpan.org #41278, reported by Andreas J. König. The
+    component test was timing out on his smoker, so I increased the
+    timeout. 
+
+  2009-02-18 17:43:15 (r357) by rcaputo
+  lib/POE/Component/Client/HTTP/RequestFactory.pm M;
+  lib/POE/Component/Client/HTTP.pm M
+
+    Resolve rt.cpan.org #35951, reported by Dave Miller. We were passing
+    Tag to POE::Component::Client::Request->new() when it wasn't
+    necessary. 
+
+  2009-02-18 17:36:32 (r356) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Resolve rt.cpan.org ticket #27643. When a server disconnects before
+    responding, POE::Component::Client::HTTP returns a 406 error to the
+    application. The "MaxSize" error was incorrect and has been replaced
+    with "Server response is Not Acceptable". The surrounding logic has
+    been simplified somewhat as well. 
+
+  2009-02-18 07:29:34 (r355) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Clarify the docs per Evan Carroll's suggestion. Resolves rt.cpan.org
+    ticket 41312. 
+
+  2009-02-18 06:19:51 (r354) by rcaputo
+  t/10_shutdown.t M; lib/POE/Filter/HTTPChunk.pm M; t/04_chunk_filter.t
+  M; t/02_keepalive.t M; t/11_cancel.t M
+
+    Clean up several warnings introduced by recent POE changes.
+    
+    Apply Zhurs' patch to resolve rt.cpan.org tickets 43073 and 25855.
+    POE::Filter::HTTPChunk would go into an infinite loop on bad chunk
+    trailer data, but now it appears to be fixed. Thank you! 
+
+  2009-01-06 03:11:42 (r353) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M
+
+    Doc fix. Client::DNS is used by Client::Keepalive and is currently
+    not optional.
+
+=================================
 2008-12-09T06:22:46.753700Z v0_87
 =================================
 
