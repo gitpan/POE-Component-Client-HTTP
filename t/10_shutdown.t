@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 10_shutdown.t 354 2009-02-18 06:19:51Z rcaputo $
+# $Id: 10_shutdown.t 365 2009-07-26 23:01:30Z rcaputo $
 # vim: filetype=perl
 
 use strict;
@@ -16,7 +16,7 @@ use POE qw(Component::Client::HTTP);
 plan tests => 2;
 
 # Create a weeble component.
-POE::Component::Client::HTTP->spawn( Timeout => 1 );
+POE::Component::Client::HTTP->spawn( Timeout => 2 );
 
 # Create a session that will make some requests.
 POE::Session->create(

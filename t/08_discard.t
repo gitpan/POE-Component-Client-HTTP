@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $Id: 08_discard.t 273 2006-09-25 17:16:03Z rcaputo $
+# $Id: 08_discard.t 365 2009-07-26 23:01:30Z rcaputo $
 # -*- perl -*-
 # vim: filetype=perl
 
@@ -16,7 +16,7 @@ use Socket;
 
 POE::Component::Client::HTTP->spawn(
  Alias => 'ua',
- Timeout => 1
+ Timeout => 2,
 );
 
 # We are testing against a localhost server.

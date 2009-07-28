@@ -1,3 +1,54 @@
+==================================
+2009-07-28T06:25:31.783332Z v0_890
+==================================
+
+  2009-07-28 06:21:07 (r369) by rcaputo; Makefile.PL M
+
+    Use the latest POE::Component::Client::Keepalive, too.
+
+  2009-07-28 06:20:01 (r368) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M; Makefile.PL M
+
+    Use latest POE, and prepare for a new release.
+
+  2009-07-27 04:53:43 (r367) by rcaputo
+  lib/POE/Component/Client/HTTP.pm M; Makefile.PL M
+
+    Added a machine-readable repository directory to the distribution.
+    Documented the bug tracker, repository, and other resource URLs. 
+
+  2009-07-26 23:03:04 (r366) by rcaputo; t/59_incomplete_b.t A
+
+    Forgot to add this test in the last commit.
+
+  2009-07-26 23:01:30 (r365) by rcaputo
+  t/01_request.t M; t/01_stream.t M; t/10_shutdown.t M;
+  lib/POE/Component/Client/HTTP.pm M; t/08_discard.t M; MANIFEST M;
+  t/55_reiss_double_resp.t M; lib/POE/Filter/HTTPHead.pm M;
+  lib/POE/Component/Client/HTTP/Request.pm M; t/02_keepalive.t M
+
+    Resolve a long-standing debate between MaxSize and Content-Length
+    headers. If the Content-Length is greater than MaxSize, or the length
+    of the content is (in the case where there is no Content-Length
+    header), then we return a 406 Not Acceptable error rather than
+    truncated data.
+    
+    Users who want truncated data should issue range requests instead of
+    relying upon MaxSize. Besides, MaxSize won't let you resume your
+    request where it left off.
+    
+    Resolves rt.cpan.org ticket 26874. 
+
+  2009-07-26 17:33:10 (r364) by rcaputo
+  lib/POE/Component/Client/HTTP/Request.pm M
+
+    Internal component errors are sometimes indistinguishable from
+    external server errors. Add a bit of text to differentiate them. 
+
+  2009-03-07 15:47:52 (r363) by martijn; t/01_request.t M
+
+    apply patch from Apocalypse to make invalid host test more robust 
+
 =================================
 2009-02-19T07:14:44.152645Z v0_88
 =================================
@@ -173,141 +224,6 @@
     version of t/58_joel_cancel_multi.t does everything it does and more
     and by updating t/58_joel_cancel_multi.t to my version because the
     changes in trunk were assuming the non-local tests. 
-
-=================================
-2008-07-13T08:07:37.418057Z v0_85
-=================================
-
-  2008-07-13 08:07:22 (r334) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Time for another release.
-
-  2008-07-13 06:26:14 (r333) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M; t/57_joel_immed_cancel.t M;
-  t/58_joel_cancel_multi.t M
-
-    Don't die when canceling requests or shutting down components. 
-
-  2008-07-09 19:44:56 (r332) by martijn; t/04_chunk_filter.t M
-
-    forget about reading from DATA. This way we can control how much data
-    we feed to the filter, so we get better coverage. 
-
-  2008-07-09 19:44:41 (r331) by martijn; t/04_chunk_filter.t M
-
-    de-poe-ify 04_chunk_filter.t too. 
-
-  2008-07-09 19:44:21 (r330) by martijn; t/03_head_filter.t M
-
-    get coverage up to same level as with the old tests. 
-
-  2008-07-09 19:44:07 (r329) by martijn; t/03_head_filter.t M
-
-    stop using POE while testing Filter::HTTPHead. 
-
-=================================
-2008-05-28T17:35:59.670622Z v0_84
-=================================
-
-  2008-05-28 17:33:06 (r327) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M; t/14_gzipped_content.t M;
-  lib/POE/Component/Client/HTTP/Request.pm M
-
-    Resolve Content-Encoding issue surfaced by recent changes to
-    HTTP::Response. Applies the fix recommeded by Yuri Karaban in
-    rt.cpan.org ticket 35538. 
-
-  2008-05-04 06:57:15 (r326) by rcaputo
-  lib/POE/Component/Client/HTTP/Request.pm M
-
-    Resolve character encoding issues arising from a change in
-    HTTP::Message's decoded_content() behavior. Tentatively resolves
-    rt.cpan.org ticket 35538, reported by Yuri Karaban, with additional
-    commentary and a test case by "OverlordQ". 
-
-  2008-04-20 00:34:15 (r325) by rcaputo; MANIFEST M
-
-    Add t/59_andy_one_keepalive.t 
-
-=================================
-2008-04-20T00:30:17.408340Z v0_83
-=================================
-
-  2008-04-20 00:29:46 (r323) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Release time! 
-
-  2008-04-20 00:26:49 (r322) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Apply Kim Scheibel's patch to support a BindAddress parameter. Useful
-    for running on multi-homed machines. Resolves rt.cpan.org ticket
-    34837. 
-
-  2008-04-19 22:56:52 (r321) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
-    Apply Yuri Karaban's patch to avoid losing responses when a redirect
-    fails. Resolves rt.cpan.org ticket 25577. 
-
-  2008-04-19 22:46:23 (r320) by rcaputo
-  lib/POE/Filter/HTTPChunk.pm M; lib/POE/Component/Client/HTTP.pm M
-
-    Apply Yuri Karaban's patch to respond correctly if the server closes
-    connection before sending headers. Resolves rt.cpan.org ticket 25920. 
-
-  2008-03-25 07:51:12 (r319) by rcaputo; lib/POE/Filter/HTTPHead.pm M
-
-    Apply Jeffrey Posnick's patch to support duplicate headers. Before
-    his patch, subsequent headers of the same type would overwrite
-    previous ones. For example, a second Cookie header would clobber the
-    first. Resolves rt.cpan.org 27262. 
-
-  2008-03-25 07:42:11 (r318) by rcaputo
-  lib/POE/Component/Client/HTTP/Request.pm M
-
-    Apply Dan Sterling's patch to use Time::HiRes when it's available. He
-    was running into premature timeouts when using subsecond timeouts.
-    Resolves rt.cpan.org 30466. 
-
-  2008-03-24 18:05:00 (r317) by rcaputo; Makefile.PL M
-
-    Rely on the latest POE::Component::Client::Keepalive, which includes
-    a fix for a common noisy POE::Kernel trap. 
-
-  2008-03-24 18:03:29 (r316) by rcaputo
-  lib/POE/Component/Client/HTTP/Request.pm M
-
-    Apply Andrew Sterling Hanenkamp's patch to not pass cookies across
-    redirects. Previously cookie headers would bleed with a redirect,
-    which is extremely bad. Resolves rt.cpan.org ticket 30400. 
-
-  2008-03-24 17:53:15 (r315) by rcaputo
-  lib/POE/Component/Client/HTTP/Request.pm M
-
-    Apply Andrew Sterling Hanenkamp's suggestion not to bail out of
-    redirect if we reach the same URL twice. It was doing the wrong thing
-    with certain site authentication schemes. Resolves rt.cpan.org ticket
-    30399. 
-
-  2008-03-24 17:44:53 (r314) by rcaputo
-  lib/POE/Component/Client/HTTP/Request.pm M
-
-    Apply Andrew Sterling Hannenkamp's patch to frob redirect cookies
-    (they count!). Resolves rt.cpan.org ticket 30401. 
-
-  2007-08-17 13:54:25 (r313) by andyg; t/59_andy_one_keepalive.t A
-
-    A failing test for reusing a single keep-alive connection (run with
-    DEBUG)
-
-  2007-05-20 12:50:02 (r312) by martijn
-  lib/POE/Component/Client/HTTP/Request.pm M
-
-    r955@kazad-dum: martijn | 2007-05-20 12:06:14 +0200 spell my name
-    right :) 
 
 ==============
 End of Excerpt

@@ -1,4 +1,4 @@
-# $Id: 02_keepalive.t 354 2009-02-18 06:19:51Z rcaputo $
+# $Id: 02_keepalive.t 365 2009-07-26 23:01:30Z rcaputo $
 # vim: filetype=perl sts=2 sw=2
 use strict;
 
@@ -151,7 +151,7 @@ sub client_got_response {
 # Create a weeble component.
 POE::Component::Client::HTTP->spawn(
   #MaxSize           => MAX_BIG_REQUEST_SIZE,
-  Timeout           => 1,
+  Timeout           => 2,
   ConnectionManager => $cm,
 );
 

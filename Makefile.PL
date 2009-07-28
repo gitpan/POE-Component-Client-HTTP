@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: Makefile.PL 351 2008-12-09 06:17:03Z rcaputo $
+# $Id: Makefile.PL 369 2009-07-28 06:21:07Z rcaputo $
 
 use strict;
 use lib qw(./mylib);
@@ -9,12 +9,12 @@ use ExtUtils::MakeMaker;
 open(CHANGES, ">>CHANGES") and close CHANGES;
 
 my %prereq = (
-  'POE'                => 0.3202,
+  'POE'                => 1.007,
   'HTTP::Request'      => 1.30,
   'HTTP::Response'     => 1.37,
   'URI'                => 1.24,
   'Net::HTTP::Methods' => 0.02,
-  'POE::Component::Client::Keepalive' => 0.25,
+  'POE::Component::Client::Keepalive' => 0.260,
   'Test::POE::Server::TCP' => 0,
 );
 
@@ -26,6 +26,12 @@ WriteMakefile(
   LICENSE      => 'perl',
   VERSION_FROM => 'lib/POE/Component/Client/HTTP.pm',
   PREREQ_PM    => \%prereq,
+  META_ADD     => {
+    resources  => {
+      license    => 'http://dev.perl.org/licenses/',
+      repository => 'http://thirdlobe.com/svn/poco-client-http/trunk'
+    },
+  },
   dist         => {
     COMPRESS   => 'gzip -9f',
     SUFFIX     => 'gz',
