@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# $Id: 53_response_parser.t 341 2008-11-24 22:32:18Z rcaputo $
 # vim: filetype=perl
 
 # Generic response parser testing, especially for cases where

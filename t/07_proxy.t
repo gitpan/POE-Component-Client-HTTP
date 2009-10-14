@@ -1,5 +1,4 @@
 #! /usr/bin/perl
-# $Id: 07_proxy.t 308 2007-02-09 07:14:18Z rcaputo $
 # -*- perl -*-
 # vim: filetype=perl
 

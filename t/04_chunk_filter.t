@@ -1,4 +1,3 @@
-# $Id: 04_chunk_filter.t 354 2009-02-18 06:19:51Z rcaputo $
 # vim: filetype=perl ts=2 sw=2 expandtab
 
 use strict;

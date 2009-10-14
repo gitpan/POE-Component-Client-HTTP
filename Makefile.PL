@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# $Id: Makefile.PL 369 2009-07-28 06:21:07Z rcaputo $
 
 use strict;
 use lib qw(./mylib);
@@ -9,12 +8,12 @@ use ExtUtils::MakeMaker;
 open(CHANGES, ">>CHANGES") and close CHANGES;
 
 my %prereq = (
-  'POE'                => 1.007,
+  'POE'                => 1.280,
   'HTTP::Request'      => 1.30,
   'HTTP::Response'     => 1.37,
   'URI'                => 1.24,
   'Net::HTTP::Methods' => 0.02,
-  'POE::Component::Client::Keepalive' => 0.260,
+  'POE::Component::Client::Keepalive' => 0.261,
   'Test::POE::Server::TCP' => 0,
 );
 
@@ -29,14 +28,14 @@ WriteMakefile(
   META_ADD     => {
     resources  => {
       license    => 'http://dev.perl.org/licenses/',
-      repository => 'http://thirdlobe.com/svn/poco-client-http/trunk'
+      repository => 'http://github.com/rcaputo/poe-component-client-http'
     },
   },
   dist         => {
     COMPRESS   => 'gzip -9f',
     SUFFIX     => 'gz',
     PREOP      => (
-      'svn-log.perl | tee ./$(DISTNAME)-$(VERSION)/CHANGES > ./CHANGES'
+      'git-log.pl | tee ./$(DISTNAME)-$(VERSION)/CHANGES > ./CHANGES'
     ),
   },
 );

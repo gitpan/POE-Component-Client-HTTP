@@ -1,4 +1,3 @@
-# $Id: 03_head_filter.t 339 2008-11-21 08:26:19Z rcaputo $
 # vim: filetype=perl ts=2 sw=2 tabexpand
 
 use strict;

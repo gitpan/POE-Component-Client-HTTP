@@ -1,5 +1,4 @@
 #!/usr/bin/perl -w
-# $Id: 10_shutdown.t 365 2009-07-26 23:01:30Z rcaputo $
 # vim: filetype=perl
 
 use strict;

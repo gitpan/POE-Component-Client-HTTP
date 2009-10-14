@@ -1,5 +1,3 @@
-# $Id: HTTP.pm 368 2009-07-28 06:20:01Z rcaputo $
-
 package POE::Component::Client::HTTP;
 
 # {{{ INIT
@@ -11,7 +9,7 @@ use constant DEBUG      => 0;
 use constant DEBUG_DATA => 0;
 
 use vars qw($VERSION);
-$VERSION = '0.890';
+$VERSION = '0.891';
 
 use Carp qw(croak);
 use HTTP::Response;
@@ -194,7 +192,7 @@ sub _poco_weeble_stop {
 sub _poco_weeble_pending_requests_count {
   my ($heap) = $_[HEAP];
   my $r = $heap->{request} || {};
-  return keys %$r;
+  return scalar keys %$r;
 }
 
 # }}} _poco_weeble_pending_requests_count
@@ -615,7 +613,8 @@ sub _poco_weeble_io_read {
     if (defined $input) {
       $input->request ($request->[REQ_HTTP_REQUEST]);
       #warn(
-      #  "INPUT for ", $request->[REQ_HTTP_REQUEST]->uri, " is \n",$input->as_string
+      #  "INPUT for ", $request->[REQ_HTTP_REQUEST]->uri,
+      #  " is \n",$input->as_string
       #)
     }
     else {
@@ -878,9 +877,9 @@ sub _finish_request {
   DEBUG and warn "address is $address";
 
   if ($wait) {
-    #wait a bit with removing the request, so there's
-    #time to receive the EOF event in case the connection
-    #gets closed.
+    # Wait a bit with removing the request, so there's time to receive
+    # the EOF event in case the connection gets closed.
+    # TODO - Inflates the pending request count.  Why do we do this?
     my $alarm_id = $poe_kernel->delay_set('remove_request', 0.5, $request_id);
 
     # remove the old timeout first
@@ -1513,11 +1512,12 @@ to version 0.79.  He's a kwalitee-increasing machine!
 
 =head1 BUG TRACKER
 
-https://rt.cpan.org/Dist/Display.html?Status=Active&Queue=POE-Component-Client-HTTP
+https://rt.cpan.org/Dist/Display.html?Queue=POE-Component-Client-HTTP
 
 =head1 REPOSITORY
 
-http://thirdlobe.com/svn/poco-client-http/
+http://github.com/rcaputo/poe-component-client-http
+http://gitorious.org/poe-component-client-http
 
 =head1 OTHER RESOURCES
 

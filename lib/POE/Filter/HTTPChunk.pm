@@ -1,5 +1,3 @@
-# $Id: HTTPChunk.pm 354 2009-02-18 06:19:51Z rcaputo $
-
 package POE::Filter::HTTPChunk;
 use warnings;
 use strict;

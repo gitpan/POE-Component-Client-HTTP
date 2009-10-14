@@ -1,4 +1,3 @@
-# $Id: 05_request.t 178 2005-06-22 16:22:17Z rcaputo $
 # vim: filetype=perl
 
 use strict;

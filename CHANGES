@@ -1,225 +1,283 @@
-==================================
-2009-07-28T06:25:31.783332Z v0_890
-==================================
+================================
+2009-10-14 03:06:39 -0400 v0_891
+================================
 
-  2009-07-28 06:21:07 (r369) by rcaputo; Makefile.PL M
+  commit 1fb613b8f784082fc52c5347ff6be41a1266755a
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Wed Oct 14 03:06:39 2009 -0400
+  
+    Prepare for release.
 
+  commit 2f6027dd7443a3a8f33c54ea1c5ff3e1ee3d93e8
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Tue Oct 13 01:36:36 2009 -0400
+  
+    Remove POE::Wheel::ReadWrite. We can't call select() on DATA handles,
+    because Windows doesn't support it.
+
+  commit 8d198280aad5075f1aab95a29fc853b99fe9dffa
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Tue Oct 13 00:01:16 2009 -0400
+  
+    Add a 00_info.t test to help diagnose platform and dependency based
+    issues.
+
+  commit e517d3eea4192fa73c0eaffe5410ece9c3bf1f77
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Mon Sep 14 12:16:36 2009 -0400
+  
+    Upgrade distribution to git based workflow. 
+
+================================
+2009-07-28 06:21:07 +0000 v0_890
+================================
+
+  commit 50a16c97409d7750b2af936af2d496452d8e1d3a
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Tue Jul 28 06:21:07 2009 +0000
+  
     Use the latest POE::Component::Client::Keepalive, too.
 
-  2009-07-28 06:20:01 (r368) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M; Makefile.PL M
-
+  commit 12e70fd8894acba9bc1c48452b13dbafa8b71a29
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Tue Jul 28 06:20:01 2009 +0000
+  
     Use latest POE, and prepare for a new release.
 
-  2009-07-27 04:53:43 (r367) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M; Makefile.PL M
-
+  commit 9801e9beab0b93ab9aed167551e8b05083f65ff2
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Mon Jul 27 04:53:43 2009 +0000
+  
     Added a machine-readable repository directory to the distribution.
-    Documented the bug tracker, repository, and other resource URLs. 
+    Documented the bug tracker, repository, and other resource URLs.
 
-  2009-07-26 23:03:04 (r366) by rcaputo; t/59_incomplete_b.t A
-
+  commit acd28ee7bbe92c30a88a14129ff0fddb2f9f2c66
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Sun Jul 26 23:03:04 2009 +0000
+  
     Forgot to add this test in the last commit.
 
-  2009-07-26 23:01:30 (r365) by rcaputo
-  t/01_request.t M; t/01_stream.t M; t/10_shutdown.t M;
-  lib/POE/Component/Client/HTTP.pm M; t/08_discard.t M; MANIFEST M;
-  t/55_reiss_double_resp.t M; lib/POE/Filter/HTTPHead.pm M;
-  lib/POE/Component/Client/HTTP/Request.pm M; t/02_keepalive.t M
-
+  commit e08485f54654c7c639dff95cdcfb030289112634
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Sun Jul 26 23:01:30 2009 +0000
+  
     Resolve a long-standing debate between MaxSize and Content-Length
     headers. If the Content-Length is greater than MaxSize, or the length
     of the content is (in the case where there is no Content-Length
     header), then we return a 406 Not Acceptable error rather than
     truncated data.
-    
+
     Users who want truncated data should issue range requests instead of
     relying upon MaxSize. Besides, MaxSize won't let you resume your
     request where it left off.
-    
-    Resolves rt.cpan.org ticket 26874. 
 
-  2009-07-26 17:33:10 (r364) by rcaputo
-  lib/POE/Component/Client/HTTP/Request.pm M
+    Resolves rt.cpan.org ticket 26874.
 
+  commit 32b09b024bf7496ce51728291bc74a2f9c99b0ca
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Sun Jul 26 17:33:10 2009 +0000
+  
     Internal component errors are sometimes indistinguishable from
-    external server errors. Add a bit of text to differentiate them. 
+    external server errors. Add a bit of text to differentiate them.
 
-  2009-03-07 15:47:52 (r363) by martijn; t/01_request.t M
-
+  commit 5eac979fffb0721e23b26d4a0a9684a62cf14212
+  Author: Martijn van Beers <martijn@eekeek.org>
+  Date:   Sat Mar 7 15:47:52 2009 +0000
+  
     apply patch from Apocalypse to make invalid host test more robust 
 
-=================================
-2009-02-19T07:14:44.152645Z v0_88
-=================================
+===============================
+2009-02-19 07:14:19 +0000 v0_88
+===============================
 
-  2009-02-19 07:14:19 (r361) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
+  commit b821cb5e79f2b99c012ff0eefee8574d788bc24e
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Thu Feb 19 07:14:19 2009 +0000
+  
     Time for a new release.
 
-  2009-02-19 07:09:22 (r360) by rcaputo
-  lib/POE/Component/Client/HTTP/RequestFactory.pm M;
-  t/57_pravus_progress.t A; MANIFEST M
-
+  commit 273ab6aa81950ddaa39efd9811874692bb101e83
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Thu Feb 19 07:09:22 2009 +0000
+  
     Add PRAVUS' test case and patch to return progress events even after
-    a redirect. Resolves his rt.cpan.org ticket, #36627. 
+    a redirect. Resolves his rt.cpan.org ticket, #36627.
 
-  2009-02-19 05:20:37 (r359) by rcaputo
-  lib/POE/Component/Client/HTTP/Request.pm M
-
+  commit 35e945c026d70d372a4dc31938a2ebcd81c38cba
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Thu Feb 19 05:20:37 2009 +0000
+  
     Comment the RS_* states.
 
-  2009-02-19 04:00:21 (r358) by rcaputo; t/01_request.t M
-
-    Resolve rt.cpan.org #41278, reported by Andreas J. König. The
+  commit 2d1ef1672712ca3c5187099d74bc777d1d1b030b
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Thu Feb 19 04:00:21 2009 +0000
+  
+    Resolve rt.cpan.org #41278, reported by Andreas J. KÃ¶nig. The
     component test was timing out on his smoker, so I increased the
-    timeout. 
+    timeout.
 
-  2009-02-18 17:43:15 (r357) by rcaputo
-  lib/POE/Component/Client/HTTP/RequestFactory.pm M;
-  lib/POE/Component/Client/HTTP.pm M
-
+  commit e577366925b1ad850518e077d21588baad1e390b
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Wed Feb 18 17:43:15 2009 +0000
+  
     Resolve rt.cpan.org #35951, reported by Dave Miller. We were passing
     Tag to POE::Component::Client::Request->new() when it wasn't
-    necessary. 
+    necessary.
 
-  2009-02-18 17:36:32 (r356) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
+  commit 1c655dbd46f0446463519179bd7fae88b96b9b22
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Wed Feb 18 17:36:32 2009 +0000
+  
     Resolve rt.cpan.org ticket #27643. When a server disconnects before
     responding, POE::Component::Client::HTTP returns a 406 error to the
     application. The "MaxSize" error was incorrect and has been replaced
     with "Server response is Not Acceptable". The surrounding logic has
-    been simplified somewhat as well. 
+    been simplified somewhat as well.
 
-  2009-02-18 07:29:34 (r355) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
+  commit 3fe6efbd87557d42e8695f766026ce014d7ba241
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Wed Feb 18 07:29:34 2009 +0000
+  
     Clarify the docs per Evan Carroll's suggestion. Resolves rt.cpan.org
-    ticket 41312. 
+    ticket 41312.
 
-  2009-02-18 06:19:51 (r354) by rcaputo
-  t/10_shutdown.t M; lib/POE/Filter/HTTPChunk.pm M; t/04_chunk_filter.t
-  M; t/02_keepalive.t M; t/11_cancel.t M
-
+  commit 74c18aafbb06e9e662c8e046c22be007b762fbb4
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Wed Feb 18 06:19:51 2009 +0000
+  
     Clean up several warnings introduced by recent POE changes.
-    
+
     Apply Zhurs' patch to resolve rt.cpan.org tickets 43073 and 25855.
     POE::Filter::HTTPChunk would go into an infinite loop on bad chunk
-    trailer data, but now it appears to be fixed. Thank you! 
+    trailer data, but now it appears to be fixed. Thank you!
 
-  2009-01-06 03:11:42 (r353) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
+  commit 66273a1ca799a3ef1d0980d0e0b133cae19ec61d
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Tue Jan 6 03:11:42 2009 +0000
+  
     Doc fix. Client::DNS is used by Client::Keepalive and is currently
-    not optional.
+    not optional. 
 
-=================================
-2008-12-09T06:22:46.753700Z v0_87
-=================================
+===============================
+2008-12-09 06:17:03 +0000 v0_87
+===============================
 
-  2008-12-09 06:17:03 (r351) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M; Makefile.PL M
-
+  commit d51dd403126b295aa58b3c7c3332dcd865575768
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Tue Dec 9 06:17:03 2008 +0000
+  
     Time for a new release. Bump the version and fix dependencies.
 
-  2008-12-09 06:10:50 (r350) by rcaputo; t/11_cancel.t M
-
+  commit 5ddae5506ef1174129cf4c7b9c9db5ba79d2f6ff
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Tue Dec 9 06:10:50 2008 +0000
+  
     Switch a post() to call() to avoid dispatch timing errors that caused
     some machines to fail this test. I think it's the test's fault for
     being intolerant, and I'm not entirely sure the fix will work
-    everywhere. 
+    everywhere.
 
-  2008-12-09 05:44:46 (r349) by rcaputo; t/01_request.t M
-
+  commit e3d77da02785ce3fb5f17034b561aae783247faa
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Tue Dec 9 05:44:46 2008 +0000
+  
     Fix a spurious test failure. Not all systems implement (or even
     enable) Nagle's algorithm the same way. This change makes
     t/01_request.t not as susceptible to packet transmission timing.
     Previously the test would fail of packets were combined (but succeed
-    if, like on my development system, they were sent separately). 
+    if, like on my development system, they were sent separately).
 
-  2008-12-09 05:29:27 (r348) by rcaputo
-  lib/POE/Component/Client/HTTP/RequestFactory.pm M
-
+  commit ae7693ce96c7d9d925a22ef4c966c820000febf4
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Tue Dec 9 05:29:27 2008 +0000
+  
     Don't set a content length if the content is a reference. The content
     length would be the reference's stringified length rather than the
     length of any actual content. In the case of CODE references, content
-    will be generated in chunks anyway. 
+    will be generated in chunks anyway.
 
-  2008-12-08 07:54:03 (r347) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
+  commit 011588707f19d28abf1051f74cc99359fb301113
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Mon Dec 8 07:54:03 2008 +0000
+  
     Clean up the leaky ext_request_to_int_id in more places. Apocalypse
     suggested using the requesting HTTP::Request reference directly as
     the internal ID rather than mapping it. That bears some
-    investigation. 
+    investigation.
 
-  2008-12-08 07:36:19 (r346) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
-
+  commit 21df5cc25646c80fad3530caf3d469e1d84c7129
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Mon Dec 8 07:36:19 2008 +0000
+  
     New version. RequestFactory doesn not like underscores in version
     numbers.
 
-  2008-12-08 07:27:14 (r345) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
+  commit 8bb874ea03923e9b3f4a1d2f5f23a26eeb8ce543
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Mon Dec 8 07:27:14 2008 +0000
+  
+    Internal development release.
 
-    Internal development release. 
-
-  2008-12-08 07:23:22 (r344) by rcaputo
-  t/01_stream.t M; lib/POE/Component/Client/HTTP.pm M;
-  lib/POE/Component/Client/HTTP/Request.pm M
-
+  commit d48a99e0b3d46808082788c5eb6dac4f01ba1566
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Mon Dec 8 07:23:22 2008 +0000
+  
     Move data cleanup for request_to_id outside wheel check blocks. The
     ID being cleaned up isn't a wheel's ID. Also renamed the data member
     for future clarity, as well as REQ_REQUEST (related). 
 
-=================================
-2008-11-24T22:39:07.052333Z v0_86
-=================================
+===============================
+2008-11-24 22:37:57 +0000 v0_86
+===============================
 
-  2008-11-24 22:37:57 (r342) by rcaputo; t/01_stream.t M
-
+  commit 4c8bf0e84d05e5a70cc19bf357c502888f27e161
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Mon Nov 24 22:37:57 2008 +0000
+  
     Remove an errant warn in one of the test cases.
 
-  2008-11-24 22:32:18 (r341) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M; t/53_response_parser.t M;
-  Makefile.PL M
-
+  commit 92310d951fdac0ab10c484e46fcd589e966ca501
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Mon Nov 24 22:32:18 2008 +0000
+  
     Bump the version, depend on the latest Client::Keepalive, and fix a
-    bit of tab damage. 
+    bit of tab damage.
 
-  2008-11-21 17:56:00 (r340) by rcaputo; t/01_ssl.t M
-
+  commit 60d95b61d69ef037e72eb98023ee9f5ac59f181a
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Fri Nov 21 17:56:00 2008 +0000
+  
     Fix a test error... sourceforge returns a 302 now, not the 200 that
     we expected.
 
-  2008-11-21 08:26:19 (r339) by rcaputo; t/03_head_filter.t M
+  commit 32cf91fc813d748e7142417d1135ec0d8f212529
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Fri Nov 21 08:26:19 2008 +0000
+  
+    Don't use == to test for undef.
 
-    Don't use == to test for undef. 
-
-  2008-11-21 08:10:14 (r338) by rcaputo; t/01_request.t M
-
+  commit 6ef4a9537c5760b5a986be27ef73883f2255b1b9
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Fri Nov 21 08:10:14 2008 +0000
+  
     Fix an unexpected response triggered by the coderef content feature.
     Two separate packets were sent without coalescing. I have a feeling
     my "fix" isn't going to be good enough in all cases though... some
-    systems may coalesce those put()s. 
+    systems may coalesce those put()s.
 
-  2008-10-15 05:44:51 (r337) by rcaputo
-  lib/POE/Component/Client/HTTP.pm M
+  commit ebed7c4d899ba207e738c982d31aed6bf6631d8e
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Wed Oct 15 05:44:51 2008 +0000
+  
+    Apply doc patches, resolving rt.cpan.org #38176.
 
-    Apply doc patches, resolving rt.cpan.org #38176. 
-
-  2008-09-03 17:54:09 (r336) by martijn
-  t/01_request.t M; t/01_stream.t A; t/10_shutdown.t M;
-  t/50_davis_zerolength.t M; t/59_andy_one_keepalive.t D; t/01_ssl.t A;
-  MANIFEST M; t/54_hzheng_head_redir.t M; t/09_bad_scheme.t D;
-  Makefile.PL M; t/57_joel_immed_cancel.t D; t/58_joel_cancel_multi.t M;
-  lib/POE/Component/Client/HTTP/Request.pm M; t/02_keepalive.t M;
-  t/11_cancel.t M
-
+  commit e186d49f75cf3a934386370a0b5864edfe6d114a
+  Author: Martijn van Beers <martijn@eekeek.org>
+  Date:   Wed Sep 3 17:54:09 2008 +0000
+  
     Merge branch 'localtests'
-    
+
     fix merge problems by deleting t/57_joel_immed_cancel.t since my new
     version of t/58_joel_cancel_multi.t does everything it does and more
     and by updating t/58_joel_cancel_multi.t to my version because the

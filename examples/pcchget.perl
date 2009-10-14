@@ -1,5 +1,4 @@
 #!perl
-# $Id: pcchget.perl 249 2006-03-24 14:10:11Z rcaputo $
 
 # A short program to dump requests and responses.
 # Provided by Toby Ovod-Everett.  Thanks!

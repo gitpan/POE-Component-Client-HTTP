@@ -1,4 +1,3 @@
-# $Id: MANIFEST 365 2009-07-26 23:01:30Z rcaputo $
 CHANGES
 CHANGES.OLD
 MANIFEST
@@ -11,6 +10,7 @@ lib/POE/Component/Client/HTTP/Request.pm
 lib/POE/Component/Client/HTTP/RequestFactory.pm
 lib/POE/Filter/HTTPChunk.pm
 lib/POE/Filter/HTTPHead.pm
+t/00_info.t
 t/01_request.t
 t/02_keepalive.t
 t/03_head_filter.t

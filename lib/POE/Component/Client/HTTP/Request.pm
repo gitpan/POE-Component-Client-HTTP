@@ -1,5 +1,3 @@
-# $Id: Request.pm 365 2009-07-26 23:01:30Z rcaputo $
-
 package POE::Component::Client::HTTP::Request;
 use strict;
 use warnings;

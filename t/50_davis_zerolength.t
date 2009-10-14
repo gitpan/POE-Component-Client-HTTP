@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# $Id: 50_davis_zerolength.t 336 2008-09-03 17:54:09Z martijn $
 # vim: filetype=perl ts=2 sw=2
 
 # Dave Davis' test case for rt.cpan.org ticket #13557:

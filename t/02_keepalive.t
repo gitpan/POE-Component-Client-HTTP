@@ -1,4 +1,3 @@
-# $Id: 02_keepalive.t 365 2009-07-26 23:01:30Z rcaputo $
 # vim: filetype=perl sts=2 sw=2
 use strict;
 
