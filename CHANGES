@@ -1,4 +1,20 @@
 ================================
+2009-11-16 02:41:17 -0500 v0_892
+================================
+
+  commit c21ac1d09418ded901fa7706eb8a4c0f4f7ba6b9
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Mon Nov 16 02:41:17 2009 -0500
+  
+    Prepare for release.
+
+  commit e2a91c6713a88c0fe274126ad7fb1a4a0d72a81c
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Mon Nov 16 02:38:53 2009 -0500
+  
+    Don't rely on external servers to test progress callbacks. 
+
+================================
 2009-10-14 03:06:39 -0400 v0_891
 ================================
 
