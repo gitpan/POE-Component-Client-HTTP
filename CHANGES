@@ -1,4 +1,21 @@
 ================================
+2009-12-04 11:42:26 -0800 v0_893
+================================
+
+  commit dcae62b587432be3864896c5c01cd3fc1425a8c5
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Fri Dec 4 11:42:26 2009 -0800
+  
+    Prepare for release.
+
+  commit f6b11dc26fe9886e2eb4961f6c23e3664a606bb2
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Fri Dec 4 11:15:58 2009 -0800
+  
+    [fix rt.cpan.org 51823] Check for zlib_ok() or gunzip_ok() and use
+    the one that is okay. 
+
+================================
 2009-11-16 02:41:17 -0500 v0_892
 ================================
 
@@ -242,62 +259,6 @@
     Move data cleanup for request_to_id outside wheel check blocks. The
     ID being cleaned up isn't a wheel's ID. Also renamed the data member
     for future clarity, as well as REQ_REQUEST (related). 
-
-===============================
-2008-11-24 22:37:57 +0000 v0_86
-===============================
-
-  commit 4c8bf0e84d05e5a70cc19bf357c502888f27e161
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Mon Nov 24 22:37:57 2008 +0000
-  
-    Remove an errant warn in one of the test cases.
-
-  commit 92310d951fdac0ab10c484e46fcd589e966ca501
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Mon Nov 24 22:32:18 2008 +0000
-  
-    Bump the version, depend on the latest Client::Keepalive, and fix a
-    bit of tab damage.
-
-  commit 60d95b61d69ef037e72eb98023ee9f5ac59f181a
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Fri Nov 21 17:56:00 2008 +0000
-  
-    Fix a test error... sourceforge returns a 302 now, not the 200 that
-    we expected.
-
-  commit 32cf91fc813d748e7142417d1135ec0d8f212529
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Fri Nov 21 08:26:19 2008 +0000
-  
-    Don't use == to test for undef.
-
-  commit 6ef4a9537c5760b5a986be27ef73883f2255b1b9
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Fri Nov 21 08:10:14 2008 +0000
-  
-    Fix an unexpected response triggered by the coderef content feature.
-    Two separate packets were sent without coalescing. I have a feeling
-    my "fix" isn't going to be good enough in all cases though... some
-    systems may coalesce those put()s.
-
-  commit ebed7c4d899ba207e738c982d31aed6bf6631d8e
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Wed Oct 15 05:44:51 2008 +0000
-  
-    Apply doc patches, resolving rt.cpan.org #38176.
-
-  commit e186d49f75cf3a934386370a0b5864edfe6d114a
-  Author: Martijn van Beers <martijn@eekeek.org>
-  Date:   Wed Sep 3 17:54:09 2008 +0000
-  
-    Merge branch 'localtests'
-
-    fix merge problems by deleting t/57_joel_immed_cancel.t since my new
-    version of t/58_joel_cancel_multi.t does everything it does and more
-    and by updating t/58_joel_cancel_multi.t to my version because the
-    changes in trunk were assuming the non-local tests. 
 
 ==============
 End of Excerpt
