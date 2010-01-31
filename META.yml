@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               POE-Component-Client-HTTP
-version:            0.893
+version:            0.894
 abstract:           Non-blocking/concurrent HTTP queries with POE
 author:
     - Rocco Caputo <rcaputo@cpan.org>

@@ -1,4 +1,15 @@
 ================================
+2010-01-31 03:28:51 -0500 v0_894
+================================
+
+  commit 25fdd2daebbfef43e310955cae152d49a3769074
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Sun Jan 31 03:28:51 2010 -0500
+  
+    Add X-PCCH-Peer header containing the socket peer address:port.
+    Feature requested by Doreen Grey on POE's mailing list. 
+
+================================
 2009-12-04 11:42:26 -0800 v0_893
 ================================
 
@@ -191,74 +202,6 @@
   
     Doc fix. Client::DNS is used by Client::Keepalive and is currently
     not optional. 
-
-===============================
-2008-12-09 06:17:03 +0000 v0_87
-===============================
-
-  commit d51dd403126b295aa58b3c7c3332dcd865575768
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Tue Dec 9 06:17:03 2008 +0000
-  
-    Time for a new release. Bump the version and fix dependencies.
-
-  commit 5ddae5506ef1174129cf4c7b9c9db5ba79d2f6ff
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Tue Dec 9 06:10:50 2008 +0000
-  
-    Switch a post() to call() to avoid dispatch timing errors that caused
-    some machines to fail this test. I think it's the test's fault for
-    being intolerant, and I'm not entirely sure the fix will work
-    everywhere.
-
-  commit e3d77da02785ce3fb5f17034b561aae783247faa
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Tue Dec 9 05:44:46 2008 +0000
-  
-    Fix a spurious test failure. Not all systems implement (or even
-    enable) Nagle's algorithm the same way. This change makes
-    t/01_request.t not as susceptible to packet transmission timing.
-    Previously the test would fail of packets were combined (but succeed
-    if, like on my development system, they were sent separately).
-
-  commit ae7693ce96c7d9d925a22ef4c966c820000febf4
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Tue Dec 9 05:29:27 2008 +0000
-  
-    Don't set a content length if the content is a reference. The content
-    length would be the reference's stringified length rather than the
-    length of any actual content. In the case of CODE references, content
-    will be generated in chunks anyway.
-
-  commit 011588707f19d28abf1051f74cc99359fb301113
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Mon Dec 8 07:54:03 2008 +0000
-  
-    Clean up the leaky ext_request_to_int_id in more places. Apocalypse
-    suggested using the requesting HTTP::Request reference directly as
-    the internal ID rather than mapping it. That bears some
-    investigation.
-
-  commit 21df5cc25646c80fad3530caf3d469e1d84c7129
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Mon Dec 8 07:36:19 2008 +0000
-  
-    New version. RequestFactory doesn not like underscores in version
-    numbers.
-
-  commit 8bb874ea03923e9b3f4a1d2f5f23a26eeb8ce543
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Mon Dec 8 07:27:14 2008 +0000
-  
-    Internal development release.
-
-  commit d48a99e0b3d46808082788c5eb6dac4f01ba1566
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Mon Dec 8 07:23:22 2008 +0000
-  
-    Move data cleanup for request_to_id outside wheel check blocks. The
-    ID being cleaned up isn't a wheel's ID. Also renamed the data member
-    for future clarity, as well as REQ_REQUEST (related). 
 
 ==============
 End of Excerpt
