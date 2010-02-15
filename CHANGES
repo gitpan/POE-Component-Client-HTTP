@@ -1,4 +1,27 @@
 ================================
+2010-02-15 01:19:25 -0500 v0_895
+================================
+
+  commit a312f51daeb5b95422b8cd1fc80226d23d3e38d5
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Mon Feb 15 01:19:25 2010 -0500
+  
+    Bump the revision for a new release.
+
+  commit 38323e64b15d9e6c8d540bb70ed88a058bfa9453
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Mon Feb 15 00:57:05 2010 -0500
+  
+    [rt.cpan.org 48354] Fix line parsing for excessively small streaming
+    sizes.
+
+  commit f18a1d1c89333d6715caf713ebe63ee0f19dd914
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Mon Feb 15 00:55:23 2010 -0500
+  
+    Fix a vim modeline. No significant changes. 
+
+================================
 2010-01-31 03:28:51 -0500 v0_894
 ================================
 
