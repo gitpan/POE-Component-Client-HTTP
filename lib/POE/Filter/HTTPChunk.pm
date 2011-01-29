@@ -1,4 +1,9 @@
 package POE::Filter::HTTPChunk;
+BEGIN {
+  $POE::Filter::HTTPChunk::VERSION = '0.900_161';
+}
+# vim: ts=2 sw=2 expandtab
+
 use warnings;
 use strict;
 
@@ -197,6 +202,10 @@ __END__
 =head1 NAME
 
 POE::Filter::HTTPChunk - Non-blocking incremental HTTP chunk parser.
+
+=head1 VERSION
+
+version 0.900_161
 
 =head1 SYNOPSIS
 

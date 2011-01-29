@@ -1,41 +1,63 @@
-#!/usr/bin/perl
 
 use strict;
-use lib qw(./mylib);
-use ExtUtils::MakeMaker;
+use warnings;
 
-# Touch CHANGES so it exists.
-open(CHANGES, ">>CHANGES") and close CHANGES;
 
-my %prereq = (
-  'POE'                => 1.280,
-  'HTTP::Request'      => 1.30,
-  'HTTP::Response'     => 1.37,
-  'URI'                => 1.24,
-  'Net::HTTP::Methods' => 0.02,
-  'POE::Component::Client::Keepalive' => 0.261,
-  'Test::POE::Server::TCP' => 0,
+
+use ExtUtils::MakeMaker 6.31;
+
+
+
+my %WriteMakefileArgs = (
+  'ABSTRACT' => 'a HTTP user-agent component',
+  'AUTHOR' => 'Rocco Caputo <rcaputo@cpan.org>',
+  'BUILD_REQUIRES' => {},
+  'CONFIGURE_REQUIRES' => {
+    'ExtUtils::MakeMaker' => '6.31'
+  },
+  'DISTNAME' => 'POE-Component-Client-HTTP',
+  'EXE_FILES' => [],
+  'LICENSE' => 'perl',
+  'NAME' => 'POE::Component::Client::HTTP',
+  'PREREQ_PM' => {
+    'HTTP::Headers' => '5.810',
+    'HTTP::Request' => '5.811',
+    'HTTP::Request::Common' => '5.811',
+    'HTTP::Response' => '5.813',
+    'HTTP::Status' => '5.811',
+    'Net::HTTP::Methods' => '5.812',
+    'POE' => '1.294_512',
+    'POE::Component::Client::Keepalive' => '0.263_161',
+    'POE::Filter::Line' => '1.294_512',
+    'Socket::GetAddrInfo' => '0.19',
+    'Test::More' => '0.96',
+    'Test::POE::Server::TCP' => '1.14',
+    'URI' => '1.37'
+  },
+  'VERSION' => '0.900_161',
+  'test' => {
+    'TESTS' => 't/*.t'
+  }
 );
 
-# Write that makefile.
-WriteMakefile(
-  NAME         => 'POE::Component::Client::HTTP',
-  AUTHOR       => 'Rocco Caputo <rcaputo@cpan.org>',
-  ABSTRACT     => 'Non-blocking/concurrent HTTP queries with POE',
-  LICENSE      => 'perl',
-  VERSION_FROM => 'lib/POE/Component/Client/HTTP.pm',
-  PREREQ_PM    => \%prereq,
-  META_ADD     => {
-    resources  => {
-      license    => 'http://dev.perl.org/licenses/',
-      repository => 'http://github.com/rcaputo/poe-component-client-http'
-    },
-  },
-  dist         => {
-    COMPRESS   => 'gzip -9f',
-    SUFFIX     => 'gz',
-    PREOP      => (
-      'git-log.pl | tee ./$(DISTNAME)-$(VERSION)/CHANGES > ./CHANGES'
-    ),
-  },
-);
+
+unless ( eval { ExtUtils::MakeMaker->VERSION(6.56) } ) {
+  my $br = delete $WriteMakefileArgs{BUILD_REQUIRES};
+  my $pp = $WriteMakefileArgs{PREREQ_PM};
+  for my $mod ( keys %$br ) {
+    if ( exists $pp->{$mod} ) {
+      $pp->{$mod} = $br->{$mod} if $br->{$mod} > $pp->{$mod};
+    }
+    else {
+      $pp->{$mod} = $br->{$mod};
+    }
+  }
+}
+
+delete $WriteMakefileArgs{CONFIGURE_REQUIRES}
+  unless eval { ExtUtils::MakeMaker->VERSION(6.52) };
+
+WriteMakefile(%WriteMakefileArgs);
+
+
+

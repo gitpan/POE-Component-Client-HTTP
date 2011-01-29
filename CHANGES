@@ -1,3 +1,118 @@
+==============================
+9999-99-99 99:99:99 +0000 HEAD
+==============================
+
+  commit e7073116e01532859c4ce37ece6d8ae01c469eed
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Thu Jan 27 17:02:36 2011 -0500
+  
+    Remove tabs, dammit. This project doesn't use 'em.
+
+  commit 51689b5a1e0c183b977cb6a703ee1e486eabf66b
+  Author: Apocalypse <perl@0ne.us>
+  Date:   Thu Jan 27 16:54:27 2011 -0500
+  
+    Some machines time out before they can respond with a 500 error on
+    bad host. Accept this as a valid outcome.
+
+  commit 83f5596032c1c2679db3150fe0aeddd32543996b
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Thu Jan 27 13:38:20 2011 -0500
+  
+    Replace Socket6 with Socket::GetAddrInfo.
+
+  commit b37d17c5efd1490c9ccce46011c042e4e899833c
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Thu Jan 27 01:54:06 2011 -0500
+  
+    Make ETIMEDOUT connection errors more consistent.
+
+  commit c63f926476660883eda7ff9bbb542a83a836d894
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Thu Jan 27 01:29:07 2011 -0500
+  
+    Fix the X-PCCH-Errmsg header.
+
+  commit 6e51447c464022615e6bc61e287aedc8c5aff7f9
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Thu Jan 27 01:14:44 2011 -0500
+  
+    Fix a couple more test stalls on Windows.
+
+  commit 7c1c2ad0f323c4ea2253b26f0c2c5f4d8e7aa7c5
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Thu Jan 27 00:40:18 2011 -0500
+  
+    Fix a hang in t/52_reiss_bad_length.t on Windows.
+
+  commit 3e79d510fadf94d04c3d63487cb25a777d39f59c
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Thu Jan 27 00:14:11 2011 -0500
+  
+    Implement X-PCCH-Errmsg and expose connect error ETIMEDOUT as a 408
+    timeout. Resolves rt.cpan.org #53576, reported by me! Thanks, me!
+
+  commit 2be3189e61fed34c4c644deffc4ae18de0d14a74
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Wed Jan 26 23:20:55 2011 -0500
+  
+    Resolve a hang in t/14_gzipped_content.t on Windows.
+
+  commit 02d18ca93b8721b085e9b556009c67b942672b86
+  Author: Apocalypse <perl@0ne.us>
+  Date:   Wed Jan 26 16:45:04 2011 -0700
+  
+    fix RT#13611 by ignoring MSWin32 for now...
+
+  commit 6a93a247a030ba0b0f08becd1441efbd586dbbcf
+  Author: Apocalypse <perl@0ne.us>
+  Date:   Wed Jan 26 16:26:27 2011 -0700
+  
+    fix RT#58265 regarding sslify socket
+
+  commit 0cea3ad624bb0ff5b9b87046f05846328475f096
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Wed Jan 26 16:19:44 2011 -0500
+  
+    Use the correct distribution name.
+
+  commit c4e71be0e7a7ae3f4a444207cc5ff40a70230674
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Wed Jan 26 16:11:43 2011 -0500
+  
+    Add MANIFEST.SKIP for great justice.
+
+  commit 0aaeea10d008d3f7f1d63ef206273292de20a46d
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Wed Jan 26 15:54:59 2011 -0500
+  
+    Migrate to Dist::Zilla for max(fun_times).
+
+  commit c2d80a85addbd0ffc951093f19b26960113e32ab
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Wed Jan 26 03:20:20 2011 -0500
+  
+    Fix Socket6 imports for the IP version agnostic code.
+
+  commit 16a210b8ebdc47c46cbd77235c3575fcdf38704e
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Wed Jan 26 03:16:01 2011 -0500
+  
+    Make peername decoding IP version agnostic.
+
+  commit 2f0a0920679b447947a2e6485331932ad437da86
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Wed Jan 26 01:55:25 2011 -0500
+  
+    Fix a test that was timing out rather than failing to connect. Some
+    systems blackhole dead-host packets rather than RST your connection.
+
+  commit 282426987f4e7964e255aa69d3e14f4e6d8ee317
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Wed Jan 26 01:07:54 2011 -0500
+  
+    Test and docs fixes. 
+
 ================================
 2010-02-15 01:19:25 -0500 v0_895
 ================================
@@ -32,200 +147,6 @@
     Add X-PCCH-Peer header containing the socket peer address:port.
     Feature requested by Doreen Grey on POE's mailing list. 
 
-================================
-2009-12-04 11:42:26 -0800 v0_893
-================================
-
-  commit dcae62b587432be3864896c5c01cd3fc1425a8c5
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Fri Dec 4 11:42:26 2009 -0800
-  
-    Prepare for release.
-
-  commit f6b11dc26fe9886e2eb4961f6c23e3664a606bb2
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Fri Dec 4 11:15:58 2009 -0800
-  
-    [fix rt.cpan.org 51823] Check for zlib_ok() or gunzip_ok() and use
-    the one that is okay. 
-
-================================
-2009-11-16 02:41:17 -0500 v0_892
-================================
-
-  commit c21ac1d09418ded901fa7706eb8a4c0f4f7ba6b9
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Mon Nov 16 02:41:17 2009 -0500
-  
-    Prepare for release.
-
-  commit e2a91c6713a88c0fe274126ad7fb1a4a0d72a81c
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Mon Nov 16 02:38:53 2009 -0500
-  
-    Don't rely on external servers to test progress callbacks. 
-
-================================
-2009-10-14 03:06:39 -0400 v0_891
-================================
-
-  commit 1fb613b8f784082fc52c5347ff6be41a1266755a
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Wed Oct 14 03:06:39 2009 -0400
-  
-    Prepare for release.
-
-  commit 2f6027dd7443a3a8f33c54ea1c5ff3e1ee3d93e8
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Tue Oct 13 01:36:36 2009 -0400
-  
-    Remove POE::Wheel::ReadWrite. We can't call select() on DATA handles,
-    because Windows doesn't support it.
-
-  commit 8d198280aad5075f1aab95a29fc853b99fe9dffa
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Tue Oct 13 00:01:16 2009 -0400
-  
-    Add a 00_info.t test to help diagnose platform and dependency based
-    issues.
-
-  commit e517d3eea4192fa73c0eaffe5410ece9c3bf1f77
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Mon Sep 14 12:16:36 2009 -0400
-  
-    Upgrade distribution to git based workflow. 
-
-================================
-2009-07-28 06:21:07 +0000 v0_890
-================================
-
-  commit 50a16c97409d7750b2af936af2d496452d8e1d3a
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Tue Jul 28 06:21:07 2009 +0000
-  
-    Use the latest POE::Component::Client::Keepalive, too.
-
-  commit 12e70fd8894acba9bc1c48452b13dbafa8b71a29
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Tue Jul 28 06:20:01 2009 +0000
-  
-    Use latest POE, and prepare for a new release.
-
-  commit 9801e9beab0b93ab9aed167551e8b05083f65ff2
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Mon Jul 27 04:53:43 2009 +0000
-  
-    Added a machine-readable repository directory to the distribution.
-    Documented the bug tracker, repository, and other resource URLs.
-
-  commit acd28ee7bbe92c30a88a14129ff0fddb2f9f2c66
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Sun Jul 26 23:03:04 2009 +0000
-  
-    Forgot to add this test in the last commit.
-
-  commit e08485f54654c7c639dff95cdcfb030289112634
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Sun Jul 26 23:01:30 2009 +0000
-  
-    Resolve a long-standing debate between MaxSize and Content-Length
-    headers. If the Content-Length is greater than MaxSize, or the length
-    of the content is (in the case where there is no Content-Length
-    header), then we return a 406 Not Acceptable error rather than
-    truncated data.
-
-    Users who want truncated data should issue range requests instead of
-    relying upon MaxSize. Besides, MaxSize won't let you resume your
-    request where it left off.
-
-    Resolves rt.cpan.org ticket 26874.
-
-  commit 32b09b024bf7496ce51728291bc74a2f9c99b0ca
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Sun Jul 26 17:33:10 2009 +0000
-  
-    Internal component errors are sometimes indistinguishable from
-    external server errors. Add a bit of text to differentiate them.
-
-  commit 5eac979fffb0721e23b26d4a0a9684a62cf14212
-  Author: Martijn van Beers <martijn@eekeek.org>
-  Date:   Sat Mar 7 15:47:52 2009 +0000
-  
-    apply patch from Apocalypse to make invalid host test more robust 
-
-===============================
-2009-02-19 07:14:19 +0000 v0_88
-===============================
-
-  commit b821cb5e79f2b99c012ff0eefee8574d788bc24e
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Thu Feb 19 07:14:19 2009 +0000
-  
-    Time for a new release.
-
-  commit 273ab6aa81950ddaa39efd9811874692bb101e83
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Thu Feb 19 07:09:22 2009 +0000
-  
-    Add PRAVUS' test case and patch to return progress events even after
-    a redirect. Resolves his rt.cpan.org ticket, #36627.
-
-  commit 35e945c026d70d372a4dc31938a2ebcd81c38cba
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Thu Feb 19 05:20:37 2009 +0000
-  
-    Comment the RS_* states.
-
-  commit 2d1ef1672712ca3c5187099d74bc777d1d1b030b
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Thu Feb 19 04:00:21 2009 +0000
-  
-    Resolve rt.cpan.org #41278, reported by Andreas J. König. The
-    component test was timing out on his smoker, so I increased the
-    timeout.
-
-  commit e577366925b1ad850518e077d21588baad1e390b
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Wed Feb 18 17:43:15 2009 +0000
-  
-    Resolve rt.cpan.org #35951, reported by Dave Miller. We were passing
-    Tag to POE::Component::Client::Request->new() when it wasn't
-    necessary.
-
-  commit 1c655dbd46f0446463519179bd7fae88b96b9b22
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Wed Feb 18 17:36:32 2009 +0000
-  
-    Resolve rt.cpan.org ticket #27643. When a server disconnects before
-    responding, POE::Component::Client::HTTP returns a 406 error to the
-    application. The "MaxSize" error was incorrect and has been replaced
-    with "Server response is Not Acceptable". The surrounding logic has
-    been simplified somewhat as well.
-
-  commit 3fe6efbd87557d42e8695f766026ce014d7ba241
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Wed Feb 18 07:29:34 2009 +0000
-  
-    Clarify the docs per Evan Carroll's suggestion. Resolves rt.cpan.org
-    ticket 41312.
-
-  commit 74c18aafbb06e9e662c8e046c22be007b762fbb4
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Wed Feb 18 06:19:51 2009 +0000
-  
-    Clean up several warnings introduced by recent POE changes.
-
-    Apply Zhurs' patch to resolve rt.cpan.org tickets 43073 and 25855.
-    POE::Filter::HTTPChunk would go into an infinite loop on bad chunk
-    trailer data, but now it appears to be fixed. Thank you!
-
-  commit 66273a1ca799a3ef1d0980d0e0b133cae19ec61d
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Tue Jan 6 03:11:42 2009 +0000
-  
-    Doc fix. Client::DNS is used by Client::Keepalive and is currently
-    not optional. 
-
-==============
-End of Excerpt
-==============
+===================================
+End of changes in the last 365 days
+===================================

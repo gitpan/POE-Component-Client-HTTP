@@ -1,4 +1,7 @@
 package POE::Component::Client::HTTP::Request;
+BEGIN {
+  $POE::Component::Client::HTTP::Request::VERSION = '0.900_161';
+}
 # vim: ts=2 sw=2 expandtab
 
 use strict;
@@ -8,6 +11,7 @@ use POE;
 
 use Carp;
 use HTTP::Status;
+use Errno qw(ETIMEDOUT);
 
 BEGIN {
   local $SIG{'__DIE__'} = 'DEFAULT';
@@ -429,11 +433,12 @@ sub check_redirect {
   # Make sure to frob any cookies set.  Redirect cookies are cookies, too!
   $self->[REQ_FACTORY]->frob_cookies($self->[REQ_RESPONSE]);
 
-  my $new_uri = $self->[REQ_RESPONSE]->header ('Location');
-  DEBUG and warn "REQ: Preparing redirect to $new_uri";
+  my $location_uri = $self->[REQ_RESPONSE]->header('Location');
+
+  DEBUG and warn "REQ: Preparing redirect to $location_uri";
   my $base = $self->[REQ_RESPONSE]->base();
-  $new_uri = URI->new($new_uri, $base)->abs($base);
-  DEBUG and warn "RED: Actual redirect uri is $new_uri";
+  $location_uri = URI->new($location_uri, $base)->abs($base);
+  DEBUG and warn "RED: Actual redirect uri is $location_uri";
 
   my $prev = $self;
   my $history = 0;
@@ -453,8 +458,18 @@ sub check_redirect {
     $newrequest->remove_header('Cookie');
 
     DEBUG and warn "RED: new request $newrequest";
-    $newrequest->uri($new_uri);
-    _set_host_header ($newrequest);
+    $newrequest->uri($location_uri);
+
+    # Don't change the Host header on a relative redirect.  This
+    # allows the HTTP::Request's Host to remain intact, per
+    # rt.cpan.org #63990.
+    if (defined $location_uri->scheme()) {
+      DEBUG and warn "RED: redirecting to absolute location $location_uri";
+      _set_host_header($newrequest);
+    }
+    else {
+      DEBUG and warn "RED: no new Host for relative redirect to $location_uri";
+    }
 
     $self->[REQ_STATE] = RS_REDIRECTED;
     DEBUG and warn "RED: new request $newrequest";
@@ -526,8 +541,8 @@ sub error {
 
   my $nl = "\n";
 
-  my $r = HTTP::Response->new($code);
-  my $http_msg = status_message ($code);
+  my $http_msg = status_message($code);
+  my $r = HTTP::Response->new($code, $http_msg, [ 'X-PCCH-Errmsg', $message ]);
   my $m = (
     "<html>$nl"
     . "<HEAD><TITLE>Error: $http_msg</TITLE></HEAD>$nl"
@@ -539,20 +554,28 @@ sub error {
     . "</HTML>$nl"
   );
 
-  $r->content ($m);
-  $r->request ($self->[REQ_HTTP_REQUEST]);
+  $r->content($m);
+  $r->request($self->[REQ_HTTP_REQUEST]);
   $self->[REQ_POSTBACK]->($r);
   $self->[REQ_STATE] |= RS_POSTED;
 }
 
 sub connect_error {
-  my ($self, $message) = @_;
+  my ($self, $operation, $errnum, $errstr) = @_;
 
   my $host = $self->[REQ_HOST];
   my $port = $self->[REQ_PORT];
 
-  $message = "Cannot connect to $host:$port ($message)";
-  $self->error (RC_INTERNAL_SERVER_ERROR, $message);
+  if ($operation eq "connect" and $errnum == ETIMEDOUT) {
+    $self->error(408, "Connection to $host:$port failed: timeout");
+  }
+  else {
+    $self->error(
+      RC_INTERNAL_SERVER_ERROR,
+      "Connection to $host:$port failed: $operation error $errnum: $errstr"
+    );
+  }
+
   return;
 }
 
@@ -580,6 +603,10 @@ __END__
 =head1 NAME
 
 POE::Component::Client::HTTP::Request - an HTTP request class
+
+=head1 VERSION
+
+version 0.900_161
 
 =head1 SYNOPSIS
 

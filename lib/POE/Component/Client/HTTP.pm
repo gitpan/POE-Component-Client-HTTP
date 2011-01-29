@@ -1,4 +1,5 @@
 package POE::Component::Client::HTTP;
+# vim: ts=2 sw=2 expandtab
 
 # {{{ INIT
 
@@ -28,6 +29,8 @@ BEGIN {
     Time::HiRes->import("time");
   };
 }
+
+use Socket::GetAddrInfo qw(:newapi getnameinfo NI_NUMERICHOST NI_NUMERICSERV);
 
 use POE qw(
   Driver::SysRW Filter::Stream
@@ -167,7 +170,7 @@ sub _poco_weeble_start {
   # have to do this here because it wants a current_session
   $heap->{cm} = POE::Component::Client::Keepalive->new(
     timeout => $heap->{factory}->timeout,
-    $heap->{bind_addr} ? (bind_address => $heap->{bind_addr}) : (),
+    ($heap->{bind_addr} ? (bind_address => $heap->{bind_addr}) : ()),
   ) unless ($heap->{cm});
 }
 
@@ -341,13 +344,29 @@ sub _poco_weeble_connect_done {
 
     $request->[REQ_CONNECTION] = $connection;
 
-    my $peer_addr = getpeername($new_wheel->get_input_handle());
+    # SSLify needs us to call it's function to get the "real" socket
+    my $peer_addr;
+    if ( $request->scheme eq 'http' ) {
+      $peer_addr = getpeername($new_wheel->get_input_handle());
+    } else {
+      my $socket = $new_wheel->get_input_handle();
+      $peer_addr = getpeername(POE::Component::SSLify::SSLify_GetSocket($socket));
+    }
+
     if (defined $peer_addr) {
-      my ($port, $iaddr) = sockaddr_in($peer_addr);
-      $request->[REQ_PEERNAME] = inet_ntoa($iaddr) . "." . $port;
+      my ($error, $address, $port) = getnameinfo(
+        $peer_addr, NI_NUMERICHOST | NI_NUMERICSERV
+      );
+
+      if ($error) {
+        $request->[REQ_PEERNAME] = "error: $error";
+      }
+      else {
+        $request->[REQ_PEERNAME] = "$address.$port";
+      }
     }
     else {
-      $request->[REQ_PEERNAME] = "error:$!";
+      $request->[REQ_PEERNAME] = "error: $!";
     }
 
     $request->create_timer($heap->{factory}->timeout);
@@ -375,7 +394,7 @@ sub _poco_weeble_connect_done {
     delete $heap->{ext_request_to_int_id}->{$request->[REQ_HTTP_REQUEST]};
 
     # Post an error response back to the requesting session.
-    $request->connect_error("$operation error $errnum: $errstr");
+    $request->connect_error($operation, $errnum, $errstr);
   }
 }
 
@@ -521,6 +540,11 @@ sub _poco_weeble_io_error {
   # If there was a non-zero error, then something bad happened.  Post
   # an error response back, if we haven't posted anything before.
   if ($errnum) {
+    if ($operation eq "connect") {
+      $request->connect_error($operation, $errnum, $errstr);
+      return;
+    }
+
     unless ($request->[REQ_STATE] & RS_POSTED) {
       $request->error(400, "$operation error $errnum: $errstr");
     }
@@ -1013,6 +1037,10 @@ __END__
 
 POE::Component::Client::HTTP - a HTTP user-agent component
 
+=head1 VERSION
+
+version 0.900_161
+
 =head1 SYNOPSIS
 
   use POE qw(Component::Client::HTTP);
@@ -1079,8 +1107,8 @@ other sessions run while HTTP transactions are being processed, and it
 lets several HTTP transactions be processed in parallel.
 
 It supports keep-alive through POE::Component::Client::Keepalive,
-which in turn uses POE::Component::Client::DNS for asynchronous name
-resolution.
+which in turn uses POE::Component::Resolver for asynchronous IPv4 and
+IPv6 name resolution.
 
 HTTP client components are not proper objects.  Instead of being
 created, as most objects are, they are "spawned" as separate sessions.
@@ -1138,7 +1166,9 @@ not have done this already.
     # ...
   );
 
-See L<POE::Component::Client::Keepalive> for more information.
+See L<POE::Component::Client::Keepalive> for more information,
+including how to alter the connection manager's resolver
+configuration (for example, to force IPv6 or prefer it before IPv4).
 
 =item CookieJar => $cookie_jar
 
@@ -1466,6 +1496,15 @@ L<http://rt.cpan.org/Ticket/Display.html?id=35538>
 POE::Component::Client::HTTP sets its own response headers with
 additional information.  All of its headers begin with "X-PCCH".
 
+=head2 X-PCCH-Errmsg
+
+POE::Component::Client::HTTP may fail because of an internal client
+error rather than an HTTP protocol error.  X-PCCH-Errmsg will contain a
+human readable reason for client failures, should they occur.
+
+The text of X-PCCH-Errmsg may also be repeated in the response's
+content.
+
 =head2 X-PCCH-Peer
 
 X-PCCH-Peer contains the remote IPv4 address and port, separated by a
@@ -1511,7 +1550,7 @@ Secure HTTP (https) proxying is not supported at this time.
 
 There is no object oriented interface.  See
 L<POE::Component::Client::Keepalive> and
-L<POE::Component::Client::DNS> for examples of a decent OO interface.
+L<POE::Component::Resolver> for examples of a decent OO interface.
 
 =head1 AUTHOR, COPYRIGHT, & LICENSE
 
@@ -1561,4 +1600,3 @@ http://search.cpan.org/dist/POE-Component-Client-HTTP/
 =cut
 
 # }}} POD
-# rocco // vim: ts=2 sw=2 expandtab
