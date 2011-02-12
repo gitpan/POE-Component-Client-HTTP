@@ -161,7 +161,7 @@ POE::Filter::HTTPHead - filter data as HTTP::Response objects
 
 =head1 VERSION
 
-version 0.900_161
+version 0.910
 
 =head1 SYNOPSYS
 

@@ -1039,7 +1039,7 @@ POE::Component::Client::HTTP - a HTTP user-agent component
 
 =head1 VERSION
 
-version 0.900_161
+version 0.910
 
 =head1 SYNOPSIS
 

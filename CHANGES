@@ -1,6 +1,6 @@
-==============================
-9999-99-99 99:99:99 +0000 HEAD
-==============================
+================================
+2011-01-27 17:02:36 -0500 v0_910
+================================
 
   commit e7073116e01532859c4ce37ece6d8ae01c469eed
   Author: Rocco Caputo <rcaputo@cpan.org>
@@ -135,17 +135,6 @@
   Date:   Mon Feb 15 00:55:23 2010 -0500
   
     Fix a vim modeline. No significant changes. 
-
-================================
-2010-01-31 03:28:51 -0500 v0_894
-================================
-
-  commit 25fdd2daebbfef43e310955cae152d49a3769074
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Sun Jan 31 03:28:51 2010 -0500
-  
-    Add X-PCCH-Peer header containing the socket peer address:port.
-    Feature requested by Doreen Grey on POE's mailing list. 
 
 ===================================
 End of changes in the last 365 days
