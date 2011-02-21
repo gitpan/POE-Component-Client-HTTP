@@ -33,7 +33,7 @@ my %WriteMakefileArgs = (
     'Test::POE::Server::TCP' => '1.14',
     'URI' => '1.37'
   },
-  'VERSION' => '0.941',
+  'VERSION' => '0.942',
   'test' => {
     'TESTS' => 't/*.t'
   }

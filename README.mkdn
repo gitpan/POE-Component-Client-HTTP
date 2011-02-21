@@ -4,7 +4,7 @@ POE::Component::Client::HTTP - a HTTP user-agent component
 
 # VERSION
 
-version 0.941
+version 0.942
 
 # SYNOPSIS
 
@@ -316,6 +316,10 @@ requests currently being processed.  To receive the return value, it
 must be invoked with $kernel->call().
 
   my $count = $kernel->call('ua' => 'pending_requests_count');
+
+NOTE: Sometimes the count might not be what you expected, because responses
+are currently in POE's queue and you haven't processed them. This could happen
+if you configure the `ConnectionManager`'s concurrency to a high enough value.
 
 ## cancel
 

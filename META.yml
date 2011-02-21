@@ -27,4 +27,4 @@ requires:
   URI: 1.37
 resources:
   repository: git://github.com/rcaputo/poe-component-client-http.git
-version: 0.941
+version: 0.942

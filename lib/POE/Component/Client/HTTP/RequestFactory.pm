@@ -1,6 +1,6 @@
 package POE::Component::Client::HTTP::RequestFactory;
 BEGIN {
-  $POE::Component::Client::HTTP::RequestFactory::VERSION = '0.941';
+  $POE::Component::Client::HTTP::RequestFactory::VERSION = '0.942';
 }
 # vim: ts=2 sw=2 expandtab
 

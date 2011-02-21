@@ -1,4 +1,21 @@
 ================================
+2011-02-20 23:51:41 -0500 v0_942
+================================
+
+  commit 5b052d5d2d238f6af470958e4ed33e5453119e2e
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Sun Feb 20 23:51:41 2011 -0500
+  
+    Bump the version for release.
+
+  commit cf963d64dcb3f60f56bcfa493b04b7eb0f5f8a7e
+  Author: Apocalypse <perl@0ne.us>
+  Date:   Sun Jan 30 15:35:54 2011 -0700
+  
+    Add tests for pending_requests_count() and fix underlying cause of
+    RT#50231, thanks Jeff Bisbee 
+
+================================
 2011-02-20 22:56:33 -0500 v0_941
 ================================
 
