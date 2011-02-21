@@ -1,4 +1,7 @@
 package POE::Filter::HTTPHead_Line;
+BEGIN {
+  $POE::Filter::HTTPHead_Line::VERSION = '0.941';
+}
 # vim: ts=2 sw=2 expandtab
 
 use warnings;
@@ -153,6 +156,9 @@ sub get_pending {
 }
 
 package POE::Filter::HTTPHead;
+BEGIN {
+  $POE::Filter::HTTPHead::VERSION = '0.941';
+}
 use strict;
 
 =head1 NAME
@@ -161,7 +167,7 @@ POE::Filter::HTTPHead - filter data as HTTP::Response objects
 
 =head1 VERSION
 
-version 0.910
+version 0.941
 
 =head1 SYNOPSYS
 
@@ -178,9 +184,6 @@ into a HTTP::Response object. In an all-POE world, this would sit on
 the other end of a connection as L<POE::Filter::HTTPD>
 
 =cut
-
-use vars qw($VERSION);
-$VERSION = '0.895';
 
 use base qw(POE::Filter::Stackable);
 use POE::Filter::Line;

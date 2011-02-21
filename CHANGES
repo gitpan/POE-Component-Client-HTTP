@@ -1,4 +1,33 @@
 ================================
+2011-02-20 22:56:33 -0500 v0_941
+================================
+
+  commit f89255d7f0a801600c8533f0931a7d31e615116c
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Sun Feb 20 22:56:33 2011 -0500
+  
+    Remove explicit VERSION assignments so dzil can do it for us.
+
+  commit f1ddf1cfea5bfa8e4d1c365ab8735941653dfc52
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Mon Feb 14 10:52:13 2011 -0500
+  
+    Bump the version for release.
+
+  commit 38412e1f9c0afdd0d338c75f9a9c45e87c32911d
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Sun Feb 13 14:50:44 2011 -0500
+  
+    Make notes (marked with "TODO CONNECT") where SSL CONNECT proxying
+    logic might go.
+
+  commit 3562e58dd084ca86630003dede755326a7cdbf92
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Sun Feb 13 14:25:18 2011 -0500
+  
+    Remove "patches welcome" for IPv6. 
+
+================================
 2011-01-27 17:02:36 -0500 v0_910
 ================================
 
@@ -112,29 +141,6 @@
   Date:   Wed Jan 26 01:07:54 2011 -0500
   
     Test and docs fixes. 
-
-================================
-2010-02-15 01:19:25 -0500 v0_895
-================================
-
-  commit a312f51daeb5b95422b8cd1fc80226d23d3e38d5
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Mon Feb 15 01:19:25 2010 -0500
-  
-    Bump the revision for a new release.
-
-  commit 38323e64b15d9e6c8d540bb70ed88a058bfa9453
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Mon Feb 15 00:57:05 2010 -0500
-  
-    [rt.cpan.org 48354] Fix line parsing for excessively small streaming
-    sizes.
-
-  commit f18a1d1c89333d6715caf713ebe63ee0f19dd914
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Mon Feb 15 00:55:23 2010 -0500
-  
-    Fix a vim modeline. No significant changes. 
 
 ===================================
 End of changes in the last 365 days

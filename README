@@ -2,7 +2,7 @@ NAME
     POE::Component::Client::HTTP - a HTTP user-agent component
 
 VERSION
-    version 0.910
+    version 0.941
 
 SYNOPSIS
       use POE qw(Component::Client::HTTP);
@@ -437,8 +437,6 @@ CLIENT HEADERS
     This feature was added at Doreen Grey's request. Doreen wanted a means
     to find the remote server's address without having to make an additional
     request.
-
-    Patches for IPv6 support are welcome.
 
 ENVIRONMENT
     POE::Component::Client::HTTP uses two standard environment variables:

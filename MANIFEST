@@ -14,8 +14,6 @@ lib/POE/Component/Client/HTTP/Request.pm
 lib/POE/Component/Client/HTTP/RequestFactory.pm
 lib/POE/Filter/HTTPChunk.pm
 lib/POE/Filter/HTTPHead.pm
-moo.pl
-pcchget.perl
 t/000-report-versions.t
 t/01_request.t
 t/01_ssl.t

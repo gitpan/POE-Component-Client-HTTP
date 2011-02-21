@@ -1,6 +1,6 @@
 package POE::Component::Client::HTTP::Request;
 BEGIN {
-  $POE::Component::Client::HTTP::Request::VERSION = '0.910';
+  $POE::Component::Client::HTTP::Request::VERSION = '0.941';
 }
 # vim: ts=2 sw=2 expandtab
 
@@ -27,6 +27,10 @@ BEGIN {
 my $request_seq = 0;
 
 use constant DEBUG => 0;
+
+# TODO CONNECT - Add a flag to indicate whether to generate an HTTP
+# CONNECT request for proxying, or to return REQ_HTTP_REQUEST.  Add a
+# method to update that flag.
 
 use constant REQ_ID            =>  0;
 use constant REQ_POSTBACK      =>  1;
@@ -606,7 +610,7 @@ POE::Component::Client::HTTP::Request - an HTTP request class
 
 =head1 VERSION
 
-version 0.910
+version 0.941
 
 =head1 SYNOPSIS
 

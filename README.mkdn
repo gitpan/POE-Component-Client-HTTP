@@ -4,7 +4,7 @@ POE::Component::Client::HTTP - a HTTP user-agent component
 
 # VERSION
 
-version 0.910
+version 0.941
 
 # SYNOPSIS
 
@@ -478,8 +478,6 @@ be connected to a proxy rather than the server itself.
 This feature was added at Doreen Grey's request.  Doreen wanted a
 means to find the remote server's address without having to make an
 additional request.
-
-Patches for IPv6 support are welcome.
 
 # ENVIRONMENT
 
