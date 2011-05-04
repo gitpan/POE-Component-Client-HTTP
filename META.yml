@@ -6,7 +6,7 @@ build_requires: {}
 configure_requires:
   ExtUtils::MakeMaker: 6.31
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 4.200000, CPAN::Meta::Converter version 2.102400'
+generated_by: 'Dist::Zilla version 4.200004, CPAN::Meta::Converter version 2.102400'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -19,12 +19,12 @@ requires:
   HTTP::Response: 5.813
   HTTP::Status: 5.811
   Net::HTTP::Methods: 5.812
-  POE: 1.299
-  POE::Component::Client::Keepalive: 0.266
+  POE: 1.311
+  POE::Component::Client::Keepalive: 0.267
   Socket::GetAddrInfo: 0.19
   Test::More: 0.96
   Test::POE::Server::TCP: 1.14
   URI: 1.37
 resources:
   repository: git://github.com/rcaputo/poe-component-client-http.git
-version: 0.942
+version: 0.943

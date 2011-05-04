@@ -14,6 +14,8 @@ lib/POE/Component/Client/HTTP/Request.pm
 lib/POE/Component/Client/HTTP/RequestFactory.pm
 lib/POE/Filter/HTTPChunk.pm
 lib/POE/Filter/HTTPHead.pm
+pem.key
+ssl.debug.2
 t/000-report-versions.t
 t/01_request.t
 t/01_ssl.t
@@ -44,3 +46,6 @@ t/60_rt50231_pending.t
 t/60_rt50231_pending_many.t
 t/release-pod-coverage.t
 t/release-pod-syntax.t
+thirdlobe-pass.key
+thirdlobe.crt
+thirdlobe.key
