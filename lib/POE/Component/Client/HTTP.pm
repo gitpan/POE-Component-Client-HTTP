@@ -1,6 +1,6 @@
 package POE::Component::Client::HTTP;
 BEGIN {
-  $POE::Component::Client::HTTP::VERSION = '0.943';
+  $POE::Component::Client::HTTP::VERSION = '0.944';
 }
 # vim: ts=2 sw=2 expandtab
 
@@ -1051,7 +1051,7 @@ POE::Component::Client::HTTP - a HTTP user-agent component
 
 =head1 VERSION
 
-version 0.943
+version 0.944
 
 =head1 SYNOPSIS
 
@@ -1604,12 +1604,13 @@ https://rt.cpan.org/Dist/Display.html?Queue=POE-Component-Client-HTTP
 
 =head1 REPOSITORY
 
-http://github.com/rcaputo/poe-component-client-http
-http://gitorious.org/poe-component-client-http
+Github: L<http://github.com/rcaputo/poe-component-client-http> .
+
+Gitorious: L<http://gitorious.org/poe-component-client-http> .
 
 =head1 OTHER RESOURCES
 
-http://search.cpan.org/dist/POE-Component-Client-HTTP/
+L<http://search.cpan.org/dist/POE-Component-Client-HTTP/>
 
 =cut
 

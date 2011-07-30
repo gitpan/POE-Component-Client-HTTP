@@ -1,4 +1,22 @@
 ================================
+2011-07-30 17:48:27 -0400 v0_944
+================================
+
+  commit e143628f975c8c7572f5254b36ef895b746fddc8
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date:   Sat Jul 30 17:48:27 2011 -0400
+  
+    Bump revision and dependency versions.
+
+  commit 814e9d42655a3650d6c9d8b166771bd3c04d61db
+  Author: Shlomi Fish <shlomif@iglu.org.il>
+  Date:   Fri Jul 22 12:46:52 2011 +0300
+  
+    Add L<...> to URLs.
+
+    They were displayed as plaintext in the web-interface. 
+
+================================
 2011-05-03 22:44:20 -0400 v0_943
 ================================
 

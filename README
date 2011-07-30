@@ -2,7 +2,7 @@ NAME
     POE::Component::Client::HTTP - a HTTP user-agent component
 
 VERSION
-    version 0.943
+    version 0.944
 
 SYNOPSIS
       use POE qw(Component::Client::HTTP);
@@ -496,9 +496,10 @@ BUG TRACKER
     https://rt.cpan.org/Dist/Display.html?Queue=POE-Component-Client-HTTP
 
 REPOSITORY
-    http://github.com/rcaputo/poe-component-client-http
-    http://gitorious.org/poe-component-client-http
+    Github: <http://github.com/rcaputo/poe-component-client-http> .
+
+    Gitorious: <http://gitorious.org/poe-component-client-http> .
 
 OTHER RESOURCES
-    http://search.cpan.org/dist/POE-Component-Client-HTTP/
+    <http://search.cpan.org/dist/POE-Component-Client-HTTP/>
 
