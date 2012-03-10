@@ -1,6 +1,6 @@
 package POE::Component::Client::HTTP;
-BEGIN {
-  $POE::Component::Client::HTTP::VERSION = '0.944';
+{
+  $POE::Component::Client::HTTP::VERSION = '0.945';
 }
 # vim: ts=2 sw=2 expandtab
 
@@ -228,7 +228,8 @@ sub _poco_weeble_request {
        . "</HTML>\n"
     );
     $rsp->request($http_request);
-    if (ref $response_event) {
+    if (ref($response_event) eq 'POE::Component::Client::HTTP::Request') {
+      use Carp qw(confess); confess("blessed $response_event");
       $response_event->postback->($rsp);
     } else {
       $kernel->post($sender, $response_event, [$http_request, $tag], [$rsp]);
@@ -249,7 +250,7 @@ sub _poco_weeble_request {
        . "</HTML>\n"
       );
     $rsp->request($http_request);
-    if (ref $response_event) {
+    if (ref($response_event) eq 'POE::Component::Client::HTTP::Request') {
       $response_event->postback->($rsp);
     } else {
       $kernel->post($sender, $response_event, [$http_request, $tag], [$rsp]);
@@ -1051,7 +1052,7 @@ POE::Component::Client::HTTP - a HTTP user-agent component
 
 =head1 VERSION
 
-version 0.944
+version 0.945
 
 =head1 SYNOPSIS
 

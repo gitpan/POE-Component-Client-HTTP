@@ -1,192 +1,85 @@
-================================
-2011-07-30 17:48:27 -0400 v0_944
-================================
+==================================================
+Changes from 2011-03-11 00:00:00 +0000 to present.
+==================================================
 
-  commit e143628f975c8c7572f5254b36ef895b746fddc8
+------------------------------------------
+version 0.945 at 2012-03-10 19:59:37 +0000
+------------------------------------------
+
+  Change: 28ac3ae14572aed075c53b5930dfd24645cbfe03
   Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Sat Jul 30 17:48:27 2011 -0400
-  
-    Bump revision and dependency versions.
+  Date : 2012-03-10 14:58:49 +0000
 
-  commit 814e9d42655a3650d6c9d8b166771bd3c04d61db
+    Rely on latest POE::Component::Client::Keepalive. 
+
+  Change: bcc6b11a4effd9a59e6315a1c667d88067896231
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date : 2012-03-10 14:55:23 +0000
+
+    [rt.cpan.org 70268] Some DNS providers redirect bad hosts.
+
+    They redirect bad hosts instead of allowing outright failure. I think
+    it's supposed to be helpful, or improve domain sales, or both, or
+    something. But anyway, it meant that people using certain DNS
+    providers wouldn't be able to cleanly test this distribution.
+
+    Thanks to "blackcode" for reporting this. Unfortunately I'm not sure
+    of a foolproof solution other than to make the test accept 303s.
+
+    Patches are welcome, dear reader from the future. 
+
+  Change: 90a80744154fc20a135360c229d42fb3d479ce8c
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date : 2012-03-10 14:17:09 +0000
+
+    Shut down user agents in tests so they end more promptly. 
+
+  Change: 565515d6870b9b7e1fd0f13edb1ec94dfcbb5dbe
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date : 2012-01-25 16:52:30 +0000
+
+    Allow response events to be objects.
+
+    Reflex::POE::Event objects are intended to be used as POE events. For
+    it to work, components like this one must treat events as opaque
+    data. 
+
+------------------------------------------
+version 0_944 at 2011-07-30 21:48:27 +0000
+------------------------------------------
+
+  Change: e143628f975c8c7572f5254b36ef895b746fddc8
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date : 2011-07-30 17:48:27 +0000
+
+    Bump revision and dependency versions. 
+
+  Change: faf7d597649759683a3b4ccbab8eca4ef2de9659
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date : 2011-07-22 06:02:03 +0000
+
+    Merge pull request #3 from shlomif/master
+
+    Convert http:// URLs to L<..> in the POD. 
+
+  Change: 814e9d42655a3650d6c9d8b166771bd3c04d61db
   Author: Shlomi Fish <shlomif@iglu.org.il>
-  Date:   Fri Jul 22 12:46:52 2011 +0300
-  
+  Date : 2011-07-22 12:46:52 +0000
+
     Add L<...> to URLs.
 
     They were displayed as plaintext in the web-interface. 
 
-================================
-2011-05-03 22:44:20 -0400 v0_943
-================================
+------------------------------------------
+version 0_943 at 2011-05-04 02:44:20 +0000
+------------------------------------------
 
-  commit 151ec1c205e1558f05a55e05fc1ad37bbd552de0
+  Change: 151ec1c205e1558f05a55e05fc1ad37bbd552de0
   Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Tue May 3 22:44:20 2011 -0400
-  
+  Date : 2011-05-03 22:44:20 +0000
+
     Prepare for next release. 
 
-================================
-2011-02-20 23:51:41 -0500 v0_942
-================================
-
-  commit 5b052d5d2d238f6af470958e4ed33e5453119e2e
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Sun Feb 20 23:51:41 2011 -0500
-  
-    Bump the version for release.
-
-  commit cf963d64dcb3f60f56bcfa493b04b7eb0f5f8a7e
-  Author: Apocalypse <perl@0ne.us>
-  Date:   Sun Jan 30 15:35:54 2011 -0700
-  
-    Add tests for pending_requests_count() and fix underlying cause of
-    RT#50231, thanks Jeff Bisbee 
-
-================================
-2011-02-20 22:56:33 -0500 v0_941
-================================
-
-  commit f89255d7f0a801600c8533f0931a7d31e615116c
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Sun Feb 20 22:56:33 2011 -0500
-  
-    Remove explicit VERSION assignments so dzil can do it for us.
-
-  commit f1ddf1cfea5bfa8e4d1c365ab8735941653dfc52
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Mon Feb 14 10:52:13 2011 -0500
-  
-    Bump the version for release.
-
-  commit 38412e1f9c0afdd0d338c75f9a9c45e87c32911d
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Sun Feb 13 14:50:44 2011 -0500
-  
-    Make notes (marked with "TODO CONNECT") where SSL CONNECT proxying
-    logic might go.
-
-  commit 3562e58dd084ca86630003dede755326a7cdbf92
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Sun Feb 13 14:25:18 2011 -0500
-  
-    Remove "patches welcome" for IPv6. 
-
-================================
-2011-01-27 17:02:36 -0500 v0_910
-================================
-
-  commit e7073116e01532859c4ce37ece6d8ae01c469eed
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Thu Jan 27 17:02:36 2011 -0500
-  
-    Remove tabs, dammit. This project doesn't use 'em.
-
-  commit 51689b5a1e0c183b977cb6a703ee1e486eabf66b
-  Author: Apocalypse <perl@0ne.us>
-  Date:   Thu Jan 27 16:54:27 2011 -0500
-  
-    Some machines time out before they can respond with a 500 error on
-    bad host. Accept this as a valid outcome.
-
-  commit 83f5596032c1c2679db3150fe0aeddd32543996b
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Thu Jan 27 13:38:20 2011 -0500
-  
-    Replace Socket6 with Socket::GetAddrInfo.
-
-  commit b37d17c5efd1490c9ccce46011c042e4e899833c
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Thu Jan 27 01:54:06 2011 -0500
-  
-    Make ETIMEDOUT connection errors more consistent.
-
-  commit c63f926476660883eda7ff9bbb542a83a836d894
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Thu Jan 27 01:29:07 2011 -0500
-  
-    Fix the X-PCCH-Errmsg header.
-
-  commit 6e51447c464022615e6bc61e287aedc8c5aff7f9
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Thu Jan 27 01:14:44 2011 -0500
-  
-    Fix a couple more test stalls on Windows.
-
-  commit 7c1c2ad0f323c4ea2253b26f0c2c5f4d8e7aa7c5
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Thu Jan 27 00:40:18 2011 -0500
-  
-    Fix a hang in t/52_reiss_bad_length.t on Windows.
-
-  commit 3e79d510fadf94d04c3d63487cb25a777d39f59c
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Thu Jan 27 00:14:11 2011 -0500
-  
-    Implement X-PCCH-Errmsg and expose connect error ETIMEDOUT as a 408
-    timeout. Resolves rt.cpan.org #53576, reported by me! Thanks, me!
-
-  commit 2be3189e61fed34c4c644deffc4ae18de0d14a74
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Wed Jan 26 23:20:55 2011 -0500
-  
-    Resolve a hang in t/14_gzipped_content.t on Windows.
-
-  commit 02d18ca93b8721b085e9b556009c67b942672b86
-  Author: Apocalypse <perl@0ne.us>
-  Date:   Wed Jan 26 16:45:04 2011 -0700
-  
-    fix RT#13611 by ignoring MSWin32 for now...
-
-  commit 6a93a247a030ba0b0f08becd1441efbd586dbbcf
-  Author: Apocalypse <perl@0ne.us>
-  Date:   Wed Jan 26 16:26:27 2011 -0700
-  
-    fix RT#58265 regarding sslify socket
-
-  commit 0cea3ad624bb0ff5b9b87046f05846328475f096
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Wed Jan 26 16:19:44 2011 -0500
-  
-    Use the correct distribution name.
-
-  commit c4e71be0e7a7ae3f4a444207cc5ff40a70230674
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Wed Jan 26 16:11:43 2011 -0500
-  
-    Add MANIFEST.SKIP for great justice.
-
-  commit 0aaeea10d008d3f7f1d63ef206273292de20a46d
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Wed Jan 26 15:54:59 2011 -0500
-  
-    Migrate to Dist::Zilla for max(fun_times).
-
-  commit c2d80a85addbd0ffc951093f19b26960113e32ab
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Wed Jan 26 03:20:20 2011 -0500
-  
-    Fix Socket6 imports for the IP version agnostic code.
-
-  commit 16a210b8ebdc47c46cbd77235c3575fcdf38704e
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Wed Jan 26 03:16:01 2011 -0500
-  
-    Make peername decoding IP version agnostic.
-
-  commit 2f0a0920679b447947a2e6485331932ad437da86
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Wed Jan 26 01:55:25 2011 -0500
-  
-    Fix a test that was timing out rather than failing to connect. Some
-    systems blackhole dead-host packets rather than RST your connection.
-
-  commit 282426987f4e7964e255aa69d3e14f4e6d8ee317
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date:   Wed Jan 26 01:07:54 2011 -0500
-  
-    Test and docs fixes. 
-
-===================================
-End of changes in the last 365 days
-===================================
+=================================================
+Plus 55 releases after 2011-03-11 00:00:00 +0000.
+=================================================

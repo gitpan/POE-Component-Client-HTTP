@@ -1,6 +1,6 @@
 package POE::Filter::HTTPHead_Line;
-BEGIN {
-  $POE::Filter::HTTPHead_Line::VERSION = '0.944';
+{
+  $POE::Filter::HTTPHead_Line::VERSION = '0.945';
 }
 # vim: ts=2 sw=2 expandtab
 
@@ -156,8 +156,8 @@ sub get_pending {
 }
 
 package POE::Filter::HTTPHead;
-BEGIN {
-  $POE::Filter::HTTPHead::VERSION = '0.944';
+{
+  $POE::Filter::HTTPHead::VERSION = '0.945';
 }
 use strict;
 
@@ -167,7 +167,7 @@ POE::Filter::HTTPHead - filter data as HTTP::Response objects
 
 =head1 VERSION
 
-version 0.944
+version 0.945
 
 =head1 SYNOPSYS
 

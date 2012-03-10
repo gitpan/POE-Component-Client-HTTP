@@ -105,6 +105,7 @@ sub send_after_timeout {
 
   $heap->{testd}->send_to_client($id, $data);
   $heap->{testd}->shutdown;
+  $_[KERNEL]->post( weeble => 'shutdown' );
 }
 
 sub testd_client_input {
@@ -121,6 +122,7 @@ sub testd_client_input {
   elsif ($buffer =~ /^GET \/timeout/) {
     pass("got test request we will let timeout");
     $heap->{input_buffer} = "";
+
     $kernel->delay_add('send_after_timeout', 3.3, $id);
   }
   elsif ($buffer =~ /^POST \/post1.*field.*field/s) {
@@ -168,9 +170,13 @@ sub got_response {
   }
   elsif (
     $request_path =~ m/badhost$/ and
-    ($response->code == 500 or $response->code == 408)
+    (
+      $response->code == 500 or
+      $response->code == 408 or
+      $response->code == 303     # some DNS's redirect bad hosts
+    )
   ) {
-    pass('got 500 response for request on bad host')
+    pass("got " . $response->code . " response for request on bad host")
   }
   elsif ($request_path =~ m/filesystem$/ and $response->code == 400) {
     pass('got 400 response for request with unsupported scheme')

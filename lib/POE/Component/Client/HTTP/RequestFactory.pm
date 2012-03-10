@@ -1,6 +1,6 @@
 package POE::Component::Client::HTTP::RequestFactory;
-BEGIN {
-  $POE::Component::Client::HTTP::RequestFactory::VERSION = '0.944';
+{
+  $POE::Component::Client::HTTP::RequestFactory::VERSION = '0.945';
 }
 # vim: ts=2 sw=2 expandtab
 
@@ -21,6 +21,7 @@ use constant FCT_NOPROXY         => 6;
 use constant FCT_HTTP_PROXY      => 7;
 use constant FCT_FOLLOWREDIRECTS => 8;
 use constant FCT_TIMEOUT         => 9;
+
 use constant DEBUG               => 0;
 use constant DEFAULT_BLOCK_SIZE  => 4096;
 
@@ -255,7 +256,7 @@ sub create_request {
   }
 
   my ($last_request, $postback);
-  if (ref($response_event)) {
+  if (ref($response_event) eq 'POE::Component::Client::HTTP::Request') {
     $last_request = $response_event;
     $postback = $last_request->postback;
   }
