@@ -1,6 +1,6 @@
 package POE::Component::Client::HTTP::RequestFactory;
 {
-  $POE::Component::Client::HTTP::RequestFactory::VERSION = '0.945';
+  $POE::Component::Client::HTTP::RequestFactory::VERSION = '0.946';
 }
 # vim: ts=2 sw=2 expandtab
 
@@ -24,6 +24,18 @@ use constant FCT_TIMEOUT         => 9;
 
 use constant DEBUG               => 0;
 use constant DEFAULT_BLOCK_SIZE  => 4096;
+
+=head1 NAME
+
+POE::Component::Client::HTTP::RequestFactory - an HTTP request factory object
+
+=head1 VERSION
+
+version 0.946
+
+=head1 SYNOPSIS
+
+  # Used internally by POE::Component::Client::HTTP
 
 =head1 CONSTRUCTOR
 

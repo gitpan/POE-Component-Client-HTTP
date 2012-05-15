@@ -1,9 +1,32 @@
 ==================================================
-Changes from 2011-03-11 00:00:00 +0000 to present.
+Changes from 2011-05-16 00:00:00 +0000 to present.
 ==================================================
 
 ------------------------------------------
-version 0.945 at 2012-03-10 19:59:37 +0000
+version 0.946 at 2012-05-15 01:48:38 +0000
+------------------------------------------
+
+  Change: eacdcf93f62f566011a8c29637d10f27d0aad28a
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date : 2012-05-14 21:47:32 +0000
+
+    Rely upon the latest POE::Component::Client::Keepalive. 
+
+  Change: 567c9bf1b2a7ac5aa057baaefa545055548dafc2
+  Author: Rocco Caputo <rcaputo@cpan.org>
+  Date : 2012-04-29 19:50:38 +0000
+
+    [rt.cpan.org 76543] Help out Debian with a NAME and SYNOPSIS for an
+    internal module.
+
+    Florian sent in a patch written by Krzysztof Krzyzaniak to add NAME
+    and SYNOPSIS sections to
+    POE::Component::Client::HTTP::RequestFactory. This is reported to
+    help Debian automatically build a "whatis" entry for the module.
+    Thanks for the patch! Please send any others upstream. 
+
+------------------------------------------
+version 0.945 at 2012-03-10 19:58:49 +0000
 ------------------------------------------
 
   Change: 28ac3ae14572aed075c53b5930dfd24645cbfe03
@@ -70,16 +93,6 @@ version 0_944 at 2011-07-30 21:48:27 +0000
 
     They were displayed as plaintext in the web-interface. 
 
-------------------------------------------
-version 0_943 at 2011-05-04 02:44:20 +0000
-------------------------------------------
-
-  Change: 151ec1c205e1558f05a55e05fc1ad37bbd552de0
-  Author: Rocco Caputo <rcaputo@cpan.org>
-  Date : 2011-05-03 22:44:20 +0000
-
-    Prepare for next release. 
-
 =================================================
-Plus 55 releases after 2011-03-11 00:00:00 +0000.
+Plus 56 releases after 2011-05-16 00:00:00 +0000.
 =================================================

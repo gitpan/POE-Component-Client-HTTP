@@ -1,6 +1,6 @@
 package POE::Component::Client::HTTP;
 {
-  $POE::Component::Client::HTTP::VERSION = '0.945';
+  $POE::Component::Client::HTTP::VERSION = '0.946';
 }
 # vim: ts=2 sw=2 expandtab
 
@@ -1052,7 +1052,7 @@ POE::Component::Client::HTTP - a HTTP user-agent component
 
 =head1 VERSION
 
-version 0.945
+version 0.946
 
 =head1 SYNOPSIS
 

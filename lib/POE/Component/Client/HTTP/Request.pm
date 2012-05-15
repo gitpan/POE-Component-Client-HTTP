@@ -1,6 +1,6 @@
 package POE::Component::Client::HTTP::Request;
 {
-  $POE::Component::Client::HTTP::Request::VERSION = '0.945';
+  $POE::Component::Client::HTTP::Request::VERSION = '0.946';
 }
 # vim: ts=2 sw=2 expandtab
 
@@ -610,7 +610,7 @@ POE::Component::Client::HTTP::Request - an HTTP request class
 
 =head1 VERSION
 
-version 0.945
+version 0.946
 
 =head1 SYNOPSIS
 

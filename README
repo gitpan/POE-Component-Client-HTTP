@@ -2,7 +2,7 @@ NAME
     POE::Component::Client::HTTP - a HTTP user-agent component
 
 VERSION
-    version 0.945
+    version 0.946
 
 SYNOPSIS
       use POE qw(Component::Client::HTTP);
