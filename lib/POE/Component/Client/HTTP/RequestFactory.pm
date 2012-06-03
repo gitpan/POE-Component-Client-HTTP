@@ -1,6 +1,6 @@
 package POE::Component::Client::HTTP::RequestFactory;
 {
-  $POE::Component::Client::HTTP::RequestFactory::VERSION = '0.946';
+  $POE::Component::Client::HTTP::RequestFactory::VERSION = '0.947';
 }
 # vim: ts=2 sw=2 expandtab
 
@@ -31,7 +31,7 @@ POE::Component::Client::HTTP::RequestFactory - an HTTP request factory object
 
 =head1 VERSION
 
-version 0.946
+version 0.947
 
 =head1 SYNOPSIS
 

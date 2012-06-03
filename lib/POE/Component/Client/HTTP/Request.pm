@@ -1,6 +1,6 @@
 package POE::Component::Client::HTTP::Request;
 {
-  $POE::Component::Client::HTTP::Request::VERSION = '0.946';
+  $POE::Component::Client::HTTP::Request::VERSION = '0.947';
 }
 # vim: ts=2 sw=2 expandtab
 
@@ -290,7 +290,6 @@ sub add_content {
 
     $self->[REQ_STATE] |= RS_DONE;
     $self->[REQ_STATE] &= ~RS_IN_CONTENT;
-    $self->[REQ_CONNECTION]->close();
     return 1;
   }
 
@@ -610,7 +609,7 @@ POE::Component::Client::HTTP::Request - an HTTP request class
 
 =head1 VERSION
 
-version 0.946
+version 0.947
 
 =head1 SYNOPSIS
 

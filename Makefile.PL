@@ -28,12 +28,12 @@ my %WriteMakefileArgs = (
     "Net::HTTP::Methods" => "5.812",
     "POE" => "1.312",
     "POE::Component::Client::Keepalive" => "0.271",
-    "Socket::GetAddrInfo" => "0.19",
+    "Socket" => "2.001",
     "Test::More" => "0.96",
     "Test::POE::Server::TCP" => "1.14",
     "URI" => "1.37"
   },
-  "VERSION" => "0.946",
+  "VERSION" => "0.947",
   "test" => {
     "TESTS" => "t/*.t"
   }
