@@ -1,6 +1,6 @@
 package POE::Component::Client::HTTP::Request;
 {
-  $POE::Component::Client::HTTP::Request::VERSION = '0.947';
+  $POE::Component::Client::HTTP::Request::VERSION = '0.948';
 }
 # vim: ts=2 sw=2 expandtab
 
@@ -128,11 +128,13 @@ sub new {
 
   # Add a host header if one isn't included.  Must do this before
   # we reset the $host for the proxy!
-  _set_host_header ($http_request) unless (
+  unless (
     defined $http_request->header('Host') and
     length $http_request->header('Host')
-  );
-
+  ) {
+    my $error = _set_host_header($http_request);
+    croak "Can't set Host header: $error" if $error;
+  }
 
   if (defined $params{Proxy}) {
     # This request qualifies for proxying.  Replace the host and port
@@ -405,7 +407,9 @@ sub _set_host_header {
       $request->header( Host => "$new_host:$new_port" );
     }
   };
-  warn $@ if $@;
+
+  # Return Boolean state of the eval.
+  return $@;
 }
 
 sub does_redirect {
@@ -609,7 +613,7 @@ POE::Component::Client::HTTP::Request - an HTTP request class
 
 =head1 VERSION
 
-version 0.947
+version 0.948
 
 =head1 SYNOPSIS
 

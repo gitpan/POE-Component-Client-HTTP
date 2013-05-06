@@ -1,6 +1,6 @@
 package POE::Component::Client::HTTP;
 {
-  $POE::Component::Client::HTTP::VERSION = '0.947';
+  $POE::Component::Client::HTTP::VERSION = '0.948';
 }
 # vim: ts=2 sw=2 expandtab
 
@@ -211,12 +211,10 @@ sub _poco_weeble_request {
     $proxy_override
   ) = @_[KERNEL, HEAP, SENDER, ARG0, ARG1, ARG2, ARG3, ARG4];
 
+  my $scheme = $http_request->uri->scheme;
   unless (
-    defined($http_request->uri->scheme) and
-    length($http_request->uri->scheme) and
-    $supported_schemes{$http_request->uri->scheme} and
-    defined($http_request->uri->host) and
-    length($http_request->uri->host)
+    defined($scheme) and
+    exists $supported_schemes{$scheme}
   ) {
     my $rsp = HTTP::Response->new(
        400 => 'Bad Request', [],
@@ -224,13 +222,33 @@ sub _poco_weeble_request {
        . "<HEAD><TITLE>Error: Bad Request</TITLE></HEAD>\n"
        . "<BODY>\n"
        . "<H1>Error: Bad Request</H1>\n"
-       . "Unsupported URI scheme\n"
+       . "Unsupported URI scheme: '$scheme'\n"
        . "</BODY>\n"
        . "</HTML>\n"
     );
     $rsp->request($http_request);
     if (ref($response_event) eq 'POE::Component::Client::HTTP::Request') {
-      use Carp qw(confess); confess("blessed $response_event");
+      $response_event->postback->($rsp);
+    } else {
+      $kernel->post($sender, $response_event, [$http_request, $tag], [$rsp]);
+    }
+    return;
+  }
+
+  my $host = $http_request->uri->host;
+  unless (defined $host and length $host) {
+    my $rsp = HTTP::Response->new(
+       400 => 'Bad Request', [],
+       "<html>\n"
+       . "<HEAD><TITLE>Error: Bad Request</TITLE></HEAD>\n"
+       . "<BODY>\n"
+       . "<H1>Error: Bad Request</H1>\n"
+       . "URI contains no discernable host.\n"
+       . "</BODY>\n"
+       . "</HTML>\n"
+    );
+    $rsp->request($http_request);
+    if (ref($response_event) eq 'POE::Component::Client::HTTP::Request') {
       $response_event->postback->($rsp);
     } else {
       $kernel->post($sender, $response_event, [$http_request, $tag], [$rsp]);
@@ -1056,7 +1074,7 @@ POE::Component::Client::HTTP - a HTTP user-agent component
 
 =head1 VERSION
 
-version 0.947
+version 0.948
 
 =head1 SYNOPSIS
 
@@ -1349,12 +1367,12 @@ Requests are posted to the component's "request" state.  They include
 an HTTP::Request object which defines the request.  For example:
 
   $kernel->post(
-    'ua', 'request',           # http session alias & state
-    'response',                # my state to receive responses
-    GET 'http://poe.perl.org', # a simple HTTP request
-    'unique id',               # a tag to identify the request
-    'progress',                # an event to indicate progress
-    'http://1.2.3.4:80/'       # proxy to use for this request
+    'ua', 'request',            # http session alias & state
+    'response',                 # my state to receive responses
+    GET('http://poe.perl.org'), # a simple HTTP request
+    'unique id',                # a tag to identify the request
+    'progress',                 # an event to indicate progress
+    'http://1.2.3.4:80/'        # proxy to use for this request
   );
 
 Requests include the state to which responses will be posted.  In the
