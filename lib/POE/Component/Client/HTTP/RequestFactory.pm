@@ -1,9 +1,6 @@
 package POE::Component::Client::HTTP::RequestFactory;
-{
-  $POE::Component::Client::HTTP::RequestFactory::VERSION = '0.948';
-}
 # vim: ts=2 sw=2 expandtab
-
+$POE::Component::Client::HTTP::RequestFactory::VERSION = '0.949';
 use strict;
 use warnings;
 
@@ -11,19 +8,23 @@ use Carp;
 use POE::Component::Client::HTTP::Request;
 use POE::Component::Client::HTTP;
 
-use constant FCT_AGENT           => 0;
-use constant FCT_STREAMING       => 1;
-use constant FCT_MAXSIZE         => 2;
-use constant FCT_PROTOCOL        => 3;
-use constant FCT_COOKIEJAR       => 4;
-use constant FCT_FROM            => 5;
-use constant FCT_NOPROXY         => 6;
-use constant FCT_HTTP_PROXY      => 7;
-use constant FCT_FOLLOWREDIRECTS => 8;
-use constant FCT_TIMEOUT         => 9;
+use constant {
+  FCT_AGENT           => 0,
+  FCT_STREAMING       => 1,
+  FCT_MAXSIZE         => 2,
+  FCT_PROTOCOL        => 3,
+  FCT_COOKIEJAR       => 4,
+  FCT_FROM            => 5,
+  FCT_NOPROXY         => 6,
+  FCT_HTTP_PROXY      => 7,
+  FCT_FOLLOWREDIRECTS => 8,
+  FCT_TIMEOUT         => 9,
+};
 
-use constant DEBUG               => 0;
+use constant DEBUG => 0;
+
 use constant DEFAULT_BLOCK_SIZE  => 4096;
+
 
 =head1 NAME
 
@@ -31,7 +32,7 @@ POE::Component::Client::HTTP::RequestFactory - an HTTP request factory object
 
 =head1 VERSION
 
-version 0.948
+version 0.949
 
 =head1 SYNOPSIS
 
@@ -93,6 +94,7 @@ Timeout
 
 =cut
 
+
 sub new {
   my ($class, $params) = @_;
 
@@ -108,6 +110,8 @@ sub new {
   }
 
   my $v = $POE::Component::Client::HTTP::VERSION;
+  $v = "0.000" unless defined $v;
+
   push(
     @$agent,
     sprintf(
@@ -163,6 +167,7 @@ sub new {
   return bless $self, $class;
 }
 
+
 =head1 METHODS
 
 =head2 timeout [$timeout]
@@ -171,6 +176,7 @@ Method that lets you query and/or change the timeout value for requests
 created by this factory.
 
 =cut
+
 
 sub timeout {
   my ($self, $timeout) = @_;
@@ -181,11 +187,13 @@ sub timeout {
   return $self->[FCT_TIMEOUT];
 }
 
+
 =head2 is_streaming
 
 Accessor for the Streaming parameter
 
 =cut
+
 
 sub is_streaming {
   my ($self) = @_;
@@ -198,11 +206,13 @@ sub is_streaming {
   return $self->[FCT_STREAMING];
 }
 
+
 =head2 agent
 
 Accessor to the Agent parameter
 
 =cut
+
 
 sub agent {
   my ($self) = @_;
@@ -210,11 +220,13 @@ sub agent {
   return $self->[FCT_AGENT]->[rand @{$self->[FCT_AGENT]}];
 }
 
+
 =head2 from
 
 getter/setter for the From parameter
 
 =cut
+
 
 sub from {
   my ($self) = @_;
@@ -225,11 +237,13 @@ sub from {
   return undef;
 }
 
+
 =head2 create_request
 
 Creates a new L<POE::Component::Client::HTTP::Request>
 
 =cut
+
 
 sub create_request {
   my ($self, $http_request, $response_event, $tag,
@@ -342,8 +356,8 @@ sub create_request {
   return $request;
 }
 
+
 # Determine whether a host is in a no-proxy list.
-# {{{ _in_no_proxy
 
 sub _in_no_proxy {
   my ($host, $no_proxy) = @_;
@@ -354,7 +368,6 @@ sub _in_no_proxy {
   return 0;
 }
 
-# }}} _in_no_proxy
 
 =head2 max_response_size
 
@@ -363,17 +376,20 @@ C<MaxSize> parameter to L<Client::HTTP>'s C<spawn()> method.
 
 =cut
 
+
 sub max_response_size {
   my ($self) = @_;
 
   return $self->[FCT_MAXSIZE];
 }
 
+
 =head2 block_size
 
 Accessor for the Streaming parameter
 
 =cut
+
 
 sub block_size {
   my ($self) = @_;
@@ -384,12 +400,14 @@ sub block_size {
   return $block_size;
 }
 
+
 =head2 frob_cookies $response
 
 Store the cookies from the L<HTTP::Response> parameter passed into
 our cookie jar
 
 =cut
+
 
 sub frob_cookies {
   my ($self, $response) = @_;
@@ -398,6 +416,7 @@ sub frob_cookies {
     $self->[FCT_COOKIEJAR] ->extract_cookies($response);
   }
 }
+
 
 =head2 max_redirect_count [$count]
 
@@ -408,6 +427,7 @@ C<spawn> method.
 
 =cut
 
+
 sub max_redirect_count {
   my ($self, $count) = @_;
 
@@ -416,6 +436,7 @@ sub max_redirect_count {
   }
   return $self->[FCT_FOLLOWREDIRECTS];
 }
+
 
 =head2 parse_proxy $proxy
 
@@ -432,6 +453,7 @@ array ferences), each containing a host and a port:
   ]
 
 =cut
+
 
 sub parse_proxy {
   my $proxy = $_[1];

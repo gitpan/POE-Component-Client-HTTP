@@ -1,9 +1,6 @@
 package POE::Filter::HTTPHead_Line;
-{
-  $POE::Filter::HTTPHead_Line::VERSION = '0.948';
-}
 # vim: ts=2 sw=2 expandtab
-
+$POE::Filter::HTTPHead_Line::VERSION = '0.949';
 use warnings;
 use strict;
 
@@ -11,15 +8,19 @@ use base 'POE::Filter';
 
 use HTTP::Response;
 
-sub FRAMING_BUFFER   () { 0 }
-sub CURRENT_STATE    () { 1 }
-sub WORK_RESPONSE    () { 2 }
-sub PROTOCOL_VERSION () { 3 }
+use constant {
+  FRAMING_BUFFER   => 0,
+  CURRENT_STATE    => 1,
+  WORK_RESPONSE    => 2,
+  PROTOCOL_VERSION => 3,
+};
 
-sub STATE_STATUS () { 0x01 }  # waiting for a status line
-sub STATE_HEADER () { 0x02 }  # gotten status, looking for header or end
+use constant {
+  STATE_STATUS => 0x01,  # waiting for a status line
+  STATE_HEADER => 0x02,  # gotten status, looking for header or end
+};
 
-sub DEBUG () { 0 }
+use constant DEBUG => 0;
 
 sub new {
   my $type = shift;
@@ -58,14 +59,44 @@ sub get_one {
       DEBUG and warn "----- Waiting for a status line.\n";
 
       # Does the line look like a status line?
-      if ($line =~ m|^(?:HTTP/(\d+\.\d+) )?(\d{3})\s*(.+)?$|) {
-        $self->[PROTOCOL_VERSION] = $1 if defined $1;
-        $self->[WORK_RESPONSE] = HTTP::Response->new ($2, $3);
+      if ($line =~ m!^(\d{3})\s+(.+?)\s+HTTP/(\d+\.\d+)$!) {
+        $self->[PROTOCOL_VERSION] = $3;
+        $self->[WORK_RESPONSE] = HTTP::Response->new($1, $2);
         $self->[WORK_RESPONSE]->protocol('HTTP/' . $self->[PROTOCOL_VERSION]);
         $self->[CURRENT_STATE] = STATE_HEADER;
-
-        # We're done with the line.  Try the next one.
-        DEBUG and warn "Got a status line.\n";
+        DEBUG and warn "Got a status line";
+        next LINE;
+      }
+      elsif ($line =~ m!^(\d{3})\s+(.+?)$!) {
+        $self->[PROTOCOL_VERSION] = 0.9;
+        $self->[WORK_RESPONSE] = HTTP::Response->new($1, $2);
+        $self->[WORK_RESPONSE]->protocol('HTTP/' . $self->[PROTOCOL_VERSION]);
+        $self->[CURRENT_STATE] = STATE_HEADER;
+        DEBUG and warn "Got a status line";
+        next LINE;
+      }
+      elsif ($line =~ m!^(\d{3})$!) {
+        $self->[PROTOCOL_VERSION] = 0.9;
+        $self->[WORK_RESPONSE] = HTTP::Response->new($1);
+        $self->[WORK_RESPONSE]->protocol('HTTP/' . $self->[PROTOCOL_VERSION]);
+        $self->[CURRENT_STATE] = STATE_HEADER;
+        DEBUG and warn "Got a status line";
+        next LINE;
+      }
+      elsif ($line =~ m!^HTTP/(\d+\.\d+)\s+(\d{3})\s+(.*?)\s*$!) {
+        $self->[PROTOCOL_VERSION] = $1;
+        $self->[WORK_RESPONSE] = HTTP::Response->new($2, $3);
+        $self->[WORK_RESPONSE]->protocol('HTTP/' . $self->[PROTOCOL_VERSION]);
+        $self->[CURRENT_STATE] = STATE_HEADER;
+        DEBUG and warn "Got a status line";
+        next LINE;
+      }
+      elsif ($line =~ m!^HTTP/(\d+\.\d+)\s+(\d{3})\s*$!) {
+        $self->[PROTOCOL_VERSION] = $1;
+        $self->[WORK_RESPONSE] = HTTP::Response->new($2);
+        $self->[WORK_RESPONSE]->protocol('HTTP/' . $self->[PROTOCOL_VERSION]);
+        $self->[CURRENT_STATE] = STATE_HEADER;
+        DEBUG and warn "Got a status line";
         next LINE;
       }
 
@@ -156,9 +187,7 @@ sub get_pending {
 }
 
 package POE::Filter::HTTPHead;
-{
-  $POE::Filter::HTTPHead::VERSION = '0.948';
-}
+$POE::Filter::HTTPHead::VERSION = '0.949';
 use strict;
 
 =head1 NAME
@@ -167,7 +196,7 @@ POE::Filter::HTTPHead - filter data as HTTP::Response objects
 
 =head1 VERSION
 
-version 0.948
+version 0.949
 
 =head1 SYNOPSYS
 

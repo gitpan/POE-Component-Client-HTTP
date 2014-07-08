@@ -1,9 +1,6 @@
 package POE::Component::Client::HTTP::Request;
-{
-  $POE::Component::Client::HTTP::Request::VERSION = '0.948';
-}
 # vim: ts=2 sw=2 expandtab
-
+$POE::Component::Client::HTTP::Request::VERSION = '0.949';
 use strict;
 use warnings;
 
@@ -32,32 +29,37 @@ use constant DEBUG => 0;
 # CONNECT request for proxying, or to return REQ_HTTP_REQUEST.  Add a
 # method to update that flag.
 
-use constant REQ_ID            =>  0;
-use constant REQ_POSTBACK      =>  1;
-use constant REQ_CONNECTION    =>  2;
-use constant REQ_HTTP_REQUEST  =>  3;
-use constant REQ_STATE         =>  4;
-use constant REQ_RESPONSE      =>  5;
-use constant REQ_BUFFER        =>  6;
-use constant REQ_OCTETS_GOT    =>  8;
-use constant REQ_TIMER         =>  9;
-use constant REQ_PROG_POSTBACK => 10;
-use constant REQ_USING_PROXY   => 11;
-use constant REQ_HOST          => 12;
-use constant REQ_PORT          => 13;
-use constant REQ_HISTORY       => 14;
-use constant REQ_START_TIME    => 15;
-use constant REQ_FACTORY       => 16;
-use constant REQ_CONN_ID       => 17;
-use constant REQ_PEERNAME      => 18;
+use constant {
+  REQ_ID            =>  0,
+  REQ_POSTBACK      =>  1,
+  REQ_CONNECTION    =>  2,
+  REQ_HTTP_REQUEST  =>  3,
+  REQ_STATE         =>  4,
+  REQ_RESPONSE      =>  5,
+  REQ_BUFFER        =>  6,
+  REQ_OCTETS_GOT    =>  8,
+  REQ_TIMER         =>  9,
+  REQ_PROG_POSTBACK => 10,
+  REQ_USING_PROXY   => 11,
+  REQ_HOST          => 12,
+  REQ_PORT          => 13,
+  REQ_HISTORY       => 14,
+  REQ_START_TIME    => 15,
+  REQ_FACTORY       => 16,
+  REQ_CONN_ID       => 17,
+  REQ_PEERNAME      => 18,
+};
 
-use constant RS_CONNECT        => 0x01; # establishing a connection
-use constant RS_SENDING        => 0x02; # sending request to server
-use constant RS_IN_HEAD        => 0x04; # waiting for or receiving headers
-use constant RS_REDIRECTED     => 0x08; # request has been redirected
-use constant RS_IN_CONTENT     => 0x20; # waiting for or receiving content
-use constant RS_DONE           => 0x40; # received full content
-use constant RS_POSTED         => 0x80; # we have posted back a response
+use constant {
+  RS_CONNECT        => 0x01, # establishing a connection
+  RS_SENDING        => 0x02, # sending request to server
+  RS_IN_HEAD        => 0x04, # waiting for or receiving headers
+  RS_REDIRECTED     => 0x08, # request has been redirected
+  RS_IN_CONTENT     => 0x20, # waiting for or receiving content
+  RS_DONE           => 0x40, # received full content
+  RS_POSTED         => 0x80, # we have posted back a response
+};
+
 
 sub import {
   my ($class) = shift;
@@ -93,10 +95,9 @@ sub import {
   }
 }
 
-sub ID {
-  my ($self) = @_;
-  return $self->[REQ_ID];
-}
+
+sub ID { return $_[0][REQ_ID] }
+
 
 sub new {
   my $class = shift;
@@ -173,6 +174,7 @@ sub new {
   return bless $self, $class;
 }
 
+
 sub return_response {
   my ($self) = @_;
 
@@ -208,6 +210,7 @@ sub return_response {
   }
   $self->[REQ_BUFFER] = '';
 }
+
 
 sub add_eof {
   my ($self) = @_;
@@ -252,6 +255,7 @@ sub add_eof {
     $self->return_response();
   }
 }
+
 
 sub add_content {
   my ($self, $data) = @_;
@@ -342,6 +346,10 @@ sub add_content {
   return 0;
 }
 
+
+### Methods to manage the request's timer.
+
+
 sub timer {
   my ($self, $timer) = @_;
 
@@ -352,6 +360,7 @@ sub timer {
   }
   return $self->[REQ_TIMER];
 }
+
 
 sub create_timer {
   my ($self, $timeout) = @_;
@@ -369,6 +378,7 @@ sub create_timer {
   );
 }
 
+
 sub remove_timeout {
   my ($self) = @_;
 
@@ -381,6 +391,7 @@ sub remove_timeout {
   }
 }
 
+
 sub postback {
   my ($self, $postback) = @_;
 
@@ -390,6 +401,7 @@ sub postback {
   }
   return $self->[REQ_POSTBACK];
 }
+
 
 sub _set_host_header {
   my ($request) = @_;
@@ -412,6 +424,7 @@ sub _set_host_header {
   return $@;
 }
 
+
 sub does_redirect {
   my ($self, $last) = @_;
 
@@ -425,6 +438,7 @@ sub does_redirect {
 
   return defined $self->[REQ_HISTORY];
 }
+
 
 sub check_redirect {
   my ($self) = @_;
@@ -485,6 +499,7 @@ sub check_redirect {
   return undef;
 }
 
+
 sub send_to_wheel {
   my ($self) = @_;
 
@@ -526,6 +541,7 @@ sub send_to_wheel {
   $self->[REQ_CONNECTION]->wheel->put ($request_string);
 }
 
+
 sub wheel {
   my ($self) = @_;
 
@@ -542,6 +558,7 @@ sub wheel {
   return unless $self->[REQ_CONNECTION];
   return $self->[REQ_CONNECTION]->wheel;
 }
+
 
 sub error {
   my ($self, $code, $message) = @_;
@@ -567,6 +584,7 @@ sub error {
   $self->[REQ_STATE] |= RS_POSTED;
 }
 
+
 sub connect_error {
   my ($self, $operation, $errnum, $errstr) = @_;
 
@@ -586,15 +604,27 @@ sub connect_error {
   return;
 }
 
-sub host { shift->[REQ_HOST] }
 
-sub port { shift->[REQ_PORT] }
+sub host { $_[0][REQ_HOST] }
+
+
+sub port { $_[0][REQ_PORT] }
+
+
+sub close_connection {
+  my ($self) = @_;
+  return unless defined $self->[REQ_CONNECTION];
+  $self->[REQ_CONNECTION]->close();
+  $self->[REQ_CONNECTION] = undef;
+}
+
 
 sub scheme {
   my $self = shift;
 
   $self->[REQ_USING_PROXY] ? 'http' : $self->[REQ_HTTP_REQUEST]->uri->scheme;
 }
+
 
 sub DESTROY {
   my ($self) = @_;
@@ -613,7 +643,7 @@ POE::Component::Client::HTTP::Request - an HTTP request class
 
 =head1 VERSION
 
-version 0.948
+version 0.949
 
 =head1 SYNOPSIS
 
@@ -715,6 +745,11 @@ FIXME - Not sure what this accessor does.
 Check whether the last response is a redirect, the request is
 permitted to follow redirects, and the maximum number of redirects has
 not been met.  Initiate a redirect if all conditions are favorable.
+
+=head2 close_connection
+
+Each active request object contains an internal connection.  This
+method closes it.
 
 =head2 send_to_wheel
 

@@ -1,5 +1,14 @@
 # vim: filetype=perl sw=2 ts=2 expandtab
+
 use strict;
+
+BEGIN {
+  my @proxies = grep /^http.*proxy$/i, keys %ENV;
+  delete @ENV{@proxies} if @proxies;
+}
+
+#sub POE::Kernel::ASSERT_DEFAULT () { 1 }
+
 use Test::More;
 use POE qw(
   Filter::Stream
@@ -54,7 +63,13 @@ POE::Session->create(
       got_response
       send_after_timeout
     )],
-  ]
+  ],
+  inline_states => {
+    testd_client_flushed => sub { undef },
+    testd_connected      => sub { undef },
+    testd_disconnected   => sub { undef },
+    _stop                => sub { undef },
+  },
 );
 
 $poe_kernel->run;

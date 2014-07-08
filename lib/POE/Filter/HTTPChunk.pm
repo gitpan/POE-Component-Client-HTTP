@@ -1,9 +1,6 @@
 package POE::Filter::HTTPChunk;
-{
-  $POE::Filter::HTTPChunk::VERSION = '0.948';
-}
 # vim: ts=2 sw=2 expandtab
-
+$POE::Filter::HTTPChunk::VERSION = '0.949';
 use warnings;
 use strict;
 
@@ -13,17 +10,24 @@ use base 'POE::Filter';
 
 use HTTP::Response;
 
-use constant FRAMING_BUFFER  => 0;
-use constant CURRENT_STATE   => 1;
-use constant CHUNK_SIZE      => 2;
-use constant CHUNK_BUFFER    => 3;
-use constant TRAILER_HEADERS => 4;
+use constant {
+  FRAMING_BUFFER  => 0,
+  CURRENT_STATE   => 1,
+  CHUNK_SIZE      => 2,
+  CHUNK_BUFFER    => 3,
+  TRAILER_HEADERS => 4,
+};
 
-use constant STATE_SIZE      => 0x01;  # waiting for a status line
-use constant STATE_DATA      => 0x02;  # received status, looking for header or end
-use constant STATE_TRAILER   => 0x04;  # received status, looking for header or end
+use constant {
+  STATE_SIZE      => 0x01,  # waiting for a status line
+  STATE_DATA      => 0x02,  # received status, looking for header or end
+  STATE_TRAILER   => 0x04,  # received status, looking for header or end
+};
 
-use constant DEBUG           => 0;
+use constant DEBUG => 0;
+
+my $HEX = qr/[\dA-Fa-f]/o;
+
 
 sub new {
   my ($class) = @_;
@@ -39,7 +43,6 @@ sub new {
   return $self;
 }
 
-my $HEX = qr/[\dA-Fa-f]/o;
 
 =for later
 
@@ -57,6 +60,7 @@ my $chunk_extension = qr/(?:;$chunk_ext_name(?:$chunk_ext_val)?)/o;
 
 =cut
 
+
 sub get_one_start {
   my ($self, $chunks) = @_;
 
@@ -64,6 +68,7 @@ sub get_one_start {
   push (@{$self->[FRAMING_BUFFER]}, @$chunks);
   #warn "NUMBER OF CHUNKS is now ", scalar @{$self->[FRAMING_BUFFER]};
 }
+
 
 sub get_one {
   my $self = shift;
@@ -181,6 +186,7 @@ sub get_one {
   return $retval;
 }
 
+
 =for future
 
 sub put {
@@ -189,15 +195,15 @@ sub put {
 
 =cut
 
+
 sub get_pending {
   my $self = shift;
   return $self->[FRAMING_BUFFER] if @{$self->[FRAMING_BUFFER]};
   return undef;
 }
 
-__END__
 
-# {{{ POD
+__END__
 
 =head1 NAME
 
@@ -205,7 +211,7 @@ POE::Filter::HTTPChunk - Non-blocking incremental HTTP chunk parser.
 
 =head1 VERSION
 
-version 0.948
+version 0.949
 
 =head1 SYNOPSIS
 
@@ -303,5 +309,3 @@ or mail L<mailto:bug-POE-Component-Client-HTTP@rt.cpan.org>
 For questions, try the L<POE> mailing list (poe@perl.org)
 
 =cut
-
-# }}} POD

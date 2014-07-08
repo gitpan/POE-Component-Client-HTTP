@@ -1,18 +1,13 @@
 package POE::Component::Client::HTTP;
-{
-  $POE::Component::Client::HTTP::VERSION = '0.948';
-}
 # vim: ts=2 sw=2 expandtab
-
-# {{{ INIT
-
+$POE::Component::Client::HTTP::VERSION = '0.949';
 use strict;
 #use bytes; # for utf8 compatibility
 
 use constant DEBUG      => 0;
 use constant DEBUG_DATA => 0;
 
-use Carp qw(croak);
+use Carp qw(croak carp);
 use HTTP::Response;
 use Net::HTTP::Methods;
 use Socket qw(
@@ -25,6 +20,7 @@ use POE::Component::Client::HTTP::Request qw(:states :fields);
 
 BEGIN {
   local $SIG{'__DIE__'} = 'DEFAULT';
+
   #TODO: move this to Client::Keepalive?
   # Allow more finely grained timeouts if Time::HiRes is available.
   eval {
@@ -92,14 +88,12 @@ my %supported_schemes = (
   https => 1,
 );
 
-# }}} INIT
 
 #------------------------------------------------------------------------------
 # Spawn a new PoCo::Client::HTTP session.  This basically is a
 # constructor, but it isn't named "new" because it doesn't create a
 # usable object.  Instead, it spawns the object off as a separate
 # session.
-# {{{ spawn
 
 sub spawn {
   my $type = shift;
@@ -159,9 +153,6 @@ sub spawn {
   undef;
 }
 
-# }}} spawn
-# ------------------------------------------------------------------------------
-# {{{ _poco_weeble_start
 
 sub _poco_weeble_start {
   my ($kernel, $heap) = @_[KERNEL, HEAP];
@@ -175,9 +166,6 @@ sub _poco_weeble_start {
   ) unless ($heap->{cm});
 }
 
-# }}} _poco_weeble_start
-#------------------------------------------------------------------------------
-# {{{ _poco_weeble_stop
 
 sub _poco_weeble_stop {
   my $heap = $_[HEAP];
@@ -191,8 +179,6 @@ sub _poco_weeble_stop {
   DEBUG and warn "Client::HTTP (alias=$heap->{alias}) stopped.";
 }
 
-# }}} _poco_weeble_stop
-# {{{ _poco_weeble_pending_requests_count
 
 sub _poco_weeble_pending_requests_count {
   my ($heap) = $_[HEAP];
@@ -200,9 +186,6 @@ sub _poco_weeble_pending_requests_count {
   return scalar keys %$r;
 }
 
-# }}} _poco_weeble_pending_requests_count
-#------------------------------------------------------------------------------
-# {{{ _poco_weeble_request
 
 sub _poco_weeble_request {
   my (
@@ -228,6 +211,7 @@ sub _poco_weeble_request {
     );
     $rsp->request($http_request);
     if (ref($response_event) eq 'POE::Component::Client::HTTP::Request') {
+      # This happens during redirect.
       $response_event->postback->($rsp);
     } else {
       $kernel->post($sender, $response_event, [$http_request, $tag], [$rsp]);
@@ -319,10 +303,6 @@ sub _poco_weeble_request {
   }
 }
 
-# }}} _poco_weeble_request
-
-#------------------------------------------------------------------------------
-# {{{ _poco_weeble_connect_done
 
 sub _poco_weeble_connect_done {
   my ($heap, $response) = @_[HEAP, ARG0];
@@ -422,9 +402,6 @@ sub _poco_weeble_connect_done {
   }
 }
 
-# }}} _poco_weeble_connect_done
-
-# {{{ _poco_weeble_timeout
 
 sub _poco_weeble_timeout {
   my ($kernel, $heap, $request_id) = @_[KERNEL, HEAP, ARG0];
@@ -448,12 +425,12 @@ sub _poco_weeble_timeout {
   delete $heap->{ext_request_to_int_id}->{$request->[REQ_HTTP_REQUEST]};
 
   # There's a wheel attached to the request.  Shut it down.
-  if (defined(my $wheel = $request->wheel())) {
-    my $wheel_id = $wheel->ID();
+  if ($request->wheel) {
+    my $wheel_id = $request->wheel->ID();
     DEBUG and warn "T/O: request $request_id is wheel $wheel_id";
 
     # Shut down the connection so it's not reused.
-    $wheel->shutdown_input();
+    $request->wheel->shutdown_input();
     delete $heap->{wheel_to_request}->{$wheel_id};
   }
 
@@ -480,9 +457,6 @@ sub _poco_weeble_timeout {
   }
 }
 
-# }}} _poco_weeble_timeout
-#------------------------------------------------------------------------------
-# {{{ _poco_weeble_io_flushed
 
 sub _poco_weeble_io_flushed {
   my ($heap, $wheel_id) = @_[HEAP, ARG0];
@@ -508,7 +482,7 @@ sub _poco_weeble_io_flushed {
     my $buf = eval { $callback->() };
 
     if ( $buf ) {
-      $request->[REQ_CONNECTION]->wheel->put($buf);
+      $request->wheel->put($buf);
 
       # reset the timeout
       # Have to also reset REQ_START_TIME or timer ends early
@@ -529,9 +503,6 @@ sub _poco_weeble_io_flushed {
   # $request->wheel->shutdown_output();
 }
 
-# }}} _poco_weeble_io_flushed
-#------------------------------------------------------------------------------
-# {{{ _poco_weeble_io_error
 
 sub _poco_weeble_io_error {
   my ($kernel, $heap, $operation, $errnum, $errstr, $wheel_id) =
@@ -636,12 +607,11 @@ sub _poco_weeble_io_error {
   $request->error(406, "Server response is Not Acceptable - $request_id");
 }
 
-# }}} _poco_weeble_io_error
+
 #------------------------------------------------------------------------------
 # Read a chunk of response.  This code is directly adapted from Artur
 # Bergman's nifty POE::Filter::HTTPD, which does pretty much the same
 # in the other direction.
-# {{{ _poco_weeble_io_read
 
 sub _poco_weeble_io_read {
   my ($kernel, $heap, $input, $wheel_id) = @_[KERNEL, HEAP, ARG0, ARG1];
@@ -672,7 +642,6 @@ sub _poco_weeble_io_read {
     return;
   }
 
-# {{{ HEAD
 
   # The very first line ought to be status.  If it's not, then it's
   # part of the content.
@@ -771,8 +740,7 @@ sub _poco_weeble_io_read {
           DEBUG and warn "I/O: removed request $request_id";
           delete $heap->{ext_request_to_int_id}{$old_request->[REQ_HTTP_REQUEST]};
           $old_request->remove_timeout();
-          $old_request->[REQ_CONNECTION]->close();
-          $old_request->[REQ_CONNECTION] = undef;
+          $old_request->close_connection();
         }
         return;
       }
@@ -840,10 +808,6 @@ sub _poco_weeble_io_read {
     return;
   }
 
-# }}} HEAD
-
-# {{{ content
-
   # We're in a content state.
   if ($request->[REQ_STATE] & RS_IN_CONTENT) {
     if (ref($input) and UNIVERSAL::isa($input, 'HTTP::Response')) {
@@ -855,11 +819,7 @@ sub _poco_weeble_io_read {
     }
   }
 
-# }}} content
-
-# {{{ deliver reponse if complete
-
-# POST response without disconnecting
+  # POST response without disconnecting
   if (
     $request->[REQ_STATE] & RS_DONE and
     not $request->[REQ_STATE] & RS_POSTED
@@ -868,16 +828,11 @@ sub _poco_weeble_io_read {
     _finish_request($heap, $request);
   }
 
-# }}} deliver reponse if complete
-
 }
-
-# }}} _poco_weeble_io_read
 
 
 #------------------------------------------------------------------------------
 # Generate a hex dump of some input. This is not a POE function.
-# {{{ _hexdump
 
 sub _hexdump {
   my $data = shift;
@@ -899,7 +854,6 @@ sub _hexdump {
   return $dump;
 }
 
-# }}} _hexdump
 
 # Check for and handle redirect.  Returns true if redirect should
 # occur, or false if there's no redirect.
@@ -934,20 +888,16 @@ sub _try_redirect {
   return;
 }
 
+
 # Complete a request. This was moved out of _poco_weeble_io_error(). This is
 # not a POE function.
-# {{{ _finish_request
 
 sub _finish_request {
   my ($heap, $request) = @_;
 
   my $request_id = $request->ID;
   if (DEBUG) {
-    my ($pkg, $file, $line) = caller();
-    warn(
-      "XXX: calling _finish_request(request id = $request_id)" .
-      "at $file line $line"
-    );
+    carp "XXX: calling _finish_request(request id = $request_id)";
   }
 
   # XXX What does this do?
@@ -966,34 +916,45 @@ sub _finish_request {
   return _clear_req_cache( $heap, $request_id );
 }
 
-# }}} _finish_request
 
-#{{{ _remove_request
 sub _poco_weeble_remove_request {
   my ($kernel, $heap, $request_id) = @_[KERNEL, HEAP, ARG0];
 
   return _clear_req_cache( $heap, $request_id );
 }
-#}}} _remove_request
+
 
 # helper subroutine to remove a request from our caches
-#{{{ _clear_req_cache
+
 sub _clear_req_cache {
   my ($heap, $request_id) = @_;
 
   my $request = delete $heap->{request}->{$request_id};
-  if (defined $request) {
-    DEBUG and warn "I/O: removed request $request_id";
-    $request->remove_timeout();
-    delete $heap->{ext_request_to_int_id}{$request->[REQ_HTTP_REQUEST]};
-    if (my $wheel = $request->wheel) {
-      delete $heap->{wheel_to_request}->{$wheel->ID};
+  return unless defined $request;
+
+  DEBUG and warn "I/O: removed request $request_id";
+
+  $request->remove_timeout();
+  delete $heap->{ext_request_to_int_id}{$request->[REQ_HTTP_REQUEST]};
+  if (my $wheel = $request->wheel) {
+    delete $heap->{wheel_to_request}->{$wheel->ID};
+  }
+
+  # If the response wants us to close the connection, regrettably do
+  # so.  Only matters if the request is defined.
+  if ($request->[REQ_CONNECTION]) {
+    if (defined(my $response = $request->[REQ_RESPONSE])) {
+      my $connection_header = $response->header('Connection');
+      if (defined $connection_header and $connection_header =~ /\bclose\b/) {
+        DEBUG and warn "I/O: closing connection on server's request";
+        $request->close_connection();
+      }
     }
   }
 
   return;
 }
-#}}} _clear_req_cache
+
 
 # Cancel a single request by HTTP::Request object.
 
@@ -1006,6 +967,7 @@ sub _poco_weeble_cancel {
   );
 }
 
+
 sub _internal_cancel {
   my ($heap, $request_id, $code, $message) = @_;
 
@@ -1016,27 +978,28 @@ sub _internal_cancel {
   $request->remove_timeout();
   delete $heap->{ext_request_to_int_id}{$request->[REQ_HTTP_REQUEST]};
 
-  if (my $wheel = $request->wheel) {
-    my $wheel_id = $wheel->ID;
+  if ($request->wheel) {
+    my $wheel_id = $request->wheel->ID;
     DEBUG and warn "CXL: Request $request_id canceling wheel $wheel_id";
     delete $heap->{wheel_to_request}{$wheel_id};
-    $wheel = undef;
   }
 
   if ($request->[REQ_CONNECTION]) {
-    $request->[REQ_CONNECTION]->close();
-    $request->[REQ_CONNECTION] = undef;
+    DEBUG and warn "I/O: Closing connection during internal cancel";
+    $request->close_connection();
   }
   else {
     # Didn't connect yet; inform connection manager to cancel
     # connection request.
-    $heap->{cm}->deallocate($request_id);
+
+    $heap->{cm}->deallocate($request->[REQ_CONN_ID]);
   }
 
   unless ($request->[REQ_STATE] & RS_POSTED) {
     $request->error($code, $message);
   }
 }
+
 
 # Shut down the entire component.
 sub _poco_weeble_shutdown {
@@ -1066,15 +1029,13 @@ sub _poco_weeble_shutdown {
 
 __END__
 
-# {{{ POD
-
 =head1 NAME
 
 POE::Component::Client::HTTP - a HTTP user-agent component
 
 =head1 VERSION
 
-version 0.948
+version 0.949
 
 =head1 SYNOPSIS
 
@@ -1636,5 +1597,3 @@ Gitorious: L<http://gitorious.org/poe-component-client-http> .
 L<http://search.cpan.org/dist/POE-Component-Client-HTTP/>
 
 =cut
-
-# }}} POD
